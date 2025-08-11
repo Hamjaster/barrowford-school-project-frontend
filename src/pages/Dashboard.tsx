@@ -100,7 +100,7 @@ const Dashboard: React.FC = () => {
       </div>
 
       {/* RightSidebar - Hidden on mobile, visible on tablets and larger */}
-      <div className="hidden md:block md:w-1/4 h-[89.5vh]">
+      <div className="hidden md:block md:w-1/4">
         <RightSidebar />
       </div>
     </div>

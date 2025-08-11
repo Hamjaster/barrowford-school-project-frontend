@@ -10,11 +10,11 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <div className="flex min-h-screen bg-[#eaf7fd]">
+      <div className="flex min-h-screen w-full">
         <Sidebar />
-        <SidebarInset className="flex bg-[#eaf7fd] flex-col flex-1">
+        <SidebarInset className="flex bg-[#eaf7fd] flex-col flex-1 w-full min-w-0">
           <Header />
-          <div className="flex-1 p-4 sm:p-6 lg:p-8">
+          <div className="flex-1 p-4 sm:p-6 lg:p-8 w-full">
             <Outlet />
           </div>
         </SidebarInset>

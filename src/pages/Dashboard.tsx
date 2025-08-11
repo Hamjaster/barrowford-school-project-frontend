@@ -48,7 +48,7 @@ const Dashboard: React.FC = () => {
   ];
 
   return (
-    <div className="flex flex-col md:flex-row justify-between gap-5">
+    <div className="flex flex-col md:flex-row justify-between gap-5 w-full">
       <div className="w-full md:w-3/4">
         <div className="relative flex items-end pb-3 sm:pb-5 justify-center mb-4 sm:mb-6 bg-white h-[20vh] sm:h-[25vh] lg:h-[27vh]">
           <div className="absolute -top-8 sm:-top-10 lg:-top-12 left-1/2 -translate-x-1/2 mx-auto mb-5 bg-[#eaf7fd] p-1 rounded-full w-fit">

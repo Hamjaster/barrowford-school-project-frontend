@@ -52,7 +52,7 @@ const RightSidebar: React.FC = () => {
 
   return (
     <>
-      <div className="grid grid-cols-1 gap-4 h-full">
+      <div className="grid grid-cols-1 gap-4">
         {sidebarItems.map((item, index) => (
           <div
             key={index}

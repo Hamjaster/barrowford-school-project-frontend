@@ -1,0 +1,3 @@
+function findAge(age: number    ) {
+  
+}

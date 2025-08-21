@@ -1,4 +1,4 @@
-import type React from "react";
+import React from "react";
 import { Heart, Calendar, Star, Info, CheckCircle } from "lucide-react";
 import { useSelector } from "react-redux";
 import RightSidebar from "../components/RightSidebar";
@@ -97,7 +97,7 @@ const StudentDashboard: React.FC = () => {
             </Avatar>
           </div>
           <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-3xl xl:text-4xl font-bold text-gray-800 mb-2 text-center px-4">
-            Jacob Smith is a Meliorist
+            {user?.first_name} {user?.last_name} is a Meliorist
           </h2>
         </div>
 

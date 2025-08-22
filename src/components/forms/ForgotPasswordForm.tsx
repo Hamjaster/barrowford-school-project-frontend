@@ -117,7 +117,7 @@ const ForgotPasswordForm: React.FC = () => {
             disabled={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white"
           >
-            {isLoading ? "Sending Instructions..." : "Send Reset Instructions"}
+            {isLoading ? "Sending Instructions..." : "Request Password"}
           </Button>
         </div>
       </form>

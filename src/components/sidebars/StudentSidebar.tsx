@@ -1,17 +1,16 @@
 import type React from "react";
 import { Link } from "react-router-dom";
 import {
-  Home,
-  Image,
-  Heart,
-  Star,
-  BookOpen,
-  LogOut,
   GraduationCap,
+  LogOut,
+  Home,
+  BookOpen,
+  Award,
+  FileText,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../store/slices/authSlice";
+import { logout } from "@/store/slices/authSlice";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -24,13 +23,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-
-interface NavItem {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-  bgColor: string;
-}
+import { ROLEWISE_INFORMATION } from "@/constants";
 
 const StudentSidebar: React.FC = () => {
   const dispatch = useDispatch();
@@ -41,44 +34,18 @@ const StudentSidebar: React.FC = () => {
     navigate("/login");
   };
 
-  const navItems: NavItem[] = [
-    {
-      to: "/",
-      label: "My Dashboard",
-      bgColor: "bg-blue-500",
-      icon: <Home size={20} />,
-    },
-    {
-      to: "/my-learning",
-      label: "My Learning",
-      bgColor: "bg-blue-500",
-      icon: <Home size={20} />,
-    },
-    {
-      to: "/my-photos",
-      label: "My Photos",
-      bgColor: "bg-orange-500",
-      icon: <Image size={20} />,
-    },
-    {
-      to: "/my-impact",
-      label: "My Impact",
-      bgColor: "bg-pink-600",
-      icon: <Heart size={20} />,
-    },
-    {
-      to: "/my-experiences",
-      label: "My Experiences",
-      bgColor: "bg-green-500",
-      icon: <Star size={20} />,
-    },
-    {
-      to: "/what-i-read",
-      label: "What I Read",
-      bgColor: "bg-purple-600",
-      icon: <BookOpen size={20} />,
-    },
-  ];
+  const studentInfo = ROLEWISE_INFORMATION.student;
+  const navItems = studentInfo.navItems;
+
+  const getIconComponent = (iconName: string) => {
+    const iconMap = {
+      Home: <Home size={20} />,
+      BookOpen: <BookOpen size={20} />,
+      Award: <Award size={20} />,
+      FileText: <FileText size={20} />,
+    };
+    return iconMap[iconName as keyof typeof iconMap] || null;
+  };
 
   return (
     <ShadcnSidebar className="border-r" collapsible="offcanvas">
@@ -91,13 +58,13 @@ const StudentSidebar: React.FC = () => {
           </div>
           <div className="flex-1">
             <div className="text-lg font-bold text-gray-800 leading-tight">
-              Barrowford
+              {studentInfo.sidebarTitle}
             </div>
             <div className="text-sm text-gray-600 leading-tight">
-              Primary School
+              {studentInfo.sidebarSubtitle}
             </div>
             <div className="text-xs text-pink-600 italic mt-1 leading-tight">
-              Learn to Love. Love to Learn.
+              {studentInfo.sidebarSubtitle}
             </div>
           </div>
         </div>
@@ -117,7 +84,7 @@ const StudentSidebar: React.FC = () => {
                       <div
                         className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}
                       >
-                        {item.icon}
+                        {getIconComponent(item.iconName)}
                       </div>
                       <span>{item.label}</span>
                     </Link>

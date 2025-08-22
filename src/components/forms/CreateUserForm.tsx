@@ -8,11 +8,14 @@ import {
   createUser,
   clearError,
   clearSuccess,
-} from "../../store/slices/userManagementSlice";
-import type { RootState } from "../../store";
+} from "@/store/slices/userManagementSlice";
+import type { RootState } from "@/store";
+import type { CreateUserFormData, UserRole } from "@/types";
+import { validateEmail, validatePassword, validateName } from "@/lib/utils";
+import { ROLEWISE_INFORMATION } from "@/constants";
 
 interface CreateUserFormProps {
-  allowedRoles: string[];
+  allowedRoles: UserRole[];
 }
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
@@ -21,23 +24,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     (state: RootState) => state.userManagement
   );
 
-  const [formData, setFormData] = useState<{
-    email: string;
-    password: string;
-    first_name: string;
-    last_name: string;
-    role: "admin" | "staff_admin" | "staff" | "parent" | "student";
-  }>({
+  const [formData, setFormData] = useState<CreateUserFormData>({
     email: "",
     password: "",
     first_name: "",
     last_name: "",
-    role: (allowedRoles[0] || "student") as
-      | "admin"
-      | "staff_admin"
-      | "staff"
-      | "parent"
-      | "student",
+    role: allowedRoles[0] || "student",
   });
 
   const handleInputChange = (
@@ -50,23 +42,29 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (
-      !formData.email ||
-      !formData.password ||
-      !formData.first_name ||
-      !formData.last_name
-    ) {
-      toast.error("All fields are required");
+    // Validate all fields
+    const emailValidation = validateEmail(formData.email);
+    const passwordValidation = validatePassword(formData.password);
+    const firstNameValidation = validateName(formData.first_name, "First name");
+    const lastNameValidation = validateName(formData.last_name, "Last name");
+
+    if (!emailValidation.isValid) {
+      toast.error(emailValidation.error);
       return;
     }
 
-    if (!formData.email.includes("@")) {
-      toast.error("Please enter a valid email address");
+    if (!passwordValidation.isValid) {
+      toast.error(passwordValidation.error);
       return;
     }
 
-    if (formData.password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
+    if (!firstNameValidation.isValid) {
+      toast.error(firstNameValidation.error);
+      return;
+    }
+
+    if (!lastNameValidation.isValid) {
+      toast.error(lastNameValidation.error);
       return;
     }
 
@@ -93,33 +91,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         password: "",
         first_name: "",
         last_name: "",
-        role: (allowedRoles[0] || "student") as
-          | "admin"
-          | "staff_admin"
-          | "staff"
-          | "parent"
-          | "student",
+        role: allowedRoles[0] || "student",
       });
       dispatch(clearSuccess());
     }
   }, [createUserSuccess, dispatch, allowedRoles, successMessage]);
-
-  const getRoleDisplayName = (role: string) => {
-    switch (role) {
-      case "staff_admin":
-        return "Staff Admin";
-      case "staff":
-        return "Staff/Teacher";
-      case "parent":
-        return "Parent";
-      case "student":
-        return "Student";
-      case "admin":
-        return "Admin";
-      default:
-        return role;
-    }
-  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -220,7 +196,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           >
             {allowedRoles.map((role) => (
               <option key={role} value={role}>
-                {getRoleDisplayName(role)}
+                {ROLEWISE_INFORMATION[role].displayName}
               </option>
             ))}
           </select>

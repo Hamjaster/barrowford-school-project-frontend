@@ -1,5 +1,5 @@
 import type React from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import Header from "./Header";
 import AdminSidebar from "./sidebars/AdminSidebar";
@@ -13,21 +13,23 @@ import type { RootState } from "../store";
 const DashboardLayout: React.FC = () => {
   const { sidebarOpen, setSidebarOpen } = useResponsiveSidebar();
   const { user } = useSelector((state: RootState) => state.auth);
-
+  const navigate = useNavigate();
   const renderSidebar = () => {
-    if (!user) return <StudentSidebar />;
+    if (!user) {
+      navigate("/login");
+    }
 
-    switch (user.role) {
+    switch (user?.role) {
       case "admin":
         return <AdminSidebar />;
-      case "staff_admin":
       case "staff":
         return <StaffSidebar />;
       case "parent":
         return <ParentSidebar />;
       case "student":
-      default:
         return <StudentSidebar />;
+      default:
+        return null;
     }
   };
 

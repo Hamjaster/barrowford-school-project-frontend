@@ -1,41 +1,11 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
-// API Base URL
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}`;
-
-// Types
-interface CreateUserRequest {
-  email: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  role: 'admin' | 'staff_admin' | 'staff' | 'parent' | 'student';
-}
-
-interface ResetPasswordRequest {
-  email: string;
-  newPassword: string;
-}
-
-interface User {
-  id: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  role: string;
-  username?: string;
-  created_at: string;
-  is_active: boolean;
-}
-
-interface UserManagementState {
-  users: User[];
-  isLoading: boolean;
-  error: string | null;
-  createUserSuccess: boolean;
-  resetPasswordSuccess: boolean;
-  successMessage: string;
-}
+import { 
+  type CreateUserRequest, 
+  type ResetUserPasswordRequest, 
+  type User, 
+  type UserManagementState 
+} from '@/types';
+import { API_BASE_URL, STORAGE_KEYS } from '@/constants';
 
 const initialState: UserManagementState = {
   users: [],
@@ -85,7 +55,7 @@ export const createUser = createAsyncThunk(
 
 export const resetUserPassword = createAsyncThunk(
   'userManagement/resetPassword',
-  async (resetData: ResetPasswordRequest, { rejectWithValue, getState }) => {
+  async (resetData: ResetUserPasswordRequest, { rejectWithValue, getState }) => {
     try {
       const state = getState() as any;
       const token = state.auth.token;

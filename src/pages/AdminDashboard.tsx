@@ -1,17 +1,13 @@
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
-import {
-  Users,
-  UserPlus,
-  KeyRound,
-  Shield,
-  BarChart3,
-  Settings,
-} from "lucide-react";
+import { UserPlus, KeyRound, Shield, BarChart3, Settings } from "lucide-react";
 import type { RootState } from "../store";
 import CreateUserForm from "../components/forms/CreateUserForm";
 import ResetPasswordForm from "../components/forms/ResetPasswordForm";
 import ForgotPasswordForm from "../components/forms/ForgotPasswordForm";
+import type { UserRole } from "@/types";
+import { ROLEWISE_INFORMATION } from "@/constants";
+import { getTabDisplayName } from "@/lib/utils";
 
 interface DashboardCard {
   title: string;
@@ -31,22 +27,11 @@ const AdminDashboard: React.FC = () => {
   >("overview");
 
   // Admin can create all user types
-  const allowedRoles = ["staff_admin", "staff", "parent", "student"];
+  const allowedCreatableRoles: UserRole[] = ["staff", "parent", "student"];
+  const adminInfo = ROLEWISE_INFORMATION.admin;
+  const availableTabs = adminInfo.availableTabs;
 
   const dashboardCards: DashboardCard[] = [
-    {
-      title: "User Management",
-      icon: (
-        <Users className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-      ),
-      bgColor: "bg-blue-50",
-      iconColor: "bg-blue-600",
-      content: [
-        "Manage all system users",
-        "Create, edit, and deactivate accounts",
-      ],
-      action: () => setActiveTab("create-user"),
-    },
     {
       title: "Create New Users",
       icon: (
@@ -105,7 +90,7 @@ const AdminDashboard: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "create-user":
-        return <CreateUserForm allowedRoles={allowedRoles} />;
+        return <CreateUserForm allowedRoles={allowedCreatableRoles} />;
       case "reset-password":
         return (
           <div className="space-y-6">
@@ -182,36 +167,21 @@ const AdminDashboard: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-        <button
-          onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === "overview"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Overview
-        </button>
-        <button
-          onClick={() => setActiveTab("create-user")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === "create-user"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Create User
-        </button>
-        <button
-          onClick={() => setActiveTab("reset-password")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === "reset-password"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Password Management
-        </button>
+        {availableTabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() =>
+              setActiveTab(tab as "overview" | "create-user" | "reset-password")
+            }
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === tab
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {getTabDisplayName(tab)}
+          </button>
+        ))}
       </div>
 
       {/* Tab Content */}

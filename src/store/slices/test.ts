@@ -1,3 +1,0 @@
-function findAge(age: number    ) {
-  
-}

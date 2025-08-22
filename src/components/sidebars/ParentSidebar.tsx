@@ -1,18 +1,10 @@
 import type React from "react";
 import { Link } from "react-router-dom";
-import {
-  Home,
-  User,
-  Calendar,
-  MessageSquare,
-  FileText,
-  Camera,
-  GraduationCap,
-  LogOut,
-} from "lucide-react";
+import { GraduationCap, LogOut, Home, Baby, Camera } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../store/slices/authSlice";
+import { logout } from "@/store/slices/authSlice";
+import { ROLEWISE_INFORMATION } from "@/constants";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -26,13 +18,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-interface NavItem {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-  bgColor: string;
-}
-
 const ParentSidebar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -42,44 +27,17 @@ const ParentSidebar: React.FC = () => {
     navigate("/login");
   };
 
-  const navItems: NavItem[] = [
-    {
-      to: "/",
-      label: "Dashboard",
-      bgColor: "bg-green-500",
-      icon: <Home size={20} />,
-    },
-    {
-      to: "/my-child",
-      label: "My Child",
-      bgColor: "bg-blue-500",
-      icon: <User size={20} />,
-    },
-    {
-      to: "/school-calendar",
-      label: "School Calendar",
-      bgColor: "bg-purple-500",
-      icon: <Calendar size={20} />,
-    },
-    {
-      to: "/messages",
-      label: "Messages",
-      bgColor: "bg-orange-500",
-      icon: <MessageSquare size={20} />,
-    },
-    {
-      to: "/reports",
-      label: "Reports",
-      bgColor: "bg-indigo-500",
-      icon: <FileText size={20} />,
-    },
-    {
-      to: "/photos",
-      label: "School Photos",
-      bgColor: "bg-pink-500",
-      icon: <Camera size={20} />,
-    },
-  ];
+  const parentInfo = ROLEWISE_INFORMATION.parent;
+  const navItems = parentInfo.navItems;
+
+  const getIconComponent = (iconName: string) => {
+    const iconMap = {
+      Home: <Home size={20} />,
+      Baby: <Baby size={20} />,
+      Camera: <Camera size={20} />,
+    };
+    return iconMap[iconName as keyof typeof iconMap] || null;
+  };
 
   return (
     <ShadcnSidebar className="border-r" collapsible="offcanvas">
@@ -92,13 +50,13 @@ const ParentSidebar: React.FC = () => {
           </div>
           <div className="flex-1">
             <div className="text-lg font-bold text-gray-800 leading-tight">
-              Parent Portal
+              {parentInfo.sidebarTitle}
             </div>
             <div className="text-sm text-gray-600 leading-tight">
-              Stay Connected
+              {parentInfo.sidebarSubtitle}
             </div>
             <div className="text-xs text-green-600 italic mt-1 leading-tight">
-              Your Child's Journey
+              {parentInfo.sidebarSubtitle}
             </div>
           </div>
         </div>
@@ -118,7 +76,7 @@ const ParentSidebar: React.FC = () => {
                       <div
                         className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}
                       >
-                        {item.icon}
+                        {getIconComponent(item.iconName)}
                       </div>
                       <span>{item.label}</span>
                     </Link>

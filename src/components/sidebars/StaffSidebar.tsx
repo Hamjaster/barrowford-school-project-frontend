@@ -1,18 +1,19 @@
 import type React from "react";
 import { Link } from "react-router-dom";
 import {
+  GraduationCap,
+  LogOut,
   Home,
   Users,
   UserPlus,
   KeyRound,
   BookOpen,
   Calendar,
-  GraduationCap,
-  LogOut,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { logout } from "../../store/slices/authSlice";
+import { logout } from "@/store/slices/authSlice";
+import { ROLEWISE_INFORMATION } from "@/constants";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -26,13 +27,6 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-interface NavItem {
-  to: string;
-  label: string;
-  icon: React.ReactNode;
-  bgColor: string;
-}
-
 const StaffSidebar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -42,44 +36,20 @@ const StaffSidebar: React.FC = () => {
     navigate("/login");
   };
 
-  const navItems: NavItem[] = [
-    {
-      to: "/",
-      label: "Dashboard",
-      bgColor: "bg-blue-500",
-      icon: <Home size={20} />,
-    },
-    {
-      to: "/my-students",
-      label: "My Students",
-      bgColor: "bg-green-500",
-      icon: <Users size={20} />,
-    },
-    {
-      to: "/create-user",
-      label: "Create User",
-      bgColor: "bg-purple-500",
-      icon: <UserPlus size={20} />,
-    },
-    {
-      to: "/reset-passwords",
-      label: "Reset Passwords",
-      bgColor: "bg-orange-500",
-      icon: <KeyRound size={20} />,
-    },
-    {
-      to: "/curriculum",
-      label: "Curriculum",
-      bgColor: "bg-indigo-500",
-      icon: <BookOpen size={20} />,
-    },
-    {
-      to: "/schedule",
-      label: "Schedule",
-      bgColor: "bg-pink-500",
-      icon: <Calendar size={20} />,
-    },
-  ];
+  const staffInfo = ROLEWISE_INFORMATION.staff;
+  const navItems = staffInfo.navItems;
+
+  const getIconComponent = (iconName: string) => {
+    const iconMap = {
+      Home: <Home size={20} />,
+      Users: <Users size={20} />,
+      UserPlus: <UserPlus size={20} />,
+      KeyRound: <KeyRound size={20} />,
+      BookOpen: <BookOpen size={20} />,
+      Calendar: <Calendar size={20} />,
+    };
+    return iconMap[iconName as keyof typeof iconMap] || null;
+  };
 
   return (
     <ShadcnSidebar className="border-r" collapsible="offcanvas">
@@ -92,13 +62,13 @@ const StaffSidebar: React.FC = () => {
           </div>
           <div className="flex-1">
             <div className="text-lg font-bold text-gray-800 leading-tight">
-              Staff Portal
+              {staffInfo.sidebarTitle}
             </div>
             <div className="text-sm text-gray-600 leading-tight">
-              Teaching & Management
+              {staffInfo.sidebarSubtitle}
             </div>
             <div className="text-xs text-blue-600 italic mt-1 leading-tight">
-              Educate & Inspire
+              {staffInfo.sidebarDescription}
             </div>
           </div>
         </div>
@@ -118,7 +88,7 @@ const StaffSidebar: React.FC = () => {
                       <div
                         className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}
                       >
-                        {item.icon}
+                        {getIconComponent(item.iconName)}
                       </div>
                       <span>{item.label}</span>
                     </Link>

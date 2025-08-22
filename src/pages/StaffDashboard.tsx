@@ -12,6 +12,9 @@ import type { RootState } from "../store";
 import CreateUserForm from "../components/forms/CreateUserForm";
 import ResetPasswordForm from "../components/forms/ResetPasswordForm";
 import ForgotPasswordForm from "../components/forms/ForgotPasswordForm";
+import { ROLEWISE_INFORMATION } from "@/constants";
+import { getTabDisplayName } from "@/lib/utils";
+import type { UserRole } from "@/types";
 
 interface DashboardCard {
   title: string;
@@ -31,7 +34,9 @@ const StaffDashboard: React.FC = () => {
   >("overview");
 
   // Staff can create parent and student accounts only
-  const allowedRoles = ["parent", "student"];
+  const allowedCreatableRoles: UserRole[] = ["parent", "student"];
+  const staffInfo = ROLEWISE_INFORMATION.staff;
+  const availableTabs = staffInfo.availableTabs;
 
   const dashboardCards: DashboardCard[] = [
     {
@@ -98,7 +103,7 @@ const StaffDashboard: React.FC = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "create-user":
-        return <CreateUserForm allowedRoles={allowedRoles} />;
+        return <CreateUserForm allowedRoles={allowedCreatableRoles} />;
       case "reset-password":
         return (
           <div className="space-y-6">
@@ -175,36 +180,27 @@ const StaffDashboard: React.FC = () => {
 
       {/* Tab Navigation */}
       <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg w-fit">
-        <button
-          onClick={() => setActiveTab("overview")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === "overview"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Overview
-        </button>
-        <button
-          onClick={() => setActiveTab("create-user")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === "create-user"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Create User
-        </button>
-        <button
-          onClick={() => setActiveTab("reset-password")}
-          className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
-            activeTab === "reset-password"
-              ? "bg-white text-gray-900 shadow-sm"
-              : "text-gray-600 hover:text-gray-900"
-          }`}
-        >
-          Password Management
-        </button>
+        {availableTabs.map((tab) => (
+          <button
+            key={tab}
+            onClick={() =>
+              setActiveTab(
+                tab as
+                  | "overview"
+                  | "create-user"
+                  | "reset-password"
+                  | "forgot-password"
+              )
+            }
+            className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              activeTab === tab
+                ? "bg-white text-gray-900 shadow-sm"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {getTabDisplayName(tab)}
+          </button>
+        ))}
       </div>
 
       {/* Tab Content */}

@@ -1,72 +1,31 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-
-// Types
-export interface User {
-  id: string;
-  email: string;
-  role: string;
-  first_name: string;
-  last_name: string;
-  dob: string;
-  username?: string; // For students
-}
-
-export interface LoginRequest {
-  email?: string;
-  username?: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  access_token: string;
-  user: User;
-}
-
-export interface ForgotPasswordRequest {
-  email: string;
-}
-
-export interface ForgotPasswordResponse {
-  success: boolean;
-  message: string;
-}
-
-export interface ResetPasswordRequest {
-  accessToken: string;
-  refreshToken: string;
-  newPassword: string;
-}
-
-export interface ResetPasswordResponse {
-  success: boolean;
-  message: string;
-}
-
-interface AuthState {
-  user: User | null;
-  token: string | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  error: string | null;
-}
+import { 
+    type  User, 
+    type LoginRequest, 
+    type LoginResponse, 
+    type ForgotPasswordRequest, 
+    type ForgotPasswordResponse, 
+    type ResetPasswordRequest, 
+    type ResetPasswordResponse,
+    type AuthState 
+} from '@/types';
+import { AUTH_API_URL, STORAGE_KEYS } from '../../constants';
+import { getFromStorage } from '../../lib/utils';
 
 const initialState: AuthState = {
   user: null,
-  token: localStorage.getItem('auth_token'),
-  isAuthenticated: !!localStorage.getItem('auth_token'),
+  token: getFromStorage(STORAGE_KEYS.AUTH_TOKEN),
+  isAuthenticated: !!getFromStorage(STORAGE_KEYS.AUTH_TOKEN),
   isLoading: false,
   error: null,
 };
-
-// API Base URL
-const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}/auth`;
 
 // Async Thunks
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (loginData: LoginRequest, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/login`, {
+      const response = await fetch(`${AUTH_API_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -91,7 +50,7 @@ export const forgotPassword = createAsyncThunk(
   'auth/forgotPassword',
   async (forgotPasswordData: ForgotPasswordRequest, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/forgot-password`, {
+      const response = await fetch(`${AUTH_API_URL}/forgot-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -116,7 +75,7 @@ export const resetPassword = createAsyncThunk(
   'auth/resetPassword',
   async (resetPasswordData: ResetPasswordRequest, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/reset-password-token`, {
+      const response = await fetch(`${AUTH_API_URL}/reset-password-token`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -146,15 +105,15 @@ const authSlice = createSlice({
       state.token = null;
       state.isAuthenticated = false;
       state.error = null;
-      localStorage.removeItem('auth_token');
-      localStorage.removeItem('user');
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      localStorage.removeItem(STORAGE_KEYS.USER);
     },
     clearError: (state) => {
       state.error = null;
     },
     initializeAuth: (state) => {
-      const token = localStorage.getItem('auth_token');
-      const userStr = localStorage.getItem('user');
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const userStr = localStorage.getItem(STORAGE_KEYS.USER);
       
       if (token && userStr) {
         try {
@@ -164,8 +123,8 @@ const authSlice = createSlice({
           state.isAuthenticated = true;
         } catch (error) {
           // If parsing fails, clear localStorage
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
+          localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.USER);
         }
       }
     },
@@ -185,8 +144,8 @@ const authSlice = createSlice({
         state.error = null;
         
         // Persist to localStorage
-        localStorage.setItem('auth_token', action.payload.access_token);
-        localStorage.setItem('user', JSON.stringify(action.payload.user));
+        localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, action.payload.access_token);
+        localStorage.setItem(STORAGE_KEYS.USER, JSON.stringify(action.payload.user));
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;

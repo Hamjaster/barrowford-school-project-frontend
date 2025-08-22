@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+
 // Validation utilities
 export const validateEmail = (email: string): { isValid: boolean; error?: string } => {
   if (!email) {

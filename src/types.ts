@@ -79,7 +79,8 @@ export interface NavItem {
 
 // Form Types
 export interface CreateUserFormData {
-  email: string;
+  email:
+   string;
   password: string;
   first_name: string;
   last_name: string;

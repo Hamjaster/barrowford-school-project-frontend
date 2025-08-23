@@ -1,7 +1,9 @@
 import type React from "react";
-import { Heart, Calendar, Star, Info } from "lucide-react";
+import { Heart, Calendar, Star, Info, CheckCircle } from "lucide-react";
+import { useSelector } from "react-redux";
 import RightSidebar from "../components/RightSidebar";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import type { RootState } from "../store";
 
 interface DashboardCard {
   title: string;
@@ -11,7 +13,10 @@ interface DashboardCard {
   content: string[];
 }
 
-const Dashboard: React.FC = () => {
+const StudentDashboard: React.FC = () => {
+  const { user, isAuthenticated } = useSelector(
+    (state: RootState) => state.auth
+  );
   const dashboardCards: DashboardCard[] = [
     {
       title: "What I Love About Me",
@@ -50,6 +55,34 @@ const Dashboard: React.FC = () => {
   return (
     <div className="flex flex-col md:flex-row justify-between gap-5 w-full">
       <div className="w-full md:w-3/4">
+        {/* Authentication Status Card */}
+        {isAuthenticated && user && (
+          <div className="bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div className="flex items-center gap-3">
+              <CheckCircle className="text-green-600 w-6 h-6" />
+              <div>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Welcome back, {user.first_name}!
+                </h3>
+                <p className="text-sm text-gray-600">
+                  You're successfully logged in as a{" "}
+                  <span className="font-medium capitalize">
+                    {user.role.replace("_", " ")}
+                  </span>
+                  {user.username && (
+                    <span>
+                      {" "}
+                      • Username:{" "}
+                      <span className="font-mono bg-gray-100 px-1 rounded">
+                        @{user.username}
+                      </span>
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <div className="relative flex items-end pb-3 sm:pb-5 justify-center mb-4 sm:mb-6 bg-white h-[20vh] sm:h-[25vh] lg:h-[27vh]">
           <div className="absolute -top-8 sm:-top-10 lg:-top-12 left-1/2 -translate-x-1/2 mx-auto mb-5 bg-[#eaf7fd] p-1 rounded-full w-fit">
             <Avatar className="w-20 h-20 sm:w-28 sm:h-28 lg:w-32 lg:h-32 xl:w-36 xl:h-36">
@@ -107,4 +140,4 @@ const Dashboard: React.FC = () => {
   );
 };
 
-export default Dashboard;
+export default StudentDashboard;

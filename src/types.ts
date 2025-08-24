@@ -60,6 +60,33 @@ export interface ResetUserPasswordRequest {
   newPassword: string;
 }
 
+// Paginated Users Types
+export interface FetchUsersRequest {
+  page?: number;
+  limit?: number;
+  search?: string;
+  role?: string;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  totalUsers: number;
+  usersPerPage: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface FetchUsersResponse {
+  success: boolean;
+  data: {
+    users: User[];
+    pagination: PaginationInfo;
+  };
+}
+
 // Component Types
 export interface DashboardCard {
   title: string;
@@ -108,6 +135,7 @@ export interface AuthState {
 
 export interface UserManagementState {
   users: User[];
+  pagination: PaginationInfo | null;
   isLoading: boolean;
   error: string | null;
   createUserSuccess: boolean;

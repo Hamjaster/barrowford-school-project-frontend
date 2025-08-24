@@ -3,13 +3,7 @@ import type { UserRole, NavItem } from './types';
 
 // API Configuration
 export const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}`;
-export const AUTH_API_URL = `${API_BASE_URL}/auth`;
 
-// Local Storage Keys
-export const STORAGE_KEYS = {
-  AUTH_TOKEN: 'auth_token',
-  USER: 'user',
-} as const;
 
 // Validation Constants
 export const VALIDATION = {
@@ -20,6 +14,13 @@ export const VALIDATION = {
 } as const;
 
 // Role-wise Information
+// 
+// CHANGES MADE FOR NEW PASSWORD MANAGEMENT FLOW:
+// - Removed 'reset-password' and 'forgot-password' tabs from admin and staff availableTabs
+// - These tabs have been commented out (not deleted) for potential future restoration
+// - Password management is now integrated into the main dashboard views
+//
+// TO RESTORE OLD TABS: Uncomment the tabs in the availableTabs arrays below
 export const ROLEWISE_INFORMATION: Record<UserRole, {
   displayName: string;
   dashboardTitle: string;
@@ -48,39 +49,10 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
         bgColor: 'bg-blue-500',
         iconName: 'Home',
       },
-      {
-        to: '/users',
-        label: 'Manage Users',
-        bgColor: 'bg-purple-500',
-        iconName: 'Users',
-      },
-      {
-        to: '/create-user',
-        label: 'Create User',
-        bgColor: 'bg-green-500',
-        iconName: 'UserPlus',
-      },
-      {
-        to: '/reset-passwords',
-        label: 'Reset Passwords',
-        bgColor: 'bg-orange-500',
-        iconName: 'KeyRound',
-      },
-      {
-        to: '/system-settings',
-        label: 'System Settings',
-        bgColor: 'bg-red-500',
-        iconName: 'Settings',
-      },
-      {
-        to: '/security',
-        label: 'Security',
-        bgColor: 'bg-gray-600',
-        iconName: 'Shield',
-      },
+
     ],
     
-    availableTabs: ['overview', 'create-user', 'reset-password'],
+    availableTabs: ['overview', 'create-user'], // 'reset-password' commented out for new password management flow
     
   },
   staff: {
@@ -131,7 +103,7 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
       },
     ],
     
-    availableTabs: ['overview', 'create-user', 'reset-password', 'forgot-password'],
+    availableTabs: ['overview', 'create-user'], // 'reset-password', 'forgot-password' commented out for new password management flow
 
   },
   parent: {
@@ -150,18 +122,18 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
         bgColor: 'bg-blue-500',
         iconName: 'Home',
       },
-      {
-        to: '/my-child',
-        label: 'My Child',
-        bgColor: 'bg-green-500',
-        iconName: 'Baby',
-      },
-      {
-        to: '/my-photos',
-        label: 'Photos & Memories',
-        bgColor: 'bg-purple-500',
-        iconName: 'Camera',
-      },
+      // {
+      //   to: '/my-child',
+      //   label: 'My Child',
+      //   bgColor: 'bg-green-500',
+      //   iconName: 'Baby',
+      // },
+      // {
+      //   to: '/my-photos',
+      //   label: 'Photos & Memories',
+      //   bgColor: 'bg-purple-500',
+      //   iconName: 'Camera',
+      // },
     ],
     
     availableTabs: ['overview', 'my-child', 'my-photos'],
@@ -194,6 +166,12 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
         label: 'My Experiences',
         bgColor: 'bg-purple-500',
         iconName: 'Award',
+      },
+      {
+        to: '/my-impact',
+        label: 'My Impact',
+        bgColor: 'bg-red-500',
+        iconName: 'BookOpen',
       },
       {
         to: '/what-i-read',

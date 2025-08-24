@@ -18,6 +18,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Unauthorized from "./pages/Unauthorized";
 
 import "./App.css";
+import MyImpact from "./pages/student/MyImpact";
 
 const App: React.FC = () => {
   return (
@@ -53,7 +54,7 @@ const App: React.FC = () => {
                 <Route path="my-child" element={<RoleBasedDashboard />} />
                 <Route path="my-learning" element={<RoleBasedDashboard />} />
                 <Route path="my-photos" element={<RoleBasedDashboard />} />
-                <Route path="my-impact" element={<RoleBasedDashboard />} />
+                <Route path="my-impact" element={<MyImpact />} />
                 <Route path="my-experiences" element={<RoleBasedDashboard />} />
                 <Route path="what-i-read" element={<RoleBasedDashboard />} />
               </Route>

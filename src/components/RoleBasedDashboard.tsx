@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import type { RootState } from "../store";
@@ -11,6 +11,10 @@ const RoleBasedDashboard: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
+
+  useEffect(() => {
+    console.log(user, isAuthenticated, "logs");
+  }, []);
 
   // If not authenticated, redirect to login
   if (!isAuthenticated || !user) {

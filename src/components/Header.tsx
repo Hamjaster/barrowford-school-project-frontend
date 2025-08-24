@@ -67,7 +67,7 @@ const Header: React.FC = () => {
             <p className="text-sm font-medium text-gray-900">
               {getUserDisplayName()}
             </p>
-            <div className="flex items-center gap-2">
+            {/* <div className="flex items-center gap-2">
               <span
                 className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor()}`}
               >
@@ -76,12 +76,12 @@ const Header: React.FC = () => {
               {user?.role === "student" && user?.username && (
                 <span className="text-xs text-gray-500">@{user.username}</span>
               )}
-            </div>
+            </div> */}
           </div>
         </div>
 
         {/* Logout Button */}
-        <Button
+        {/* <Button
           variant="outline"
           size="sm"
           onClick={handleLogout}
@@ -89,7 +89,7 @@ const Header: React.FC = () => {
         >
           <LogOut className="h-4 w-4" />
           <span className="hidden sm:inline">Logout</span>
-        </Button>
+        </Button> */}
       </div>
     </header>
   );

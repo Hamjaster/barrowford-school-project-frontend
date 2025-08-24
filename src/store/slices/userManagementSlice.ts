@@ -2,13 +2,15 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { 
   type CreateUserRequest, 
   type ResetUserPasswordRequest, 
-  type User, 
-  type UserManagementState 
+  type UserManagementState,
+  type FetchUsersRequest,
+  type FetchUsersResponse
 } from '@/types';
-import { API_BASE_URL, STORAGE_KEYS } from '@/constants';
+import { API_BASE_URL } from '@/constants';
 
 const initialState: UserManagementState = {
   users: [],
+  pagination: null,
   isLoading: false,
   error: null,
   createUserSuccess: false,
@@ -85,7 +87,7 @@ export const resetUserPassword = createAsyncThunk(
 
 export const fetchUsers = createAsyncThunk(
   'userManagement/fetchUsers',
-  async (role?: string, { rejectWithValue, getState }) => {
+  async (params: FetchUsersRequest = {}, { rejectWithValue, getState }) => {
     try {
       const state = getState() as any;
       const token = state.auth.token;
@@ -94,10 +96,16 @@ export const fetchUsers = createAsyncThunk(
         return rejectWithValue('No authentication token found');
       }
 
-      let endpoint = `${API_BASE_URL}/users`;
-      if (role) {
-        endpoint = `${API_BASE_URL}/users/${role}`;
-      }
+      // Build query parameters
+      const searchParams = new URLSearchParams();
+      if (params.page) searchParams.set('page', params.page.toString());
+      if (params.limit) searchParams.set('limit', params.limit.toString());
+      if (params.search) searchParams.set('search', params.search);
+      if (params.role && params.role !== 'all') searchParams.set('role', params.role);
+      if (params.sortBy) searchParams.set('sortBy', params.sortBy);
+      if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
+
+      const endpoint = `${API_BASE_URL}/user?${searchParams.toString()}`;
 
       const response = await fetch(endpoint, {
         method: 'GET',
@@ -109,8 +117,8 @@ export const fetchUsers = createAsyncThunk(
         return rejectWithValue(errorData.error || 'Failed to fetch users');
       }
 
-      const data = await response.json();
-      return data.users || data.data || [];
+      const data: FetchUsersResponse = await response.json();
+      return data.data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');
     }
@@ -131,6 +139,7 @@ const userManagementSlice = createSlice({
     },
     resetState: (state) => {
       state.users = [];
+      state.pagination = null;
       state.error = null;
       state.createUserSuccess = false;
       state.resetPasswordSuccess = false;
@@ -184,12 +193,14 @@ const userManagementSlice = createSlice({
       .addCase(fetchUsers.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = null;
-        state.users = action.payload;
+        state.users = action.payload.users;
+        state.pagination = action.payload.pagination;
       })
       .addCase(fetchUsers.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;
         state.users = [];
+        state.pagination = null;
       });
   },
 });

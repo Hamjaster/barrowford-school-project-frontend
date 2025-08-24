@@ -1,20 +1,30 @@
+/**
+ * TO RESTORE OLD PASSWORD MANAGEMENT:
+ * 1. Uncomment the KeyRound import and ResetPasswordForm import
+ * 2. Uncomment the "Password Management" card in dashboardCards array
+ * 3. Uncomment the "reset-password" case in renderTabContent switch statement
+ * 4. Add "reset-password", "forgot-password" back to availableTabs in constants.ts
+ * 5. Update TypeScript types to include these tabs in activeTab state
+ */
+
 import React, { useState } from "react";
 import { useSelector } from "react-redux";
 import {
   Users,
   UserPlus,
-  KeyRound,
   BookOpen,
   Calendar,
   GraduationCap,
 } from "lucide-react";
+// import { KeyRound } from "lucide-react";
 import type { RootState } from "../store";
 import CreateUserForm from "../components/forms/CreateUserForm";
-import ResetPasswordForm from "../components/forms/ResetPasswordForm";
+// import ResetPasswordForm from "../components/forms/ResetPasswordForm";
 import ForgotPasswordForm from "../components/forms/ForgotPasswordForm";
 import { ROLEWISE_INFORMATION } from "@/constants";
 import { getTabDisplayName } from "@/lib/utils";
 import type { UserRole } from "@/types";
+import UsersTable from "@/components/UsersTable";
 
 interface DashboardCard {
   title: string;
@@ -30,7 +40,7 @@ const StaffDashboard: React.FC = () => {
     (state: RootState) => state.auth
   );
   const [activeTab, setActiveTab] = useState<
-    "overview" | "create-user" | "reset-password" | "forgot-password"
+    "overview" | "create-user" // | "reset-password" | "forgot-password"
   >("overview");
 
   // Staff can create parent and student accounts only
@@ -58,19 +68,20 @@ const StaffDashboard: React.FC = () => {
       content: ["Add new parents and students", "Set up initial credentials"],
       action: () => setActiveTab("create-user"),
     },
-    {
-      title: "Password Management",
-      icon: (
-        <KeyRound className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-      ),
-      bgColor: "bg-orange-50",
-      iconColor: "bg-orange-600",
-      content: [
-        "Reset parent and student passwords",
-        "Reset your own password",
-      ],
-      action: () => setActiveTab("reset-password"),
-    },
+    // Commented out for new password management flow - may need in future
+    // {
+    //   title: "Password Management",
+    //   icon: (
+    //     <KeyRound className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
+    //   ),
+    //   bgColor: "bg-orange-50",
+    //   iconColor: "bg-orange-600",
+    //   content: [
+    //     "Reset parent and student passwords",
+    //     "Reset your own password",
+    //   ],
+    //   action: () => setActiveTab("reset-password"),
+    // },
     {
       title: "Curriculum Management",
       icon: (
@@ -104,56 +115,37 @@ const StaffDashboard: React.FC = () => {
     switch (activeTab) {
       case "create-user":
         return <CreateUserForm allowedRoles={allowedCreatableRoles} />;
-      case "reset-password":
-        return (
-          <div className="space-y-6">
-            <ResetPasswordForm />
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Reset Your Own Password
-              </h3>
-              <ForgotPasswordForm />
-            </div>
-          </div>
-        );
+      // Commented out for new password management flow - may need in future
+      // case "reset-password":
+      //   return (
+      //     <div className="space-y-6">
+      //       <ResetPasswordForm />
+      //       <div className="border-t pt-6">
+      //         <h3 className="text-lg font-semibold text-gray-800 mb-4">
+      //           Reset Your Own Password
+      //         </h3>
+      //         <ForgotPasswordForm />
+      //       </div>
+      //     </div>
+      //   );
       case "overview":
       default:
         return (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
-            {dashboardCards.map((card, index) => (
-              <div
-                key={index}
-                className={`${
-                  card.bgColor
-                } rounded-lg p-4 sm:p-5 lg:p-6 shadow-sm ${
-                  card.action
-                    ? "cursor-pointer hover:shadow-md transition-shadow"
-                    : ""
-                }`}
-                onClick={card.action}
-              >
-                <div className="flex items-center gap-3 mb-3 sm:mb-4">
-                  <div
-                    className={`w-12 h-12 sm:w-14 sm:h-14 ${card.iconColor} rounded-full flex items-center justify-center flex-shrink-0`}
-                  >
-                    {card.icon}
-                  </div>
-                  <h3 className="text-lg sm:text-xl font-semibold text-gray-800 leading-tight">
-                    {card.title}
-                  </h3>
-                </div>
-                <div className="space-y-2">
-                  {card.content.map((text, textIndex) => (
-                    <p
-                      key={textIndex}
-                      className="text-gray-700 text-sm sm:text-base leading-relaxed"
-                    >
-                      {text}
-                    </p>
-                  ))}
-                </div>
+          <div className="space-y-6">
+            <div className="bg-white rounded-lg border p-6">
+              <div className="mb-6">
+                <h2 className="text-xl font-semibold text-gray-800 mb-2">
+                  Users Management
+                </h2>
+                <p className="text-gray-600">
+                  View, search, and manage all users in the system. Reset
+                  passwords directly from the table.
+                </p>
               </div>
-            ))}
+              <UsersTable />
+            </div>
+
+            <ForgotPasswordForm />
           </div>
         );
     }
@@ -187,9 +179,7 @@ const StaffDashboard: React.FC = () => {
               setActiveTab(
                 tab as
                   | "overview"
-                  | "create-user"
-                  | "reset-password"
-                  | "forgot-password"
+                  | "create-user" /* | "reset-password" | "forgot-password" */
               )
             }
             className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${

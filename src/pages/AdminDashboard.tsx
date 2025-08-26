@@ -144,7 +144,7 @@ const AdminDashboard: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full p-6">
       {/* Welcome Section */}
       {isAuthenticated && user && (
         <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4 mb-6">

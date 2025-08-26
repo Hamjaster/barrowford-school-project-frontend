@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,13 @@ const ForgotPasswordForm: React.FC = () => {
     (state: RootState) => state.auth
   );
   const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
+  const [cooldownTime, setCooldownTime] = useState(0);
+  const [isOnCooldown, setIsOnCooldown] = useState(false);
+
+  const startCooldown = () => {
+    setIsOnCooldown(true);
+    setCooldownTime(20);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,65 +26,42 @@ const ForgotPasswordForm: React.FC = () => {
     // If user is logged in, use their email automatically
     const emailToUse = user?.email || email;
 
-    if (!emailToUse) {
-      toast.error("Email address is required");
-      return;
-    }
-
-    if (!emailToUse.includes("@")) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
-
-    try {
-      await dispatch(forgotPassword({ email: emailToUse }) as any);
-      setSubmitted(true);
-      toast.success("Password reset instructions sent to your email");
-    } catch (err) {
-      // Error handling is done in the slice
+    const data = await dispatch(forgotPassword({ email: emailToUse }) as any);
+    console.log(data, "DATA");
+    if (!data.error) {
+      startCooldown(); // Start the 20-second cooldown
+      toast.success(
+        data.payload.message || "Password reset instructions sent to your email"
+      );
+    } else {
+      console.log(data, "failed to send reset email");
     }
   };
 
-  React.useEffect(() => {
+  // Cooldown timer effect
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (isOnCooldown && cooldownTime > 0) {
+      timer = setTimeout(() => {
+        setCooldownTime(cooldownTime - 1);
+      }, 1000);
+    } else if (cooldownTime === 0 && isOnCooldown) {
+      setIsOnCooldown(false);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [isOnCooldown, cooldownTime]);
+
+  // Error handling effect
+  useEffect(() => {
     if (error) {
       toast.error(error);
       dispatch(clearError());
     }
   }, [error, dispatch]);
-
-  if (submitted) {
-    return (
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <div className="text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <svg
-              className="w-8 h-8 text-green-600"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
-            </svg>
-          </div>
-          <h2 className="text-xl font-bold text-gray-800 mb-2">
-            Check Your Email
-          </h2>
-          <p className="text-gray-600 mb-4">
-            We've sent password reset instructions to{" "}
-            <strong>{user?.email || email}</strong>
-          </p>
-          <p className="text-sm text-gray-500">
-            Didn't receive the email? Check your spam folder or try again.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="bg-white rounded-lg shadow-sm border p-6">
@@ -92,12 +75,24 @@ const ForgotPasswordForm: React.FC = () => {
             Click the button below to request a password reset for your account:{" "}
             <strong>{user.email}</strong>
           </p>
+          {isOnCooldown && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-yellow-800 text-sm">
+                ⏳ Please wait <strong>{cooldownTime} seconds</strong> before
+                requesting another password reset.
+              </p>
+            </div>
+          )}
           <Button
             onClick={handleSubmit}
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={isLoading || isOnCooldown}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? "Sending Instructions..." : "Request Password Reset"}
+            {isLoading
+              ? "Sending Instructions..."
+              : isOnCooldown
+              ? `Request Password Reset`
+              : "Request Password Reset"}
           </Button>
         </div>
       ) : (
@@ -107,6 +102,14 @@ const ForgotPasswordForm: React.FC = () => {
             Enter your email address and we'll send you instructions to reset
             your password.
           </p>
+          {isOnCooldown && (
+            <div className="mb-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
+              <p className="text-yellow-800 text-sm">
+                ⏳ Please wait <strong>{cooldownTime} seconds</strong> before
+                requesting another password reset.
+              </p>
+            </div>
+          )}
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label
@@ -129,11 +132,13 @@ const ForgotPasswordForm: React.FC = () => {
             <div className="pt-4">
               <Button
                 type="submit"
-                disabled={isLoading}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                disabled={isLoading || isOnCooldown}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading
                   ? "Sending Instructions..."
+                  : isOnCooldown
+                  ? `Wait ${cooldownTime}s to request again`
                   : "Request Password Reset"}
               </Button>
             </div>

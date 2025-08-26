@@ -1,6 +1,7 @@
 :root {
-  --tt-toolbar-height: 2.75rem;
+  --tt-toolbar-height: 3.25rem;
   --tt-safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  
   --tt-toolbar-bg-color: var(--white);
   --tt-toolbar-border-color: var(--tt-gray-light-a-100);
 }
@@ -38,6 +39,8 @@
     min-height: var(--tt-toolbar-height);
     background: var(--tt-toolbar-bg-color);
     border-bottom: 1px solid var(--tt-toolbar-border-color);
+    // box shadow at the bottom
+    box-shadow: 0px 1px 3px 0 rgba(0, 0, 0, 0.1);
     padding: 0 0.5rem;
     overflow-x: auto;
     overscroll-behavior-x: contain;

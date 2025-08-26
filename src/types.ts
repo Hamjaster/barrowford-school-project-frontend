@@ -142,3 +142,18 @@ export interface UserManagementState {
   resetPasswordSuccess: boolean;
   successMessage: string;
 }
+
+// Child-related Types
+export interface Child {
+  id: string;
+  first_name: string;
+  last_name: string;
+  username: string;
+  age: number;
+  grade: string;
+  class: string;
+  avatar?: string;
+  parent_id: string;
+  created_at: string;
+  is_active: boolean;
+}

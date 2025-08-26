@@ -5,7 +5,7 @@ import type { RootState } from "../store";
 import AdminDashboard from "../pages/AdminDashboard";
 import StaffDashboard from "../pages/StaffDashboard";
 import ParentDashboard from "../pages/ParentDashboard";
-import StudentDashboard from "@/pages/StudentDashboard";
+import MyDashboard from "@/pages/student/MyDashboard";
 
 const RoleBasedDashboard: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
@@ -30,7 +30,7 @@ const RoleBasedDashboard: React.FC = () => {
     case "parent":
       return <ParentDashboard />;
     case "student":
-      return <StudentDashboard />;
+      return <MyDashboard />;
     default:
       return <Navigate to="/login" replace />;
   }

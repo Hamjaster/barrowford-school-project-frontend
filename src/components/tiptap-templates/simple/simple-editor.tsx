@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { EditorContent, EditorContext, useEditor } from "@tiptap/react";
+import { Editor, EditorContent, EditorContext, useEditor } from "@tiptap/react";
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit";
@@ -15,8 +15,9 @@ import { Superscript } from "@tiptap/extension-superscript";
 import { Selection } from "@tiptap/extensions";
 
 // --- UI Primitives ---
-import { Button } from "@/components/tiptap-ui-primitive/button";
+import { Button as TiptapButton } from "@/components/tiptap-ui-primitive/button";
 import { Spacer } from "@/components/tiptap-ui-primitive/spacer";
+import { Button } from "@/components/ui/button";
 import {
   Toolbar,
   ToolbarGroup,
@@ -26,6 +27,9 @@ import {
 // --- Tiptap Node ---
 import { ImageUploadNode } from "@/components/tiptap-node/image-upload-node/image-upload-node-extension";
 import { HorizontalRule } from "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node-extension";
+import Youtube from "@tiptap/extension-youtube";
+
+// import { YoutubeNodeExtension } from "@/components/tiptap-node/youtube-node";
 import "@/components/tiptap-node/blockquote-node/blockquote-node.scss";
 import "@/components/tiptap-node/code-block-node/code-block-node.scss";
 import "@/components/tiptap-node/horizontal-rule-node/horizontal-rule-node.scss";
@@ -33,10 +37,12 @@ import "@/components/tiptap-node/list-node/list-node.scss";
 import "@/components/tiptap-node/image-node/image-node.scss";
 import "@/components/tiptap-node/heading-node/heading-node.scss";
 import "@/components/tiptap-node/paragraph-node/paragraph-node.scss";
+import "@/components/tiptap-node/youtube-node/youtube-node.scss";
 
 // --- Tiptap UI ---
 import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu";
 import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button";
+import { YoutubeButton } from "@/components/tiptap-ui/youtube-button";
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu";
 import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button";
 import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button";
@@ -58,6 +64,7 @@ import { UndoRedoButton } from "@/components/tiptap-ui/undo-redo-button";
 import { ArrowLeftIcon } from "@/components/tiptap-icons/arrow-left-icon";
 import { HighlighterIcon } from "@/components/tiptap-icons/highlighter-icon";
 import { LinkIcon } from "@/components/tiptap-icons/link-icon";
+import { Edit3, Eye } from "lucide-react";
 
 // --- Hooks ---
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -65,7 +72,7 @@ import { useWindowSize } from "@/hooks/use-window-size";
 import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 
 // --- Components ---
-import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle";
+// import { ThemeToggle } from "@/components/tiptap-templates/simple/theme-toggle"; // Unused for now
 
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
@@ -83,10 +90,17 @@ const MainToolbarContent = ({
   onHighlighterClick,
   onLinkClick,
   isMobile,
+  addYoutubeVideo,
 }: {
   onHighlighterClick: () => void;
   onLinkClick: () => void;
   isMobile: boolean;
+  addYoutubeVideo: (
+    editor: Editor,
+    url: string,
+    width: string,
+    height: string
+  ) => void;
 }) => {
   return (
     <>
@@ -145,15 +159,16 @@ const MainToolbarContent = ({
 
       <ToolbarGroup>
         <ImageUploadButton text="Add" />
+        <YoutubeButton onInsert={addYoutubeVideo} text="YouTube" />
       </ToolbarGroup>
 
       <Spacer />
 
       {isMobile && <ToolbarSeparator />}
 
-      <ToolbarGroup>
+      {/* <ToolbarGroup>
         <ThemeToggle />
-      </ToolbarGroup>
+      </ToolbarGroup> */}
     </>
   );
 };
@@ -167,14 +182,14 @@ const MobileToolbarContent = ({
 }) => (
   <>
     <ToolbarGroup>
-      <Button data-style="ghost" onClick={onBack}>
+      <TiptapButton data-style="ghost" onClick={onBack}>
         <ArrowLeftIcon className="tiptap-button-icon" />
         {type === "highlighter" ? (
           <HighlighterIcon className="tiptap-button-icon" />
         ) : (
           <LinkIcon className="tiptap-button-icon" />
         )}
-      </Button>
+      </TiptapButton>
     </ToolbarGroup>
 
     <ToolbarSeparator />
@@ -196,18 +211,22 @@ export function SimpleEditor({
   const [mobileView, setMobileView] = React.useState<
     "main" | "highlighter" | "link"
   >("main");
+  const [isViewMode, setIsViewMode] = React.useState(true); // Start in view mode
   const toolbarRef = React.useRef<HTMLDivElement>(null);
 
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
+    editable: !isViewMode, // Make editor non-editable in view mode
     editorProps: {
       attributes: {
         autocomplete: "off",
         autocorrect: "off",
         autocapitalize: "off",
-        "aria-label": "Main content area, start typing to enter text.",
-        class: "simple-editor",
+        "aria-label": isViewMode
+          ? "Content view area"
+          : "Main content area, start typing to enter text.",
+        class: `simple-editor ${isViewMode ? "view-mode" : "edit-mode"}`,
       },
     },
     extensions: [
@@ -235,6 +254,12 @@ export function SimpleEditor({
         upload: handleImageUpload,
         onError: (error) => console.error("Upload failed:", error),
       }),
+      Youtube.configure({
+        width: 640,
+        height: 360,
+        autoplay: false,
+        controls: true,
+      }),
     ],
     content: initialContent || "",
     onUpdate: ({ editor }) => {
@@ -255,37 +280,85 @@ export function SimpleEditor({
     }
   }, [isMobile, mobileView]);
 
+  // Update editor editable state when view mode changes
+  React.useEffect(() => {
+    if (editor) {
+      editor.setEditable(!isViewMode);
+    }
+  }, [editor, isViewMode]);
+
+  const toggleViewMode = () => {
+    setIsViewMode(!isViewMode);
+  };
+
+  const addYoutubeVideo = (
+    editor: Editor,
+    url: string,
+    width: string,
+    height: string
+  ) => {
+    if (url) {
+      editor.commands.setYoutubeVideo({
+        src: url,
+        width: Math.max(320, parseInt(width, 10)) || 640,
+        height: Math.max(180, parseInt(height, 10)) || 480,
+      });
+    }
+  };
+
   return (
-    <div className="simple-editor-wrapper">
+    <div className="simple-editor-wrapper relative">
       <EditorContext.Provider value={{ editor }}>
-        <Toolbar
-          ref={toolbarRef}
-          style={{
-            ...(isMobile
-              ? {
-                  bottom: `calc(100% - ${height - rect.y}px)`,
-                }
-              : {}),
-          }}
-        >
-          {mobileView === "main" ? (
+        {/* View/Edit Toggle Button */}
+        <div className="absolute top-4 right-4 z-[1000]">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={toggleViewMode}
+            className="bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 max-sm:px-3 max-sm:py-2"
+            title={isViewMode ? "Switch to Edit Mode" : "Switch to View Mode"}
+          >
+            {isViewMode ? (
+              <>
+                <Edit3 size={16} />
+                <span className="max-sm:hidden">Edit</span>
+              </>
+            ) : (
+              <>
+                <Eye size={16} />
+                <span className="max-sm:hidden">View</span>
+              </>
+            )}
+          </Button>
+        </div>
+
+        {/* Toolbar - Only show in edit mode */}
+        {!isViewMode && (
+          <Toolbar
+            ref={toolbarRef}
+            style={{
+              ...(isMobile
+                ? {
+                    bottom: `calc(100% - ${height - rect.y}px)`,
+                  }
+                : {}),
+            }}
+          >
             <MainToolbarContent
               onHighlighterClick={() => setMobileView("highlighter")}
               onLinkClick={() => setMobileView("link")}
               isMobile={isMobile}
+              addYoutubeVideo={addYoutubeVideo}
             />
-          ) : (
-            <MobileToolbarContent
-              type={mobileView === "highlighter" ? "highlighter" : "link"}
-              onBack={() => setMobileView("main")}
-            />
-          )}
-        </Toolbar>
+          </Toolbar>
+        )}
 
         <EditorContent
           editor={editor}
           role="presentation"
-          className="simple-editor-content"
+          className={`simple-editor-content ${
+            isViewMode ? "view-mode" : "edit-mode"
+          }`}
         />
       </EditorContext.Provider>
     </div>

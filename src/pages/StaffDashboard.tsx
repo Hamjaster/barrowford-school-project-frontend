@@ -48,69 +48,6 @@ const StaffDashboard: React.FC = () => {
   const staffInfo = ROLEWISE_INFORMATION.staff;
   const availableTabs = staffInfo.availableTabs;
 
-  const dashboardCards: DashboardCard[] = [
-    {
-      title: "My Students",
-      icon: (
-        <Users className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-      ),
-      bgColor: "bg-blue-50",
-      iconColor: "bg-blue-600",
-      content: ["View and manage your students", "Track student progress"],
-    },
-    {
-      title: "Create New Users",
-      icon: (
-        <UserPlus className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-      ),
-      bgColor: "bg-green-50",
-      iconColor: "bg-green-600",
-      content: ["Add new parents and students", "Set up initial credentials"],
-      action: () => setActiveTab("create-user"),
-    },
-    // Commented out for new password management flow - may need in future
-    // {
-    //   title: "Password Management",
-    //   icon: (
-    //     <KeyRound className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-    //   ),
-    //   bgColor: "bg-orange-50",
-    //   iconColor: "bg-orange-600",
-    //   content: [
-    //     "Reset parent and student passwords",
-    //     "Reset your own password",
-    //   ],
-    //   action: () => setActiveTab("reset-password"),
-    // },
-    {
-      title: "Curriculum Management",
-      icon: (
-        <BookOpen className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-      ),
-      bgColor: "bg-purple-50",
-      iconColor: "bg-purple-600",
-      content: ["Manage curriculum content", "Upload learning materials"],
-    },
-    {
-      title: "Class Schedule",
-      icon: (
-        <Calendar className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-      ),
-      bgColor: "bg-pink-50",
-      iconColor: "bg-pink-600",
-      content: ["View your teaching schedule", "Manage class timetables"],
-    },
-    {
-      title: "Academic Management",
-      icon: (
-        <GraduationCap className="text-white w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7" />
-      ),
-      bgColor: "bg-indigo-50",
-      iconColor: "bg-indigo-600",
-      content: ["Manage academic years", "Assign subjects and classes"],
-    },
-  ];
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "create-user":
@@ -152,7 +89,7 @@ const StaffDashboard: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
+    <div className="w-full p-6">
       {/* Welcome Section */}
       {isAuthenticated && user && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">

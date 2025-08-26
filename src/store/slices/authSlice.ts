@@ -58,14 +58,15 @@ export const forgotPassword = createAsyncThunk(
       });
 
       if (!response.ok) {
+        console.log('failed to send reset email')
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to send reset email');
+        return rejectWithValue(errorData.message || 'Failed to send reset email');
       }
 
       const data: ForgotPasswordResponse = await response.json();
       return data;
     } catch (error: any) {
-      return rejectWithValue(error.message || 'Network error');
+      return rejectWithValue(error.message || 'Failed to send reset email');
     }
   }
 );

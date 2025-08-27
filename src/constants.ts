@@ -174,14 +174,19 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
         iconName: 'BookOpen',
       },
       {
-        to: '/what-i-read',
-        label: 'What I Read',
+        to: '/my-cultural-capital',
+        label: 'My Cultural Capital',
+        bgColor: 'bg-pink-500',
+        iconName: 'Home',
+      },
+      {
+        to: '/my-images',
+        label: 'My Images',
         bgColor: 'bg-orange-500',
-        iconName: 'FileText',
+        iconName: 'Image',
       },
     ],
-
-    availableTabs: ['overview', 'my-learning', 'my-experiences', 'what-i-read'],
+  
  
   },
 } as const;

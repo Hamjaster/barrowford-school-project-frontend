@@ -19,6 +19,7 @@ import Unauthorized from "./pages/Unauthorized";
 
 import "./App.css";
 import MyImpact from "./pages/student/MyImpact";
+import MyCulturalCaptical from "./pages/student/MyCulturalCaptical";
 
 const App: React.FC = () => {
   return (
@@ -55,6 +56,10 @@ const App: React.FC = () => {
                 <Route path="my-learning" element={<RoleBasedDashboard />} />
                 <Route path="my-photos" element={<RoleBasedDashboard />} />
                 <Route path="my-impact" element={<MyImpact />} />
+                <Route
+                  path="my-cultural-capital"
+                  element={<MyCulturalCaptical />}
+                />
                 <Route path="my-experiences" element={<RoleBasedDashboard />} />
                 <Route path="what-i-read" element={<RoleBasedDashboard />} />
               </Route>

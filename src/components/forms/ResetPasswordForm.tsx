@@ -10,6 +10,12 @@ import {
   clearSuccess,
 } from "../../store/slices/userManagementSlice";
 import type { RootState } from "../../store";
+import {
+  validateEmail,
+  validateForm,
+  validatePassword,
+  validatePasswordMatch,
+} from "@/lib/utils";
 
 const ResetPasswordForm: React.FC = () => {
   const dispatch = useDispatch();
@@ -40,18 +46,19 @@ const ResetPasswordForm: React.FC = () => {
       return;
     }
 
-    if (!formData.email.includes("@")) {
-      toast.error("Please enter a valid email address");
-      return;
-    }
+    const validation = validateForm(formData, {
+      email: (value) => validateEmail(value),
+      new_password: (value) => validatePassword(value),
+      confirmPassword: (value) =>
+        validatePasswordMatch(value, formData.new_password),
+    });
 
-    if (formData.new_password.length < 6) {
-      toast.error("Password must be at least 6 characters long");
-      return;
-    }
-
-    if (formData.new_password !== formData.confirmPassword) {
-      toast.error("Passwords do not match");
+    if (!validation.isValid) {
+      toast.error(
+        validation.errors.email ||
+          validation.errors.new_password ||
+          validation.errors.confirmPassword
+      );
       return;
     }
 

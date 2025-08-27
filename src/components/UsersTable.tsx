@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import {
   Search,
@@ -48,11 +48,11 @@ type SortOrder = "asc" | "desc";
 
 const UsersTable: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { user } = useSelector((state: RootState) => state.auth);
   const { users, pagination, isLoading, error, resetPasswordSuccess } =
     useSelector((state: RootState) => state.userManagement);
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState("all");
   const [sortColumn, setSortColumn] = useState<SortColumn>("created_at");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
@@ -64,18 +64,35 @@ const UsersTable: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Debounce search term
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500); // 500ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
+
+  // API call with debounced search term
   useEffect(() => {
     const params: FetchUsersRequest = {
       page: currentPage,
       limit: pagination?.usersPerPage || 10,
-      search: searchTerm,
+      search: debouncedSearchTerm,
       role: roleFilter,
       sortBy: sortColumn,
       sortOrder: sortOrder,
     };
     dispatch(fetchUsers(params));
-    console.log("hit the API", searchTerm);
-  }, [currentPage, searchTerm, roleFilter, sortColumn, sortOrder, dispatch]);
+    console.log("hit the API", debouncedSearchTerm);
+  }, [
+    currentPage,
+    debouncedSearchTerm,
+    roleFilter,
+    sortColumn,
+    sortOrder,
+    dispatch,
+  ]);
 
   // Handle reset password success
   useEffect(() => {
@@ -107,10 +124,10 @@ const UsersTable: React.FC = () => {
     setCurrentPage(1);
   };
 
-  const handleSearch = (value: string) => {
+  const handleSearch = useCallback((value: string) => {
     setSearchTerm(value);
     setCurrentPage(1);
-  };
+  }, []);
 
   const handleRoleFilter = (value: string) => {
     setRoleFilter(value);
@@ -174,11 +191,16 @@ const UsersTable: React.FC = () => {
       <div className="flex flex-col sm:flex-row gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+          {searchTerm !== debouncedSearchTerm && (
+            <Loader2 className="absolute right-3 top-3 h-4 w-4 text-gray-400 animate-spin" />
+          )}
           <Input
             placeholder="Search users by name or email..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
-            className="pl-10"
+            className={`pl-10 ${
+              searchTerm !== debouncedSearchTerm ? "pr-10" : ""
+            }`}
           />
         </div>
         <Select value={roleFilter} onValueChange={handleRoleFilter}>

@@ -8,6 +8,7 @@ import {
   createUser,
   clearError,
   clearSuccess,
+  fetchParents,
 } from "@/store/slices/userManagementSlice";
 import type { RootState } from "@/store";
 import type { CreateUserFormData, UserRole } from "@/types";
@@ -20,9 +21,8 @@ interface CreateUserFormProps {
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
   const dispatch = useDispatch();
-  const { isLoading, error, createUserSuccess, successMessage } = useSelector(
-    (state: RootState) => state.userManagement
-  );
+  const { isLoading, error, createUserSuccess, successMessage, parents } =
+    useSelector((state: RootState) => state.userManagement);
 
   const [formData, setFormData] = useState<CreateUserFormData>({
     email: "",
@@ -30,13 +30,23 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     first_name: "",
     last_name: "",
     role: allowedRoles[0] || "student",
+    parent_id: "",
   });
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const newFormData = { ...prev, [name]: value };
+
+      // Clear parent_id if role is changed from student to something else
+      if (name === "role" && value !== "student") {
+        newFormData.parent_id = "";
+      }
+
+      return newFormData;
+    });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -68,6 +78,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       return;
     }
 
+    // Validate parent selection for student role
+    if (formData.role === "student" && !formData.parent_id) {
+      toast.error("Please select a parent for the student");
+      return;
+    }
+
     try {
       const result = await dispatch(createUser(formData) as any);
       console.log(result, "result");
@@ -75,6 +91,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       // Error handling is done in the slice
     }
   };
+
+  // Fetch parents when component mounts
+  React.useEffect(() => {
+    dispatch(fetchParents() as any);
+  }, [dispatch]);
 
   React.useEffect(() => {
     if (error) {
@@ -92,6 +113,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         first_name: "",
         last_name: "",
         role: allowedRoles[0] || "student",
+        parent_id: "",
       });
       dispatch(clearSuccess());
     }
@@ -201,6 +223,37 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
             ))}
           </select>
         </div>
+
+        {formData.role === "student" && (
+          <div>
+            <label
+              htmlFor="parent_id"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Select Parent
+            </label>
+            <select
+              id="parent_id"
+              name="parent_id"
+              value={formData.parent_id}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              required
+            >
+              <option value="">Select a parent...</option>
+              {parents.map((parent) => (
+                <option key={parent.id} value={parent.id}>
+                  {parent.first_name} {parent.last_name} ({parent.email})
+                </option>
+              ))}
+            </select>
+            {parents.length === 0 && (
+              <p className="text-sm text-gray-500 mt-1">
+                No parents available. Please create a parent user first.
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="pt-4">
           <Button

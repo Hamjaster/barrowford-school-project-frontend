@@ -3,6 +3,7 @@ import { useSelector } from "react-redux";
 import { Navigate } from "react-router-dom";
 import type { RootState } from "../store";
 import AdminDashboard from "../pages/AdminDashboard";
+import StaffAdminDashboard from "../pages/StaffAdminDashboard";
 import StaffDashboard from "../pages/StaffDashboard";
 import ParentDashboard from "../pages/ParentDashboard";
 import MyDashboard from "@/pages/student/MyDashboard";
@@ -25,6 +26,8 @@ const RoleBasedDashboard: React.FC = () => {
   switch (user.role) {
     case "admin":
       return <AdminDashboard />;
+    case "staff_admin":
+      return <StaffAdminDashboard />;
     case "staff":
       return <StaffDashboard />;
     case "parent":

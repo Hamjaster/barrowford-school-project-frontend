@@ -1,6 +1,15 @@
 import type React from "react";
 import { Link } from "react-router-dom";
-import { GraduationCap, LogOut, Home, Baby, Camera } from "lucide-react";
+import {
+  GraduationCap,
+  LogOut,
+  Home,
+  Users,
+  UserPlus,
+  KeyRound,
+  Settings,
+  Shield,
+} from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/slices/authSlice";
@@ -19,7 +28,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 
-const ParentSidebar: React.FC = () => {
+const AdminSidebar: React.FC = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -28,14 +37,17 @@ const ParentSidebar: React.FC = () => {
     navigate("/login");
   };
 
-  const parentInfo = ROLEWISE_INFORMATION.parent;
-  const navItems = parentInfo.navItems;
+  const adminInfo = ROLEWISE_INFORMATION.staff_admin;
+  const navItems = adminInfo.navItems;
 
   const getIconComponent = (iconName: string) => {
     const iconMap = {
       Home: <Home size={20} />,
-      Baby: <Baby size={20} />,
-      Camera: <Camera size={20} />,
+      Users: <Users size={20} />,
+      UserPlus: <UserPlus size={20} />,
+      KeyRound: <KeyRound size={20} />,
+      Settings: <Settings size={20} />,
+      Shield: <Shield size={20} />,
     };
     return iconMap[iconName as keyof typeof iconMap] || null;
   };
@@ -45,19 +57,19 @@ const ParentSidebar: React.FC = () => {
       <SidebarHeader className="p-4 sm:p-6">
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+            <div className="w-10 h-10 bg-red-600 rounded-full flex items-center justify-center">
               <GraduationCap size={24} className="text-white" />
             </div>
           </div>
           <div className="flex-1">
             <div className="text-lg font-bold text-gray-800 leading-tight">
-              {parentInfo.sidebarTitle}
+              {adminInfo.sidebarTitle}
             </div>
             <div className="text-sm text-gray-600 leading-tight">
-              {parentInfo.sidebarSubtitle}
+              {adminInfo.sidebarSubtitle}
             </div>
-            <div className="text-xs text-green-600 italic mt-1 leading-tight">
-              {parentInfo.sidebarSubtitle}
+            <div className="text-xs text-red-600 italic mt-1 leading-tight">
+              {adminInfo.sidebarDescription}
             </div>
           </div>
         </div>
@@ -98,7 +110,7 @@ const ParentSidebar: React.FC = () => {
                 onClick={handleLogout}
                 className="flex cursor-pointer items-center gap-3 text-lg font-semibold w-full justify-start h-auto p-3"
               >
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
                   <LogOut size={20} />
                 </div>
                 <span>Logout</span>
@@ -111,4 +123,4 @@ const ParentSidebar: React.FC = () => {
   );
 };
 
-export default ParentSidebar;
+export default AdminSidebar;

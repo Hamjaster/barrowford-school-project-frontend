@@ -1,5 +1,5 @@
-// User Role Type - 4 roles only
-export type UserRole = 'admin' | 'staff' | 'parent' | 'student';
+// User Role Type - 5 roles system
+export type UserRole = 'admin' | 'staff_admin' | 'staff' | 'parent' | 'student';
 
 // User Interface
 export interface User {
@@ -53,6 +53,7 @@ export interface CreateUserRequest {
   first_name: string;
   last_name: string;
   role: UserRole;
+  parent_id?: string; // Optional parent ID for student role
 }
 
 export interface ResetUserPasswordRequest {
@@ -100,18 +101,18 @@ export interface DashboardCard {
 export interface NavItem {
   to: string;
   label: string;
-  iconName: string;
+  iconName: any;
   bgColor: string;
 }
 
 // Form Types
 export interface CreateUserFormData {
-  email:
-   string;
+  email: string;
   password: string;
   first_name: string;
   last_name: string;
   role: UserRole;
+  parent_id?: string; // Optional parent ID for student role
 }
 
 export interface ResetPasswordFormData {
@@ -135,6 +136,7 @@ export interface AuthState {
 
 export interface UserManagementState {
   users: User[];
+  parents: User[];
   pagination: PaginationInfo | null;
   isLoading: boolean;
   error: string | null;

@@ -14,6 +14,7 @@ import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/slices/authSlice";
 import { ROLEWISE_INFORMATION } from "@/constants";
+import { Button } from "@/components/ui/button";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -103,13 +104,17 @@ const AdminSidebar: React.FC = () => {
       <SidebarFooter className="p-2 sm:p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild size="lg" onClick={handleLogout}>
-              <button className="flex items-center gap-3 text-lg font-semibold w-full">
+            <SidebarMenuButton asChild size="lg">
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="flex cursor-pointer items-center gap-3 text-lg font-semibold w-full justify-start h-auto p-3"
+              >
                 <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
                   <LogOut size={20} />
                 </div>
                 <span>Logout</span>
-              </button>
+              </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

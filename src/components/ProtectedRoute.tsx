@@ -13,9 +13,20 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   allowedRoles = [],
 }) => {
   const location = useLocation();
-  const { isAuthenticated, user } = useSelector(
+  const { isAuthenticated, user, isLoading } = useSelector(
     (state: RootState) => state.auth
   );
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#eaf7fd]">
+        <div className="flex flex-col items-center space-y-4">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     // Redirect to login page with return url

@@ -15,7 +15,7 @@ const initialState: AuthState = {
   user: null,
   token: getFromStorage('auth_token'),
   isAuthenticated: !!getFromStorage('auth_token'),
-  isLoading: false,
+  isLoading: true, // Start with loading true to check auth on app start
   error: null,
 };
 
@@ -101,8 +101,19 @@ const authSlice = createSlice({
           // If parsing fails, clear localStorage
           localStorage.removeItem('auth_token');
           localStorage.removeItem('user');
+          state.isAuthenticated = false;
+          state.user = null;
+          state.token = null;
         }
+      } else {
+        // No token or user found
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
       }
+      
+      // Set loading to false after checking
+      state.isLoading = false;
     },
   },
   extraReducers: (builder) => {

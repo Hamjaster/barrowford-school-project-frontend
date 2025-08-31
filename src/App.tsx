@@ -20,6 +20,10 @@ import Unauthorized from "./pages/Unauthorized";
 import "./App.css";
 import MyImpact from "./pages/student/MyImpact";
 import MyCulturalCaptical from "./pages/student/MyCulturalCaptical";
+import ChildDetailsPage from "./pages/parent/ChildDetails";
+import MyLearning from "./pages/student/MyLearning";
+import MyImages from "./pages/student/MyImages";
+import MyExperiences from "./pages/student/MyExperiences";
 
 const App: React.FC = () => {
   return (
@@ -44,24 +48,23 @@ const App: React.FC = () => {
                 }
               >
                 <Route index element={<RoleBasedDashboard />} />
-                {/* Future routes for different functionalities */}
-                <Route path="create-user" element={<RoleBasedDashboard />} />
-                <Route
-                  path="reset-passwords"
-                  element={<RoleBasedDashboard />}
-                />
-                <Route path="users" element={<RoleBasedDashboard />} />
-                <Route path="my-students" element={<RoleBasedDashboard />} />
-                <Route path="my-child" element={<RoleBasedDashboard />} />
-                <Route path="my-learning" element={<RoleBasedDashboard />} />
-                <Route path="my-photos" element={<RoleBasedDashboard />} />
+
+                {/* student routes */}
+                <Route path="my-learning" element={<MyLearning />} />
                 <Route path="my-impact" element={<MyImpact />} />
+                <Route path="my-experiences" element={<MyExperiences />} />
+                <Route path="my-images" element={<MyImages />} />
                 <Route
                   path="my-cultural-capital"
                   element={<MyCulturalCaptical />}
                 />
-                <Route path="my-experiences" element={<RoleBasedDashboard />} />
-                <Route path="what-i-read" element={<RoleBasedDashboard />} />
+                <Route path="my-experiences" element={<MyExperiences />} />
+
+                {/* parent routes */}
+                <Route
+                  path="child-details/:id"
+                  element={<ChildDetailsPage />}
+                />
               </Route>
 
               {/* Catch all route */}

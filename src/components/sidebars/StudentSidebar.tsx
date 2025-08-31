@@ -6,11 +6,13 @@ import {
   Home,
   BookOpen,
   Award,
-  FileText,
+  Image,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/slices/authSlice";
+import { Button } from "@/components/ui/button";
+import LearningDropdown from "@/components/LearningDropdown";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -23,7 +25,6 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
-import { ROLEWISE_INFORMATION } from "@/constants";
 
 const StudentSidebar: React.FC = () => {
   const dispatch = useDispatch();
@@ -34,18 +35,44 @@ const StudentSidebar: React.FC = () => {
     navigate("/login");
   };
 
-  const studentInfo = ROLEWISE_INFORMATION.student;
-  const navItems = studentInfo.navItems;
-
-  const getIconComponent = (iconName: string) => {
-    const iconMap = {
-      Home: <Home size={20} />,
-      BookOpen: <BookOpen size={20} />,
-      Award: <Award size={20} />,
-      FileText: <FileText size={20} />,
-    };
-    return iconMap[iconName as keyof typeof iconMap] || null;
-  };
+  const navItems = [
+    {
+      to: "/",
+      label: "Dashboard",
+      bgColor: "bg-blue-500",
+      iconName: <Home size={20} />,
+    },
+    {
+      to: "/my-learning",
+      label: "My Learning",
+      bgColor: "bg-green-500",
+      iconName: <BookOpen size={20} />,
+    },
+    {
+      to: "/my-experiences",
+      label: "My Experiences",
+      bgColor: "bg-purple-500",
+      iconName: <Award size={20} />,
+    },
+    {
+      to: "/my-impact",
+      label: "My Impact",
+      bgColor: "bg-red-500",
+      iconName: <BookOpen size={20} />,
+    },
+    {
+      to: "/my-cultural-capital",
+      label: "My Cultural Capital",
+      bgColor: "bg-pink-500",
+      iconName: <Home size={20} />,
+    },
+    {
+      to: "/my-images",
+      label: "My Images",
+      bgColor: "bg-orange-500",
+      iconName: <Image size={20} />,
+    },
+  ];
 
   return (
     <ShadcnSidebar className="border-r" collapsible="offcanvas">
@@ -58,13 +85,13 @@ const StudentSidebar: React.FC = () => {
           </div>
           <div className="flex-1">
             <div className="text-lg font-bold text-gray-800 leading-tight">
-              {studentInfo.sidebarTitle}
+              Student Portal
             </div>
             <div className="text-sm text-gray-600 leading-tight">
-              {studentInfo.sidebarSubtitle}
+              Your Learning Journey
             </div>
             <div className="text-xs text-pink-600 italic mt-1 leading-tight">
-              {studentInfo.sidebarSubtitle}
+              Dream, Learn, Achieve
             </div>
           </div>
         </div>
@@ -76,19 +103,23 @@ const StudentSidebar: React.FC = () => {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
-                  <SidebarMenuButton className="h-16" asChild size="lg">
-                    <Link
-                      to={item.to}
-                      className="flex py-5 items-center  text-lg font-semibold"
-                    >
-                      <div
-                        className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}
+                  {item.label === "My Learning" ? (
+                    <LearningDropdown className="w-full" />
+                  ) : (
+                    <SidebarMenuButton className="h-16" asChild size="lg">
+                      <Link
+                        to={item.to}
+                        className="flex py-5 items-center text-lg font-semibold"
                       >
-                        {getIconComponent(item.iconName)}
-                      </div>
-                      <span>{item.label}</span>
-                    </Link>
-                  </SidebarMenuButton>
+                        <div
+                          className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}
+                        >
+                          {item.iconName}
+                        </div>
+                        <span>{item.label}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  )}
                 </SidebarMenuItem>
               ))}
             </SidebarMenu>
@@ -99,13 +130,17 @@ const StudentSidebar: React.FC = () => {
       <SidebarFooter className="p-2 sm:p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild size="lg" onClick={handleLogout}>
-              <button className="flex items-center gap-3 text-lg font-semibold w-full">
+            <SidebarMenuButton asChild size="lg">
+              <Button
+                variant="ghost"
+                onClick={handleLogout}
+                className="flex cursor-pointer items-center gap-3 text-lg font-semibold w-full justify-start h-auto p-3"
+              >
                 <div className="w-12 h-12 bg-pink-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
                   <LogOut size={20} />
                 </div>
                 <span>Logout</span>
-              </button>
+              </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

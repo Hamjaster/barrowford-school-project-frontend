@@ -10,6 +10,7 @@ import { API_BASE_URL } from '@/constants';
 
 const initialState: UserManagementState = {
   users: [],
+  parents: [],
   pagination: null,
   isLoading: false,
   error: null,
@@ -125,6 +126,43 @@ export const fetchUsers = createAsyncThunk(
   }
 );
 
+export const fetchParents = createAsyncThunk(
+  'userManagement/fetchParents',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      // Fetch only parents with a high limit to get all parents
+      const searchParams = new URLSearchParams();
+      searchParams.set('role', 'parent');
+      searchParams.set('limit', '1000'); // High limit to get all parents
+      searchParams.set('page', '1');
+
+      const endpoint = `${API_BASE_URL}/user?${searchParams.toString()}`;
+
+      const response = await fetch(endpoint, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch parents');
+      }
+
+      const data: FetchUsersResponse = await response.json();
+      return data.data.users; // Return only the users array
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
 const userManagementSlice = createSlice({
   name: 'userManagement',
   initialState,
@@ -139,6 +177,7 @@ const userManagementSlice = createSlice({
     },
     resetState: (state) => {
       state.users = [];
+      state.parents = [];
       state.pagination = null;
       state.error = null;
       state.createUserSuccess = false;
@@ -201,6 +240,23 @@ const userManagementSlice = createSlice({
         state.error = action.payload as string;
         state.users = [];
         state.pagination = null;
+      });
+
+    // Fetch Parents cases
+    builder
+      .addCase(fetchParents.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchParents.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.parents = action.payload;
+      })
+      .addCase(fetchParents.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.parents = [];
       });
   },
 });

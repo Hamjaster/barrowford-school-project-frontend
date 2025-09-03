@@ -161,14 +161,16 @@ export const fetchParents = createAsyncThunk(
         headers: getAuthHeaders(token),
       });
 
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to fetch parents');
       }
 
-      if(response.status === 429){
-        return rejectWithValue('Too many login attempts. Please try again later.');
-      }
+      
 
 
       const data: FetchUsersResponse = await response.json();

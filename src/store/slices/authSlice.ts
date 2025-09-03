@@ -37,6 +37,11 @@ export const loginUser = createAsyncThunk(
         return rejectWithValue(errorData.error || 'Login failed');
       }
 
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
+
       const data: LoginResponse = await response.json();
       return data;
     } catch (error: any) {
@@ -63,6 +68,10 @@ export const forgotPassword = createAsyncThunk(
         return rejectWithValue(errorData.message || 'Failed to send reset email');
       }
 
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+      
       const data: ForgotPasswordResponse = await response.json();
       return data;
     } catch (error: any) {

@@ -47,6 +47,10 @@ export const createUser = createAsyncThunk(
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to create user');
       }
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
 
       const data = await response.json();
       return data;
@@ -77,6 +81,10 @@ export const resetUserPassword = createAsyncThunk(
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to reset password');
       }
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
 
       const data = await response.json();
       return data;
@@ -105,13 +113,16 @@ export const fetchUsers = createAsyncThunk(
       if (params.role && params.role !== 'all') searchParams.set('role', params.role);
       if (params.sortBy) searchParams.set('sortBy', params.sortBy);
       if (params.sortOrder) searchParams.set('sortOrder', params.sortOrder);
-
       const endpoint = `${API_BASE_URL}/user?${searchParams.toString()}`;
 
       const response = await fetch(endpoint, {
         method: 'GET',
         headers: getAuthHeaders(token),
       });
+
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -154,6 +165,11 @@ export const fetchParents = createAsyncThunk(
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to fetch parents');
       }
+
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
 
       const data: FetchUsersResponse = await response.json();
       return data.data.users; // Return only the users array

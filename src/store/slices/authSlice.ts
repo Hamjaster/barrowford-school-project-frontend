@@ -16,6 +16,8 @@ const initialState: AuthState = {
   token: getFromStorage('auth_token'),
   isAuthenticated: !!getFromStorage('auth_token'),
   isLoading: true, // Start with loading true to check auth on app start
+  isLoadingForgotPassword: false,
+
   error: null,
 };
 
@@ -145,15 +147,15 @@ const authSlice = createSlice({
     // Forgot Password cases
     builder
       .addCase(forgotPassword.pending, (state) => {
-        state.isLoading = true;
+        state.isLoadingForgotPassword = true;
         state.error = null;
       })
       .addCase(forgotPassword.fulfilled, (state) => {
-        state.isLoading = false;
+        state.isLoadingForgotPassword = false;
         state.error = null;
       })
       .addCase(forgotPassword.rejected, (state, action) => {
-        state.isLoading = false;
+        state.isLoadingForgotPassword = false;
         state.error = action.payload as string;
       })
 

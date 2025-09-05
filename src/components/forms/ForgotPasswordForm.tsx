@@ -8,7 +8,7 @@ import type { RootState } from "../../store";
 
 const ForgotPasswordForm: React.FC = () => {
   const dispatch = useDispatch();
-  const { isLoading, error, user } = useSelector(
+  const { isLoadingForgotPassword, error, user } = useSelector(
     (state: RootState) => state.auth
   );
   const [email, setEmail] = useState("");
@@ -85,10 +85,10 @@ const ForgotPasswordForm: React.FC = () => {
           )}
           <Button
             onClick={handleSubmit}
-            disabled={isLoading || isOnCooldown}
+            disabled={isLoadingForgotPassword || isOnCooldown}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading
+            {isLoadingForgotPassword
               ? "Sending Instructions..."
               : isOnCooldown
               ? `Request Password Reset`
@@ -132,10 +132,10 @@ const ForgotPasswordForm: React.FC = () => {
             <div className="pt-4">
               <Button
                 type="submit"
-                disabled={isLoading || isOnCooldown}
+                disabled={isLoadingForgotPassword || isOnCooldown}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoading
+                {isLoadingForgotPassword
                   ? "Sending Instructions..."
                   : isOnCooldown
                   ? `Wait ${cooldownTime}s to request again`

@@ -1,6 +1,14 @@
 // User Role Type - 5 roles system
 export type UserRole = 'admin' | 'staff_admin' | 'staff' | 'parent' | 'student';
 
+/* 
+ admin: Admin user with full access to the system
+ staff_admin: Staff admin user with access to manage staff and parents
+ staff: Staff(teacher) with access to manage students
+ parent: Parent user with access to view their child's progress
+ student: Student user with access to view their own progress
+*/
+
 // User Interface
 export interface User {
   id: string;
@@ -131,6 +139,7 @@ export interface AuthState {
   token: string | null;
   isAuthenticated: boolean;
   isLoading: boolean;
+  isLoadingForgotPassword: boolean;
   error: string | null;
 }
 

@@ -49,7 +49,10 @@ const Header: React.FC = () => {
     <header className="flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-5 bg-white shadow-sm">
       <div className="flex items-center gap-4">
         <SidebarTrigger className="lg:hidden" />
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">
+        <h1
+          onClick={() => navigate("/")}
+          className="text-2xl hover:underline cursor-pointer sm:text-3xl font-bold text-gray-800"
+        >
           Dashboard
         </h1>
       </div>

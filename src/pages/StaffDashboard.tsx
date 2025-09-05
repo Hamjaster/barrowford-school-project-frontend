@@ -61,6 +61,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit3 } from "lucide-react";
+import ReflectionTopicsManagement from "@/components/ReflectionTopicsManagement";
 
 const mockStudents = [
   {
@@ -109,12 +110,10 @@ const StaffDashboard: React.FC = () => {
     (state: RootState) => state.auth
   );
   const [activeTab, setActiveTab] = useState("students");
-  const [newTopicDialog, setNewTopicDialog] = useState(false);
-  const [editingTopic, setEditingTopic] = useState(null);
+
   const [pendingContent, setPendingContent] = useState(mockPendingContent);
   const [reflectionTopics, setReflectionTopics] =
     useState(mockReflectionTopics);
-  const [selectedStudent, setSelectedStudent] = useState(null);
 
   const pendingCount = pendingContent.filter(
     (item) => item.status === "pending"
@@ -165,9 +164,6 @@ const StaffDashboard: React.FC = () => {
     );
   };
 
-  const handleDeleteTopic = (topicId: number) => {
-    setReflectionTopics((prev) => prev.filter((topic) => topic.id !== topicId));
-  };
   // Staff can create parent and student accounts only
   const allowedCreatableRoles: UserRole[] = ["parent", "student"];
   const availableTabs = [
@@ -203,99 +199,7 @@ const StaffDashboard: React.FC = () => {
           </div>
         );
       case "reflection-topics":
-        return (
-          <div>
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                  <CardTitle>Reflection Topics</CardTitle>
-                  <CardDescription>
-                    Manage topics that students can reflect on
-                  </CardDescription>
-                </div>
-                <Dialog open={newTopicDialog} onOpenChange={setNewTopicDialog}>
-                  <DialogTrigger asChild>
-                    <Button>
-                      <Plus className="h-4 w-4 mr-2" />
-                      Add Topic
-                    </Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Create New Reflection Topic</DialogTitle>
-                      <DialogDescription>
-                        Add a new topic for students to reflect on
-                      </DialogDescription>
-                    </DialogHeader>
-                    <div className="space-y-4">
-                      <div>
-                        <Label htmlFor="topic-title" className="mb-2">
-                          Topic Title
-                        </Label>
-                        <Input
-                          id="topic-title"
-                          placeholder="Enter topic title"
-                        />
-                      </div>
-                      <div>
-                        <Label className="mb-2" htmlFor="topic-description">
-                          Description
-                        </Label>
-                        <Textarea
-                          id="topic-description"
-                          placeholder="Provide guidance for students"
-                          rows={3}
-                        />
-                      </div>
-                    </div>
-                    <DialogFooter>
-                      <Button
-                        variant="outline"
-                        onClick={() => setNewTopicDialog(false)}
-                      >
-                        Cancel
-                      </Button>
-                      <Button onClick={() => setNewTopicDialog(false)}>
-                        Create Topic
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {reflectionTopics.map((topic) => (
-                    <div
-                      key={topic.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div>
-                        <h3 className="font-semibold">{topic.title}</h3>
-                        <p className="text-sm text-muted-foreground">
-                          {topic.description}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
-                          <Edit3 className="h-4 w-4 mr-2" />
-                          Edit
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleDeleteTopic(topic.id)}
-                        >
-                          <Trash2 className="h-4 w-4 mr-2" />
-                          Delete
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
+        return <ReflectionTopicsManagement />;
       case "content-review":
         return (
           <div>

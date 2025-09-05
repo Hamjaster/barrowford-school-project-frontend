@@ -91,7 +91,7 @@ const StudentSidebar: React.FC = () => {
               Your Learning Journey
             </div>
             <div className="text-xs text-pink-600 italic mt-1 leading-tight">
-              Dream, Learn, Achieve
+              Learn to Love, Love to Learn
             </div>
           </div>
         </div>

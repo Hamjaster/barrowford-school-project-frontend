@@ -215,7 +215,7 @@ const StaffDashboard: React.FC = () => {
                 </div>
                 <Dialog open={newTopicDialog} onOpenChange={setNewTopicDialog}>
                   <DialogTrigger asChild>
-                    <Button>
+                    <Button className="cursor-pointer">
                       <Plus className="h-4 w-4 mr-2" />
                       Add Topic
                     </Button>
@@ -252,11 +252,14 @@ const StaffDashboard: React.FC = () => {
                       <Button
                         variant="outline"
                         onClick={() => setNewTopicDialog(false)}
+                        className="cursor-pointer"
                       >
                         Cancel
                       </Button>
-                      <Button onClick={() => setNewTopicDialog(false)}>
+                      <Button onClick={() => setNewTopicDialog(false)}
+                        className="cursor-pointer">
                         Create Topic
+                        
                       </Button>
                     </DialogFooter>
                   </DialogContent>
@@ -276,13 +279,14 @@ const StaffDashboard: React.FC = () => {
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Button variant="outline" size="sm">
+                        <Button variant="outline" size="sm" className="cursor-pointer">
                           <Edit3 className="h-4 w-4 mr-2" />
                           Edit
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
+                          className="cursor-pointer"
                           onClick={() => handleDeleteTopic(topic.id)}
                         >
                           <Trash2 className="h-4 w-4 mr-2" />
@@ -457,7 +461,7 @@ const StaffDashboard: React.FC = () => {
                             onClick={() =>
                               handleContentModeration(item.id, "approve")
                             }
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 cursor-pointer"
                           >
                             <CheckCircle className="h-4 w-4 mr-2" />
                             Approve
@@ -468,6 +472,7 @@ const StaffDashboard: React.FC = () => {
                             onClick={() =>
                               handleContentModeration(item.id, "reject")
                             }
+                            className="cursor-pointer"
                           >
                             <XCircle className="h-4 w-4 mr-2" />
                             Reject
@@ -531,7 +536,7 @@ const StaffDashboard: React.FC = () => {
                         </Badge>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" className="cursor-pointer">
                               <Edit3 className="h-4 w-4 mr-2" />
                               Edit Sections
                             </Button>
@@ -572,8 +577,8 @@ const StaffDashboard: React.FC = () => {
                               ))}
                             </div>
                             <DialogFooter>
-                              <Button variant="outline">Cancel</Button>
-                              <Button>Save Changes</Button>
+                              <Button variant="outline" className="cursor-pointer">Cancel</Button>
+                              <Button className="cursor-pointer">Save Changes</Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
@@ -640,6 +645,7 @@ const StaffDashboard: React.FC = () => {
             key={tab}
             variant={activeTab === tab ? "outline" : "ghost"}
             onClick={() => setActiveTab(tab)}
+            className="cursor-pointer"
           >
             {getTabDisplayName(tab)}
           </Button>

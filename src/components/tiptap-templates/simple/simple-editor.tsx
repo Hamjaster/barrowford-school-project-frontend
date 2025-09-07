@@ -315,7 +315,7 @@ export function SimpleEditor({
             variant="outline"
             size="sm"
             onClick={toggleViewMode}
-            className="bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 max-sm:px-3 max-sm:py-2"
+            className="cursor-pointer bg-white/95 dark:bg-gray-800/95 hover:bg-white dark:hover:bg-gray-800 hover:shadow-md hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 max-sm:px-3 max-sm:py-2"
             title={isViewMode ? "Switch to Edit Mode" : "Switch to View Mode"}
           >
             {isViewMode ? (

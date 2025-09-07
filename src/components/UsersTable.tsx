@@ -204,15 +204,16 @@ const UsersTable: React.FC = () => {
           />
         </div>
         <Select value={roleFilter} onValueChange={handleRoleFilter}>
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="cursor-pointer w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="staff">Staff</SelectItem>
-            <SelectItem value="parent">Parent</SelectItem>
-            <SelectItem value="student">Student</SelectItem>
+          <SelectContent >
+            <SelectItem className="cursor-pointer"  value="all">All Roles</SelectItem>
+            {/* <SelectItem className="cursor-pointer" value="admin">Admin</SelectItem> */}
+            <SelectItem className="cursor-pointer" value="staff_admin">Staff Admin</SelectItem>
+            <SelectItem className="cursor-pointer" value="staff">Staff</SelectItem>
+            <SelectItem className="cursor-pointer" value="parent">Parent</SelectItem>
+            <SelectItem className="cursor-pointer" value="student">Student</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -226,7 +227,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("first_name")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Name {getSortIcon("first_name")}
                 </Button>
@@ -235,7 +236,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("email")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Email {getSortIcon("email")}
                 </Button>
@@ -244,7 +245,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("role")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Role {getSortIcon("role")}
                 </Button>
@@ -253,7 +254,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("created_at")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Created {getSortIcon("created_at")}
                 </Button>
@@ -303,7 +304,7 @@ const UsersTable: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => openResetPasswordModal(user)}
-                      className="ml-2"
+                      className="cursor-pointer ml-2"
                     >
                       <KeyRound className="h-4 w-4 mr-1" />
                       Reset Password
@@ -332,6 +333,7 @@ const UsersTable: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
+              className="cursor-pointer"
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={!pagination.hasPrevPage}
             >
@@ -346,6 +348,7 @@ const UsersTable: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
+              className="cursor-pointer"
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={!pagination.hasNextPage}
             >
@@ -415,6 +418,7 @@ const UsersTable: React.FC = () => {
             <div className="flex justify-end space-x-2">
               <Button
                 variant="outline"
+                className="cursor-pointer"
                 onClick={() => {
                   setResetPasswordModal(false);
                   setSelectedUser(null);
@@ -426,6 +430,7 @@ const UsersTable: React.FC = () => {
               </Button>
               <Button
                 onClick={handleResetPassword}
+                className="cursor-pointer"
                 disabled={
                   !newPassword ||
                   !confirmPassword ||

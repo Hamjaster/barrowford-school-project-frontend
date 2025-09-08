@@ -34,10 +34,17 @@ export const loginUser = createAsyncThunk(
         body: JSON.stringify(loginData),
       });
 
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
       if (!response.ok) {
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Login failed');
       }
+
+     
+
 
       const data: LoginResponse = await response.json();
       return data;
@@ -58,12 +65,18 @@ export const forgotPassword = createAsyncThunk(
         },
         body: JSON.stringify(forgotPasswordData),
       });
+      
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
 
       if (!response.ok) {
         console.log('failed to send reset email')
         const errorData = await response.json();
         return rejectWithValue(errorData.message || 'Failed to send reset email');
       }
+
+      
 
       const data: ForgotPasswordResponse = await response.json();
       return data;

@@ -98,7 +98,7 @@ const StaffAdminDashboard: React.FC = () => {
               <div
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
-                className={`border-b-2 p-3 font-medium text-sm ${
+                className={`border-b-2 p-3 font-medium text-sm cursor-pointer ${
                   activeTab === tab
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent"

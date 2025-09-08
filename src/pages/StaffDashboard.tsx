@@ -361,7 +361,7 @@ const StaffDashboard: React.FC = () => {
                             onClick={() =>
                               handleContentModeration(item.id, "approve")
                             }
-                            className="bg-green-600 hover:bg-green-700"
+                            className="bg-green-600 hover:bg-green-700 cursor-pointer"
                           >
                             <CheckCircle className="h-4 w-4 mr-2" />
                             Approve
@@ -372,6 +372,7 @@ const StaffDashboard: React.FC = () => {
                             onClick={() =>
                               handleContentModeration(item.id, "reject")
                             }
+                            className="cursor-pointer"
                           >
                             <XCircle className="h-4 w-4 mr-2" />
                             Reject
@@ -435,7 +436,7 @@ const StaffDashboard: React.FC = () => {
                         </Badge>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm">
+                            <Button variant="outline" size="sm" className="cursor-pointer">
                               <Edit3 className="h-4 w-4 mr-2" />
                               Edit Sections
                             </Button>
@@ -476,8 +477,8 @@ const StaffDashboard: React.FC = () => {
                               ))}
                             </div>
                             <DialogFooter>
-                              <Button variant="outline">Cancel</Button>
-                              <Button>Save Changes</Button>
+                              <Button variant="outline" className="cursor-pointer">Cancel</Button>
+                              <Button className="cursor-pointer">Save Changes</Button>
                             </DialogFooter>
                           </DialogContent>
                         </Dialog>
@@ -544,6 +545,7 @@ const StaffDashboard: React.FC = () => {
             key={tab}
             variant={activeTab === tab ? "outline" : "ghost"}
             onClick={() => setActiveTab(tab)}
+            className="cursor-pointer"
           >
             {getTabDisplayName(tab)}
           </Button>

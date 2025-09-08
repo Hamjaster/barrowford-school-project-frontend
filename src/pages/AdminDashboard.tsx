@@ -109,13 +109,14 @@ const AdminDashboard: React.FC = () => {
             key={tab}
             variant={activeTab === tab ? "secondary" : "ghost"}
             size="sm"
+
             onClick={
               () =>
                 setActiveTab(
                   tab as "overview" | "create-user" /* | "reset-password" */
                 ) // Commented out for new password management flow
             }
-            className={`text-sm font-medium transition-colors ${
+            className={`text-sm font-medium transition-colors cursor-pointer ${
               activeTab === tab
                 ? "bg-white text-gray-900 shadow-sm"
                 : "text-gray-600 hover:text-gray-900"

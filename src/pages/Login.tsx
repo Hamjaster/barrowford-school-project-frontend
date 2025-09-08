@@ -7,6 +7,8 @@ import { PasswordInput } from "../components/ui/password-input";
 import { loginUser, clearError } from "../store/slices/authSlice";
 import type { RootState, AppDispatch } from "../store";
 import { toast } from "sonner";
+import { AiOutlineInfoCircle } from "react-icons/ai";
+
 
 const Login: React.FC = () => {
   const [loginType, setLoginType] = useState<"email" | "username">("email");
@@ -16,6 +18,8 @@ const Login: React.FC = () => {
     password: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [showModal, setShowModal] = useState(false);
+
 
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -92,13 +96,81 @@ const Login: React.FC = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          {/* <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
             Sign in to your account
           </h2>
+        {/* Info Icon */}
+        {/* <button
+          type="button"
+          onClick={() => setShowModal(true)}
+          className="relative top-0 right-0 text-indigo-500 hover:text-indigo-700"
+        >
+          <AiOutlineInfoCircle size={24} />
+        </button> */} 
+          <div className="flex items-center justify-start gap-2 mt-2 mb-4">
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            Sign in to your account
+          </h2>
+          {/* Info Icon */}
+          <button
+            type="button"
+            onClick={() => setShowModal(true)}
+            className="text-indigo-500 hover:text-indigo-700"
+          >
+            <AiOutlineInfoCircle size={24}  color="black" />
+          </button>
+</div>
+
           <p className="mt-2 text-center text-sm text-gray-600">
             Welcome back to Nybble Bradford School
           </p>
+    
         </div>
+        {showModal && (
+          <div className="fixed mt-5 inset-0 bg-white/70 backdrop-blur-sm p-4 rounded-lg bg-opacity-50 flex justify-center items-center z-50">
+            <div className="bg-white rounded-lg shadow-lg p-5 w-[650px]">
+              <h3 className="text-lg font-bold mb-4 text-center">
+                Test Credentials
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="border rounded p-2 w-[300px]">
+                  <p className="font-semibold text-blue-600">Admin</p>
+                  <p>Email: <span className="font-mono">admin@school.com</span></p>
+                  <p>Password: <span className="font-mono">admin12345</span></p>
+                </div>
+                <div className="border rounded p-2 w-[300px]">
+                  <p className="font-semibold text-blue-600">Staff</p>
+                  <p>Email: <span className="font-mono">staffadmintest@gmail.com </span></p>
+                  <p>Password: <span className="font-mono">test1234</span></p>
+                </div>
+                <div className="border rounded p-2 w-[300px]">
+                  <p className="font-semibold text-blue-600">Teacher</p>
+                  <p>Email: <span className="font-mono">teachertest@gmail.com</span></p>
+                  <p>Password: <span className="font-mono">test1234</span></p>
+                </div>
+                <div className="border rounded p-2 w-[300px]">
+                  <p className="font-semibold text-blue-600">Parent</p>
+                  <p>Email: <span className="font-mono">parenttest@gmail.com</span></p>
+                  <p>Password: <span className="font-mono">test1234</span></p>
+                </div>
+                {/* Last one takes full width */}
+                <div className="border rounded p-2 col-span-2 ">
+                  <p className="font-semibold text-blue-600">Student</p>
+                  <p>Username: <span className="font-mono">student.test</span></p>
+                  <p>Password: <span className="font-mono">test1234</span></p>
+                </div>
+              </div>
+
+              <Button
+                onClick={() => setShowModal(false)}
+                className="cursor-pointer w-full mt-6 bg-red-500 hover:bg-red-600 text-white"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        )}
+
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md  space-y-4">
@@ -108,7 +180,7 @@ const Login: React.FC = () => {
                 type="button"
                 variant={loginType === "email" ? "default" : "outline"}
                 onClick={() => setLoginType("email")}
-                className="px-4 py-2"
+                className="px-4 py-2 cursor-pointer"
               >
                 Email Login
               </Button>
@@ -116,7 +188,7 @@ const Login: React.FC = () => {
                 type="button"
                 variant={loginType === "username" ? "default" : "outline"}
                 onClick={() => setLoginType("username")}
-                className="px-4 py-2"
+                className="px-4 py-2 cursor-pointer"
               >
                 Student Login
               </Button>
@@ -195,7 +267,7 @@ const Login: React.FC = () => {
             <Button
               type="submit"
               disabled={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 cursor-pointer"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>

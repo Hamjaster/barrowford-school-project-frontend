@@ -559,7 +559,7 @@ export default function ChildDetailsPage() {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
+                    className={`cursor-pointer flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
                       activeTab === tab.id
                         ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
                         : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"

@@ -1,26 +1,27 @@
+"use client";
+
 import { useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
   Camera,
   MessageSquare,
-  Activity,
   Award,
   Calendar,
   Users,
   Heart,
   Star,
-  TrendingUp,
   Clock,
   CheckCircle,
-  Target,
   Zap,
+  Send,
+  User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
 import { useNavigate, useParams } from "react-router-dom";
 import { mockChildren } from "@/constants";
 
@@ -31,10 +32,45 @@ const tabs = [
   { id: "other tabs", label: "Other Tabs", icon: Award },
 ];
 
+interface Comment {
+  id: number;
+  reflectionId: number;
+  author: string;
+  content: string;
+  date: string;
+  avatar?: string;
+}
+
 export default function ChildDetailsPage() {
   const params = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("learning");
+
+  const [comments, setComments] = useState<Comment[]>([
+    {
+      id: 1,
+      reflectionId: 1,
+      author: "Sarah Johnson (Parent)",
+      content:
+        "I'm so proud of how you approached this challenge! Your understanding of fractions has really improved. Keep up the great work!",
+      date: "2024-01-22T14:30:00Z",
+      avatar: "/loving-parent.png",
+    },
+    {
+      id: 2,
+      reflectionId: 2,
+      author: "Angela Jolie (Teacher)",
+      content:
+        "What an exciting experiment! I love how curious you are about science.",
+      date: "2024-01-21T16:45:00Z",
+      avatar: "/loving-parent.png",
+    },
+  ]);
+
+  const [newComments, setNewComments] = useState<{ [key: number]: string }>({});
+  const [showCommentInput, setShowCommentInput] = useState<{
+    [key: number]: boolean;
+  }>({});
 
   const childId = params.id as string;
   const child = mockChildren.find((c) => c.id === childId);
@@ -54,6 +90,32 @@ export default function ChildDetailsPage() {
       </div>
     );
   }
+
+  const handleAddComment = (reflectionId: number) => {
+    const commentText = newComments[reflectionId]?.trim();
+    if (!commentText) return;
+
+    const newComment: Comment = {
+      id: Date.now(),
+      reflectionId,
+      author: "Sarah Johnson (Parent)",
+      content: commentText,
+      date: new Date().toISOString(),
+      avatar: "/loving-parent.png",
+    };
+
+    setComments((prev) => [...prev, newComment]);
+    setNewComments((prev) => ({ ...prev, [reflectionId]: "" }));
+    setShowCommentInput((prev) => ({ ...prev, [reflectionId]: false }));
+  };
+
+  const toggleCommentInput = (reflectionId: number) => {
+    setShowCommentInput((prev) => ({
+      ...prev,
+      [reflectionId]: !prev[reflectionId],
+    }));
+  };
+
   const mockReflections = [
     {
       id: 1,
@@ -92,6 +154,7 @@ export default function ChildDetailsPage() {
       week: "Week 4",
     },
   ];
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "learning":
@@ -119,6 +182,10 @@ export default function ChildDetailsPage() {
 
             <div className="grid gap-6">
               {mockReflections.map((reflection) => {
+                const reflectionComments = comments.filter(
+                  (c) => c.reflectionId === reflection.id
+                );
+
                 return (
                   <Card
                     key={reflection.id}
@@ -161,14 +228,131 @@ export default function ChildDetailsPage() {
                         </p>
                       </div>
 
+                      {reflectionComments.length > 0 && (
+                        <div className="mt-4 space-y-3">
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <MessageSquare className="w-4 h-4" />
+                            Comments ({reflectionComments.length})
+                          </div>
+
+                          {reflectionComments.map((comment) => (
+                            <div
+                              key={comment.id}
+                              className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-200"
+                            >
+                              <div className="flex items-start gap-3">
+                                <Avatar className="w-8 h-8">
+                                  <AvatarImage
+                                    src={comment.avatar || "/placeholder.svg"}
+                                    alt={comment.author}
+                                  />
+                                  <AvatarFallback className="text-xs">
+                                    <User className="w-4 h-4" />
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <span className="text-sm font-medium text-gray-800">
+                                      {comment.author}
+                                    </span>
+                                    <span className="text-xs text-gray-500">
+                                      {new Date(
+                                        comment.date
+                                      ).toLocaleDateString("en-US", {
+                                        month: "short",
+                                        day: "numeric",
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })}
+                                    </span>
+                                  </div>
+                                  <p className="text-sm text-gray-700 leading-relaxed">
+                                    {comment.content}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+
+                      {showCommentInput[reflection.id] && (
+                        <div className="mt-4 space-y-3">
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <MessageSquare className="w-4 h-4" />
+                            Add a comment
+                          </div>
+                          <div className="flex gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage
+                                src="/loving-parent.png"
+                                alt="Parent"
+                              />
+                              <AvatarFallback className="text-xs">
+                                <User className="w-4 h-4" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-2">
+                              <Textarea
+                                placeholder="Share your thoughts about this reflection..."
+                                value={newComments[reflection.id] || ""}
+                                onChange={(e) =>
+                                  setNewComments((prev) => ({
+                                    ...prev,
+                                    [reflection.id]: e.target.value,
+                                  }))
+                                }
+                                className="min-h-[80px] text-sm resize-none"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleAddComment(reflection.id)
+                                  }
+                                  disabled={!newComments[reflection.id]?.trim()}
+                                  className="h-8"
+                                >
+                                  <Send className="w-3 h-3 mr-1" />
+                                  Post Comment
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    toggleCommentInput(reflection.id)
+                                  }
+                                  className="h-8"
+                                >
+                                  Cancel
+                                </Button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
                       <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
                         <div className="flex items-center gap-2 text-xs text-gray-500">
                           <MessageSquare className="w-3 h-3" />
                           <span>Student Reflection</span>
                         </div>
-                        <div className="flex items-center gap-1 text-xs text-gray-400">
-                          <Heart className="w-3 h-3" />
-                          <span>Shared with love</span>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => toggleCommentInput(reflection.id)}
+                            className="h-7 px-2 text-xs text-gray-600 hover:text-blue-600"
+                          >
+                            <MessageSquare className="w-3 h-3 mr-1" />
+                            {reflectionComments.length > 0
+                              ? `${reflectionComments.length} Comments`
+                              : "Add Comment"}
+                          </Button>
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <Heart className="w-3 h-3" />
+                            <span>Shared with love</span>
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -252,10 +436,22 @@ export default function ChildDetailsPage() {
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {[
-                    { skill: "Problem Solving", level: 4 },
-                    { skill: "Creativity", level: 5 },
-                    { skill: "Teamwork", level: 4 },
-                    { skill: "Communication", level: 3 },
+                    {
+                      skill: "Problem Solving",
+                      level: 4,
+                    },
+                    {
+                      skill: "Creativity",
+                      level: 5,
+                    },
+                    {
+                      skill: "Teamwork",
+                      level: 4,
+                    },
+                    {
+                      skill: "Communication",
+                      level: 3,
+                    },
                   ].map((skill, index) => (
                     <div key={index}>
                       <div className="flex justify-between text-sm mb-1">
@@ -289,7 +485,7 @@ export default function ChildDetailsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b">
+      {/* <div className="bg-white border-b">
         <div className="max-w-6xl mx-auto px-6 py-4">
           <div className="flex items-center gap-4">
             <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
@@ -298,9 +494,9 @@ export default function ChildDetailsPage() {
             </Button>
           </div>
         </div>
-      </div>
+      </div> */}
 
-      <div className="max-w-6xl mx-auto px-6 py-8">
+      <div className="w-full mx-auto px-6 py-8">
         {/* Child Profile Header */}
         <div className="bg-white rounded-xl shadow-sm border p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">

@@ -182,7 +182,15 @@ const UsersTable: React.FC = () => {
   };
 
   const capitalizeRole = (role: string) => {
-    return role.charAt(0).toUpperCase() + role.slice(1);
+    console.log(role, "ROLE");
+    console.log(role.charAt(0).toUpperCase() + role.slice(1), "now ROLE");
+
+    // staff_admin --> Staff Admin
+
+    return (
+      role.replace(/_/g, " ").charAt(0).toUpperCase() +
+      role.replace(/_/g, " ").slice(1)
+    );
   };
 
   return (

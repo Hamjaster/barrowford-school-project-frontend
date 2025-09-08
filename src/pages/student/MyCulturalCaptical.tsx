@@ -19,8 +19,22 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Lightbulb, Plus, Upload } from "lucide-react";
+import {
+  Calendar,
+  File,
+  FileText,
+  ImageIcon,
+  Lightbulb,
+  Music,
+  Plus,
+  Upload,
+  User,
+  Video,
+} from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface CulturalCapitalEntry {
   id: string;
@@ -96,38 +110,6 @@ const sampleData: CulturalCapitalEntry[] = [
   },
 ];
 
-const columns = [
-  {
-    key: "date" as keyof CulturalCapitalEntry,
-    header: "Date",
-    className: "text-left",
-  },
-  {
-    key: "topic" as keyof CulturalCapitalEntry,
-    header: "Topic",
-    className: "text-left",
-  },
-  {
-    key: "status" as keyof CulturalCapitalEntry,
-    header: "Status",
-    className: "text-left",
-  },
-  {
-    key: "actions" as keyof CulturalCapitalEntry,
-    header: "Actions",
-    className: "text-left",
-    render: () => (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="text-blue-600 hover:text-blue-800"
-      >
-        View
-      </Button>
-    ),
-  },
-];
-
 export default function CulturalCapitalPage() {
   const [data, setData] = useState(sampleData);
   const [filteredData, setFilteredData] = useState(sampleData);
@@ -135,6 +117,9 @@ export default function CulturalCapitalPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [topicFilter, setTopicFilter] = useState<string>("");
   const [isNewReflectionOpen, setIsNewReflectionOpen] = useState(false);
+  const [selectedReflection, setSelectedReflection] =
+    useState<CulturalCapitalEntry | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [newReflection, setNewReflection] = useState({
     title: "",
     description: "",
@@ -177,6 +162,103 @@ export default function CulturalCapitalPage() {
   const uniqueWeeks = Array.from(new Set(data.map((item) => item.week)));
   const uniqueStatuses = Array.from(new Set(data.map((item) => item.status)));
   const uniqueTopics = Array.from(new Set(data.map((item) => item.topic)));
+  const getStatusBadgeVariant = (status: string) => {
+    switch (status) {
+      case "Approved":
+        return "default";
+      case "Pending":
+        return "secondary";
+      case "Draft":
+        return "outline";
+      default:
+        return "outline";
+    }
+  };
+
+  const mockReflection = {
+    id: "1",
+    date: "14/10/2025 (Week 2)",
+    topic: "Lyfta",
+    status: "Approved",
+    week: "Week 2",
+    title: "Exploring Global Perspectives through Lyfta",
+    description:
+      "An immersive journey exploring different cultures and perspectives around the world using the Lyfta platform.",
+    reflection:
+      "Through this Lyfta experience, I discovered how different communities around the world approach daily challenges. The 360° videos helped me understand that despite our differences, we share many common values and aspirations. I was particularly moved by the story of the young entrepreneur in Kenya who started a recycling business to help her community.",
+    learningOutcomes: [
+      "Cultural awareness",
+      "Global citizenship",
+      "Empathy development",
+      "Critical thinking",
+    ],
+    attachments: [
+      {
+        name: "lyfta-screenshot.jpg",
+        type: "image",
+        url: "/placeholder-1nmoh.png",
+      },
+      { name: "reflection-notes.pdf", type: "document", url: "#" },
+    ],
+    submittedBy: "Emma Thompson",
+    submittedDate: "14/10/2025",
+    approvedBy: "Ms. Johnson",
+    approvedDate: "15/10/2025",
+    feedback:
+      "Excellent reflection showing deep understanding of cultural diversity. Well done!",
+  };
+
+  const getAttachmentIcon = (type: string) => {
+    switch (type) {
+      case "image":
+        return <ImageIcon className="w-4 h-4" />;
+      case "video":
+        return <Video className="w-4 h-4" />;
+      case "audio":
+        return <Music className="w-4 h-4" />;
+      case "document":
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <File className="w-4 h-4" />;
+    }
+  };
+  const handleViewReflection = (reflection: CulturalCapitalEntry) => {
+    setSelectedReflection(reflection);
+    setIsDetailModalOpen(true);
+  };
+
+  const columns = [
+    {
+      key: "date" as keyof CulturalCapitalEntry,
+      header: "Date",
+      className: "text-left",
+    },
+    {
+      key: "topic" as keyof CulturalCapitalEntry,
+      header: "Topic",
+      className: "text-left",
+    },
+    {
+      key: "status" as keyof CulturalCapitalEntry,
+      header: "Status",
+      className: "text-left",
+    },
+    {
+      key: "actions" as keyof CulturalCapitalEntry,
+      header: "Actions",
+      className: "text-left",
+      render: (item: CulturalCapitalEntry) => (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-blue-600 hover:text-blue-800"
+          onClick={() => handleViewReflection(item)}
+        >
+          View
+        </Button>
+      ),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-gray-100">
@@ -237,7 +319,7 @@ export default function CulturalCapitalPage() {
               Filter
             </Button>
           </div>
-
+          {/* Create new reflection */}
           <Dialog
             open={isNewReflectionOpen}
             onOpenChange={setIsNewReflectionOpen}
@@ -327,6 +409,132 @@ export default function CulturalCapitalPage() {
                   </Button>
                 </div>
               </div>
+            </DialogContent>
+          </Dialog>
+
+          {/* Reflection Detail Modal */}
+          <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
+            <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-cyan-600">
+                  {selectedReflection?.topic}
+                </DialogTitle>
+              </DialogHeader>
+
+              {selectedReflection && (
+                <div className="space-y-6">
+                  {/* Header Info */}
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <Badge
+                        variant={getStatusBadgeVariant(
+                          selectedReflection.status
+                        )}
+                        className="text-sm"
+                      >
+                        {selectedReflection.status}
+                      </Badge>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <Calendar className="w-4 h-4" />
+                        {selectedReflection.date}
+                      </div>
+                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                        <User className="w-4 h-4" />
+                        Emma Doe
+                      </div>
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  {/* Topic and Description */}
+
+                  <div className="text-xl font-semibold text-pink-600">
+                    Topic: {selectedReflection.topic}
+                  </div>
+
+                  {/* Reflection */}
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg text-cyan-600">
+                        My Reflection
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                        {mockReflection.reflection}
+                      </p>
+                    </CardContent>
+                  </Card>
+
+                  {/* Attachments */}
+                  {mockReflection.attachments.length > 0 && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="text-lg text-cyan-600">
+                          Attachments
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {mockReflection.attachments.map(
+                            (attachment, index) => (
+                              <div
+                                key={index}
+                                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50"
+                              >
+                                {getAttachmentIcon(attachment.type)}
+                                <div className="flex-1">
+                                  <p className="font-medium text-sm">
+                                    {attachment.name}
+                                  </p>
+                                  <p className="text-xs text-gray-500 capitalize">
+                                    {attachment.type}
+                                  </p>
+                                </div>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </CardContent>
+                    </Card>
+                  )}
+
+                  {/* Approval Info */}
+                  {selectedReflection.status === "Approved" &&
+                    mockReflection.approvedBy && (
+                      <Card className="bg-green-50 border-green-200">
+                        <CardHeader>
+                          <CardTitle className="text-lg text-green-700">
+                            Approval Details
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2">
+                            <p className="text-sm">
+                              <span className="font-medium">Approved by:</span>{" "}
+                              {mockReflection.approvedBy}
+                            </p>
+                            <p className="text-sm">
+                              <span className="font-medium">Approved on:</span>{" "}
+                              {mockReflection.approvedDate}
+                            </p>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
+
+                  {/* Close Button */}
+                  <div className="flex justify-end pt-4">
+                    <Button
+                      onClick={() => setIsDetailModalOpen(false)}
+                      className="bg-cyan-500 hover:bg-cyan-600 text-white px-8"
+                    >
+                      Close
+                    </Button>
+                  </div>
+                </div>
+              )}
             </DialogContent>
           </Dialog>
         </div>

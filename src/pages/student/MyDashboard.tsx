@@ -142,7 +142,7 @@ export default function StudentDashboard() {
             </div>
             <div className="flex-1">
               <h2 className="text-5xl font-bold text-gray-800 mb-4">
-                Jacob Smith is a Malorist
+                Jacob Smith is a Meliorist
               </h2>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 min-w-[280px]">

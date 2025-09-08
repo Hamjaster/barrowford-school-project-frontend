@@ -158,7 +158,7 @@ export default function MyImages() {
               <Button
                 onClick={triggerFileInput}
                 disabled={isUploading}
-                className="bg-white text-orange-500 hover:bg-orange-50 font-semibold shadow-lg"
+                className="bg-white text-orange-500 hover:bg-orange-50 font-semibold shadow-lg cursor-pointer"
               >
                 <Upload className="w-4 h-4 mr-2" />
                 {isUploading ? "Uploading..." : "Upload Images"}
@@ -214,12 +214,23 @@ export default function MyImages() {
                 onClick={() => setSelectedImage(image)}
                 className="relative mb-4"
               >
-                <img
+                {/* <img
                   src={image.url}
                   alt={image.title}
                   className="w-full h-auto object-cover  transition-transform duration-300 cursor-pointer"
                   loading="lazy"
-                />
+                /> */}
+                 {/* for square images */}
+            {/* <div className="aspect-square overflow-hidden rounded-md">
+              <img
+                src={image.url}
+                alt={image.title}
+                className="w-full h-full object-fill"
+                loading="lazy"
+              />
+            </div> */}
+
+
               </div>
             ))}
           </Masonry>

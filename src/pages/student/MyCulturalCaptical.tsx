@@ -190,40 +190,40 @@ export default function CulturalCapitalPage() {
         {/* Filters */}
         <div className="bg-white flex items-center justify-between rounded-2xl p-6 shadow-sm">
           <div className="flex gap-4 items-center justify-start">
-            <Select value={weekFilter} onValueChange={setWeekFilter}>
-              <SelectTrigger className="">
-                <SelectValue placeholder="Select week..." />
+            <Select value={weekFilter}  onValueChange={setWeekFilter}>
+              <SelectTrigger className="cursor-pointer">
+                <SelectValue  placeholder="Select week..." className="cursor-pointer" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Filter By Week</SelectItem>
+                <SelectItem className="cursor-pointer" value="all">Filter By Week</SelectItem>
                 {uniqueWeeks.map((week) => (
-                  <SelectItem key={week} value={week}>
+                  <SelectItem className="cursor-pointer" key={week} value={week }>
                     {week}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="">
+              <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder="Select status..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Filter by Status</SelectItem>
+                <SelectItem className="cursor-pointer" value="all">Filter by Status</SelectItem>
                 {uniqueStatuses.map((status) => (
-                  <SelectItem key={status} value={status}>
+                  <SelectItem className="cursor-pointer" key={status} value={status}>
                     {status}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
             <Select value={topicFilter} onValueChange={setTopicFilter}>
-              <SelectTrigger className="">
+              <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder="Select topic..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">Filter by Topic</SelectItem>
+                <SelectItem className="cursor-pointer" value="all">Filter by Topic</SelectItem>
                 {uniqueTopics.map((topic) => (
-                  <SelectItem key={topic} value={topic}>
+                  <SelectItem className="cursor-pointer" key={topic} value={topic}>
                     {topic}
                   </SelectItem>
                 ))}
@@ -232,7 +232,7 @@ export default function CulturalCapitalPage() {
 
             <Button
               onClick={applyFilters}
-              className="bg-pink-500 hover:bg-pink-600 text-white 6"
+              className="bg-pink-500 hover:bg-pink-600 text-white 6 cursor-pointer"
             >
               Filter
             </Button>
@@ -243,7 +243,7 @@ export default function CulturalCapitalPage() {
             onOpenChange={setIsNewReflectionOpen}
           >
             <DialogTrigger asChild>
-              <Button className="bg-pink-500 hover:bg-pink-600 text-white px-6">
+              <Button className="bg-pink-500 hover:bg-pink-600 text-white px-6 cursor-pointer">
                 <Lightbulb className="w-4 h-4 mr-2" />
                 New Reflection
               </Button>
@@ -299,7 +299,7 @@ export default function CulturalCapitalPage() {
                       onClick={() =>
                         document.getElementById("reflection-files")?.click()
                       }
-                      className="w-full"
+                      className="w-full cursor-pointer"
                     >
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Files
@@ -315,13 +315,13 @@ export default function CulturalCapitalPage() {
                   <Button
                     variant="outline"
                     onClick={() => setIsNewReflectionOpen(false)}
-                    className="flex-1"
+                    className="flex-1 cursor-pointer"
                   >
                     Cancel
                   </Button>
                   <Button
                     onClick={handleSubmitReflection}
-                    className="flex-1 bg-pink-500 hover:bg-pink-600"
+                    className="flex-1 bg-pink-500 hover:bg-pink- cursor-pointer"
                   >
                     Add Reflection
                   </Button>

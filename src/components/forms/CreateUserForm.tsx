@@ -213,11 +213,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
             name="role"
             value={formData.role}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
             required
           >
             {allowedRoles.map((role) => (
-              <option key={role} value={role}>
+              <option key={role} value={role} className="cursor-pointer">
                 {ROLEWISE_INFORMATION[role].displayName}
               </option>
             ))}
@@ -228,7 +228,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           <div>
             <label
               htmlFor="parent_id"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer"
             >
               Select Parent
             </label>
@@ -237,12 +237,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
               name="parent_id"
               value={formData.parent_id}
               onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
               required
             >
               <option value="">Select a parent...</option>
               {parents.map((parent) => (
-                <option key={parent.id} value={parent.id}>
+                <option key={parent.id} value={parent.id} className="cursor-pointer">
                   {parent.first_name} {parent.last_name} ({parent.email})
                 </option>
               ))}
@@ -259,7 +259,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           <Button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
           >
             {isLoading ? "Creating User..." : "Create User"}
           </Button>

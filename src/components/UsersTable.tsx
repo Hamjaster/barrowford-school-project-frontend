@@ -50,6 +50,7 @@ const UsersTable: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { users, pagination, isLoading, error, resetPasswordSuccess } =
     useSelector((state: RootState) => state.userManagement);
+  const { user: currentUser } = useSelector((state: RootState) => state.auth);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -113,6 +114,18 @@ const UsersTable: React.FC = () => {
       dispatch(clearError());
     }
   }, [error, dispatch]);
+
+  // Reset role filter if current filter is not available for the current user
+  useEffect(() => {
+    const availableRoles = getAvailableRoles();
+    const isCurrentFilterValid =
+      roleFilter === "all" ||
+      availableRoles.some((role) => role.value === roleFilter);
+
+    if (!isCurrentFilterValid) {
+      setRoleFilter("all");
+    }
+  }, [currentUser, roleFilter]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -193,6 +206,39 @@ const UsersTable: React.FC = () => {
     );
   };
 
+  // Get available roles based on current user's role
+  const getAvailableRoles = () => {
+    if (!currentUser) return [];
+
+    const allRoles = [
+      { value: "staff_admin", label: "Staff Admin" },
+      { value: "staff", label: "Staff" },
+      { value: "parent", label: "Parent" },
+      { value: "student", label: "Student" },
+    ];
+
+    // Filter roles based on current user's role
+    switch (currentUser.role) {
+      case "admin":
+        // Admin can see all roles
+        return allRoles;
+      case "staff_admin":
+        // Staff Admin cannot see "Staff Admin" (their own role)
+        return allRoles.filter((role) => role.value !== "staff_admin");
+      case "staff":
+        // Staff cannot see "Staff" or "Staff Admin"
+        return allRoles.filter(
+          (role) => role.value !== "staff" && role.value !== "staff_admin"
+        );
+      case "parent":
+      case "student":
+        // Parents and students typically don't have access to user management
+        return [];
+      default:
+        return [];
+    }
+  };
+
   return (
     <div className="space-y-4">
       {/* Search and Filter Controls */}
@@ -215,13 +261,19 @@ const UsersTable: React.FC = () => {
           <SelectTrigger className="cursor-pointer w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
-          <SelectContent >
-            <SelectItem className="cursor-pointer"  value="all">All Roles</SelectItem>
-            {/* <SelectItem className="cursor-pointer" value="admin">Admin</SelectItem> */}
-            <SelectItem className="cursor-pointer" value="staff_admin">Staff Admin</SelectItem>
-            <SelectItem className="cursor-pointer" value="staff">Staff</SelectItem>
-            <SelectItem className="cursor-pointer" value="parent">Parent</SelectItem>
-            <SelectItem className="cursor-pointer" value="student">Student</SelectItem>
+          <SelectContent>
+            <SelectItem className="cursor-pointer" value="all">
+              All Roles
+            </SelectItem>
+            {getAvailableRoles().map((role) => (
+              <SelectItem
+                key={role.value}
+                className="cursor-pointer"
+                value={role.value}
+              >
+                {role.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>

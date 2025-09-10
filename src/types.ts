@@ -56,12 +56,15 @@ export interface ResetPasswordResponse {
 
 // User Management Types
 export interface CreateUserRequest {
-  email: string;
+  email?: string;
+  username?: string;
   password: string;
   first_name: string;
   last_name: string;
   role: UserRole;
-  parent_id?: string; // Optional parent ID for student role
+  parent_ids?: number[]; // Optional array of parent IDs for student role
+  year_group_id?: number; // Optional year group ID for student role
+  class_id?: number; // Optional class ID for student role
 }
 
 export interface ResetUserPasswordRequest {
@@ -115,12 +118,15 @@ export interface NavItem {
 
 // Form Types
 export interface CreateUserFormData {
-  email: string;
+  email?: string;
+  username?: string;
   password: string;
   first_name: string;
   last_name: string;
   role: UserRole;
-  parent_id?: string; // Optional parent ID for student role
+  parent_ids?: number[]; // Optional array of parent IDs for student role
+  year_group_id?: number; // Optional year group ID for student role
+  class_id?: number; // Optional class ID for student role
 }
 
 export interface ResetPasswordFormData {

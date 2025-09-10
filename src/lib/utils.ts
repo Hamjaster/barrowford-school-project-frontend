@@ -49,6 +49,23 @@ export const validateName = (name: string, fieldName: string = 'Name'): { isVali
   return { isValid: true }
 }
 
+export const validateUsername = (username: string): { isValid: boolean; error?: string } => {
+  if (!username) {
+    return { isValid: false, error: ERROR_MESSAGES.REQUIRED_FIELD }
+  }
+  
+  if (username.trim().length < 3) {
+    return { isValid: false, error: 'Username must be at least 3 characters long' }
+  }
+  
+  if (username.trim().length > 20) {
+    return { isValid: false, error: 'Username must be no more than 20 characters long' }
+  }
+  
+  
+  return { isValid: true }
+}
+
 export const validatePasswordMatch = (password: string, confirmPassword: string): { isValid: boolean; error?: string } => {
   if (password !== confirmPassword) {
     return { isValid: false, error: ERROR_MESSAGES.PASSWORDS_DONT_MATCH }

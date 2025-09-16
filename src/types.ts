@@ -20,6 +20,7 @@ export interface User {
   username?: string; // For students
   created_at?: string;
   is_active?: boolean;
+  status?: 'active' | 'inactive';
 }
 
 // Authentication Types

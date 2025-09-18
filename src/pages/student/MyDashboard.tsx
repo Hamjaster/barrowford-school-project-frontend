@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -19,6 +19,11 @@ import {
   Shield,
 } from "lucide-react";
 import Footer from "@/components/footer";
+//import for personal section 
+import { useDispatch, useSelector } from "react-redux";
+import { fetchTopics, createTopic, updateTopic, deleteTopic } from "@/store/slices/personalSectionSlice";
+import type { RootState, AppDispatch } from "../../store";
+
 
 interface CardData {
   id: string;
@@ -115,6 +120,12 @@ const cardData: CardData[] = [
 
 export default function StudentDashboard() {
   const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
+    const dispatch = useDispatch<AppDispatch>();
+      // Grab state from Redux
+    const { topics, loading, error } = useSelector((state:RootState) => state.personalSection);
+      useEffect(() => {
+        dispatch(fetchTopics());
+      }, [dispatch]);
 
   return (
     <div className="min-h-screen bg-gray-100">

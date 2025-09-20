@@ -10,6 +10,7 @@ import {
 } from '@/types';
 import { API_BASE_URL } from '@/constants';
 import { getFromStorage } from '@/lib/utils';
+import supabase from '@/lib/supabse';
 
 const initialState: AuthState = {
   user: null,
@@ -155,6 +156,7 @@ const authSlice = createSlice({
         state.token = action.payload.access_token;
         state.isAuthenticated = true;
         state.error = null;
+
         
         // Check if user is inactive
         if (action.payload.user.status && action.payload.user.status !== 'active') {
@@ -166,10 +168,15 @@ const authSlice = createSlice({
           localStorage.removeItem('user');
           return;
         }
-        
+        supabase.auth.setSession({
+          access_token: action.payload.session.access_token,
+          refresh_token: action.payload.session.refresh_token
+        });
+        console.log('set session !!')
         // Persist to localStorage
         localStorage.setItem('auth_token', action.payload.access_token);
         localStorage.setItem('user', JSON.stringify(action.payload.user));
+        
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;

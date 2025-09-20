@@ -62,6 +62,7 @@ export default function StudentContentPage() {
     learnings,
     isLoading,
     isSubmitting,
+    isDeleting,
     error,
     message,
   } = useSelector((state: RootState) => state.student);
@@ -77,7 +78,7 @@ export default function StudentContentPage() {
   const [uploadTitle, setUploadTitle] = useState("");
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
-
+  const [itemBeingDeleted, setItemBeingDeleted] = useState<number | null>(null);
   // Fetch learnings when selected subject changes
   useEffect(() => {
     if (selectedSubject) {
@@ -276,6 +277,7 @@ export default function StudentContentPage() {
   };
 
   const removeContentItem = (id: number) => {
+    setItemBeingDeleted(id);
     dispatch(deleteStudentLearning(id));
   };
 
@@ -694,11 +696,11 @@ export default function StudentContentPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeContentItem(learning.id)}
-                          disabled={isSubmitting}
+                          disabled={isSubmitting || isDeleting}
                           className="h-7 w-7 p-0 hover:bg-red-100 text-red-400 hover:text-red-600 flex-shrink-0"
                         >
-                          {isSubmitting ? (
-                            <Loader2 className="h-3 w-3 animate-spin" />
+                          {isDeleting && itemBeingDeleted === learning.id ? (
+                            <Loader2 className="h-6 w-6 ml-3 mt-2 animate-spin" />
                           ) : (
                             <X className="h-3 w-3" />
                           )}

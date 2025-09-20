@@ -14,9 +14,9 @@ import {
   clearMessage,
 } from "@/store/slices/studentSlice";
 import {
-  uploadMultipleFilesToSupabase,
   validateFile,
   downloadImage,
+  uploadFileToSupabase,
 } from "@/utils/fileUpload";
 import type { StudentImage } from "@/types";
 import supabase from "@/lib/supabse";
@@ -116,23 +116,23 @@ export default function MyImages() {
 
       try {
         // Upload to Supabase
-        const uploadResult = await uploadMultipleFilesToSupabase(
-          [file],
+        const uploadResult = await uploadFileToSupabase(
+          file,
           "barrowford-school-uploads",
           userId
         );
         console.log(uploadResult, "upload result here !!");
 
-        if (uploadResult[0].success && uploadResult[0].url) {
+        if (uploadResult.success && uploadResult.url) {
           // Upload to backend API with year group ID
           dispatch(
             uploadStudentImage({
-              imageUrl: uploadResult[0].url,
+              imageUrl: uploadResult.url,
               yearGroupId: selectedYearGroup?.id,
             })
           );
         } else {
-          toast.error(uploadResult[0].error || "Failed to upload image");
+          toast.error(uploadResult.error || "Failed to upload image");
         }
       } catch (error) {
         console.error("Upload error:", error);
@@ -179,11 +179,7 @@ export default function MyImages() {
                 disabled={isSubmitting}
                 className="bg-white text-orange-500 hover:bg-orange-50 font-semibold shadow-lg cursor-pointer"
               >
-                {isSubmitting ? (
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                ) : (
-                  <Upload className="w-4 h-4 mr-2" />
-                )}
+                {isSubmitting ? <></> : <Upload className="w-4 h-4 mr-2" />}
                 {isSubmitting ? "Uploading..." : "Upload Images"}
               </Button>
             </div>
@@ -232,12 +228,7 @@ export default function MyImages() {
               className="bg-orange-500 hover:bg-orange-600"
               disabled={isSubmitting}
             >
-              {isSubmitting ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4 mr-2" />
-              )}
-              Upload Images
+              {isSubmitting ? "Uploading..." : "Upload Images"}
             </Button>
           </div>
         ) : (

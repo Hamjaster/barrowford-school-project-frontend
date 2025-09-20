@@ -174,3 +174,21 @@ export interface Child {
   created_at: string;
   is_active: boolean;
 }
+
+// Define Topic type
+export interface Topic {
+  id: number; // assuming backend returns id
+  title: string;
+  created_at : string;
+  status: string;
+}
+
+// Define state type
+export interface StudentState {
+  topics: Topic[];
+  loading: boolean;
+  error: string | null;
+}
+
+
+

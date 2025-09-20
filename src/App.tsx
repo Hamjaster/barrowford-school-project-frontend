@@ -49,21 +49,56 @@ const App: React.FC = () => {
               >
                 <Route index element={<RoleBasedDashboard />} />
 
-                {/* student routes */}
-                <Route path="my-learning" element={<MyLearning />} />
-                <Route path="my-impact" element={<MyImpact />} />
-                <Route path="my-experiences" element={<MyExperiences />} />
-                <Route path="my-images" element={<MyImages />} />
+                {/* Student-only routes */}
+                <Route
+                  path="my-learning"
+                  element={
+                    <ProtectedRoute allowedRoles={["student"]}>
+                      <MyLearning />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="my-impact"
+                  element={
+                    <ProtectedRoute allowedRoles={["student"]}>
+                      <MyImpact />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="my-experiences"
+                  element={
+                    <ProtectedRoute allowedRoles={["student"]}>
+                      <MyExperiences />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="my-images"
+                  element={
+                    <ProtectedRoute allowedRoles={["student"]}>
+                      <MyImages />
+                    </ProtectedRoute>
+                  }
+                />
                 <Route
                   path="my-cultural-capital"
-                  element={<MyCulturalCaptical />}
+                  element={
+                    <ProtectedRoute allowedRoles={["student"]}>
+                      <MyCulturalCaptical />
+                    </ProtectedRoute>
+                  }
                 />
-                <Route path="my-experiences" element={<MyExperiences />} />
 
-                {/* parent routes */}
+                {/* Parent-only routes */}
                 <Route
                   path="child-details/:id"
-                  element={<ChildDetailsPage />}
+                  element={
+                    <ProtectedRoute allowedRoles={["parent"]}>
+                      <ChildDetailsPage />
+                    </ProtectedRoute>
+                  }
                 />
               </Route>
 

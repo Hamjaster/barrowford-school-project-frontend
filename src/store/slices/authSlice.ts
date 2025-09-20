@@ -10,6 +10,7 @@ import {
 } from '@/types';
 import { API_BASE_URL } from '@/constants';
 import { getFromStorage } from '@/lib/utils';
+import supabase from '@/lib/supabse';
 
 const initialState: AuthState = {
   user: null,
@@ -109,9 +110,20 @@ const authSlice = createSlice({
       if (token && userStr) {
         try {
           const user = JSON.parse(userStr);
-          state.token = token;
-          state.user = user;
-          state.isAuthenticated = true;
+          
+          // Check if user is inactive
+          if (user.status && user.status !== 'active') {
+            state.isAuthenticated = false;
+            state.user = null;
+            state.token = null;
+            state.error = 'Account is inactive. Please contact an administrator.';
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+          } else {
+            state.token = token;
+            state.user = user;
+            state.isAuthenticated = true;
+          }
         } catch (error) {
           // If parsing fails, clear localStorage
           localStorage.removeItem('auth_token');
@@ -144,10 +156,27 @@ const authSlice = createSlice({
         state.token = action.payload.access_token;
         state.isAuthenticated = true;
         state.error = null;
+
         
+        // Check if user is inactive
+        if (action.payload.user.status && action.payload.user.status !== 'active') {
+          state.isAuthenticated = false;
+          state.user = null;
+          state.token = null;
+          state.error = 'Account is inactive. Please contact an administrator.';
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          return;
+        }
+        supabase.auth.setSession({
+          access_token: action.payload.session.access_token,
+          refresh_token: action.payload.session.refresh_token
+        });
+        console.log('set session !!')
         // Persist to localStorage
         localStorage.setItem('auth_token', action.payload.access_token);
         localStorage.setItem('user', JSON.stringify(action.payload.user));
+        
       })
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;

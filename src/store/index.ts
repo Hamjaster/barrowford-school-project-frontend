@@ -1,13 +1,17 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import userManagementReducer from './slices/userManagementSlice';
-import studentReducer from './slices/personalSectionSlice'
+import yearDataReducer from './slices/yearDataSlice';
+import studentReducer from './slices/studentSlice';
+import personalSectionReducer from './slices/personalSectionSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     userManagement: userManagementReducer,
-    personalSection : studentReducer
+    yearData: yearDataReducer,
+    student: studentReducer,
+    personalSection : personalSectionReducer
   },
 });
 

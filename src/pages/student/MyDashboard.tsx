@@ -1,5 +1,5 @@
 import type React from "react";
-import { useState,useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
@@ -19,11 +19,16 @@ import {
   Shield,
 } from "lucide-react";
 import Footer from "@/components/footer";
-//import for personal section 
+//import for personal section
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTopics, createTopic, updateTopic, deleteTopic } from "@/store/slices/personalSectionSlice";
+import {
+  fetchTopics,
+  createTopic,
+  updateTopic,
+  deleteTopic,
+} from "@/store/slices/personalSectionSlice";
 import type { RootState, AppDispatch } from "../../store";
-
+import supabase from "@/lib/supabse";
 
 interface CardData {
   id: string;
@@ -120,12 +125,22 @@ const cardData: CardData[] = [
 
 export default function StudentDashboard() {
   const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
-    const dispatch = useDispatch<AppDispatch>();
-      // Grab state from Redux
-    const { topics, loading, error } = useSelector((state:RootState) => state.personalSection);
-      useEffect(() => {
-        dispatch(fetchTopics());
-      }, [dispatch]);
+  const dispatch = useDispatch<AppDispatch>();
+  // Grab state from Redux
+  const { topics, loading, error } = useSelector(
+    (state: RootState) => state.personalSection
+  );
+  useEffect(() => {
+    dispatch(fetchTopics());
+  }, [dispatch]);
+
+  useEffect(() => {
+    async function getUser() {
+      const { data, error } = await supabase.auth.getUser();
+      console.log(data, "user data");
+    }
+    getUser();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gray-100">

@@ -20,6 +20,7 @@ export interface User {
   username?: string; // For students
   created_at?: string;
   is_active?: boolean;
+  status?: 'active' | 'inactive';
 }
 
 // Authentication Types
@@ -32,6 +33,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   access_token: string;
   user: User;
+  session: any;
 }
 
 export interface ForgotPasswordRequest {
@@ -192,3 +194,89 @@ export interface StudentState {
 
 
 
+
+// Year Data Types
+export interface YearGroup {
+  id: number;
+  name: string;
+  description: string;
+  created_at: string;
+}
+
+export interface Subject {
+  id: number;
+  name: string;
+  status: string;
+  created_at: string;
+}
+
+export interface YearGroupWithSubjects extends YearGroup {
+  subjects: Subject[];
+}
+
+export interface YearDataState {
+  yearGroups: YearGroup[];
+  yearGroupsWithSubjects: YearGroupWithSubjects[];
+  isLoading: boolean;
+  isLoadingSubjects: boolean;
+  error: string | null;
+}
+
+// Student Learning Types
+export interface StudentLearning {
+  id: number;
+  subject_id: number;
+  title: string;
+  description: string;
+  attachment_url?: string;
+  created_at: string;
+}
+
+export interface CreateLearningRequest {
+  subject_id: number;
+  title: string;
+  content?: string;
+  attachment_url?: string;
+}
+
+// Student Image Interface
+export interface StudentImage {
+  id: string;
+  image_url: string;
+  created_at: string;
+}
+
+// Student Impact and Experience Types
+export interface StudentImpact {
+  id: number;
+  content: string;
+  created_at: string;
+}
+
+export interface StudentExperience {
+  id: number;
+  content: string;
+  created_at: string;
+}
+
+export interface UpdateImpactRequest {
+  content: string;
+}
+
+export interface UpdateExperienceRequest {
+  content: string;
+}
+
+export interface StudentState {
+  selectedSubject: Subject | null;
+  selectedYearGroup: YearGroup | null;
+  learnings: StudentLearning[];
+  images: StudentImage[];
+  impact: StudentImpact | null;
+  experience: StudentExperience | null;
+  isLoading: boolean;
+  isSubmitting: boolean;
+  isDeleting: boolean;
+  error: string | null;
+  message: string | null;
+}

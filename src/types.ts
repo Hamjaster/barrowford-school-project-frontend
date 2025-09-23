@@ -191,6 +191,83 @@ export interface StudentState {
   loading: boolean;
   error: string | null;
 }
+// define reflection topic type 
+export interface ReflectionTopic {
+  id : number;
+  title : string;
+  created_by : string;
+  is_active : string;
+  created_at : string;
+}
+
+export interface ReflectionState {
+  topics: ReflectionTopic[];    // full objects
+  activeTitles: { id: string; title: string }[];     // just titles
+  comments : ReflectionComment[];
+  reflections: ReflectionItem[]  ;
+  loading: boolean;
+  error: string | null;
+}
+
+
+// New one (only for active topics API)
+export interface ReflectionTopicTitle {
+  title: string;
+  id : number
+}
+
+export interface RelectionRequest {
+    topicID: number ,
+    content: string,
+    file: File,
+}
+// Define the type for a reflection item
+export interface ReflectionItem {
+  id: string;
+  content: string;
+  attachment_url?: string;
+  student_id: string;
+  created_at: string;
+  topic_id: string;
+  status: string;
+  reflectiontopics: {
+    title: string;
+  };
+}
+
+export interface TableEntry {
+  id: string;
+  date: string;
+  topic: string;
+  status: "Approved" | "Pending" | "Draft";
+  week: string;
+  title?: string; // optional if needed
+}
+
+export interface UpdateReflectionPayload {
+  id: string;
+  content: string;
+  status: string;
+}
+export interface UpdateReflectionResponse {
+  success: boolean;
+  updatedReflection: ReflectionItem;
+}
+
+//for add comments
+export interface AddCommentRequest {
+  reflectionId: string;
+  content: string;
+}
+
+// fetch comments
+export interface ReflectionComment {
+  id: string;
+  reflection_id: string;
+  user_role: string;
+  comment: string;
+  created_at: string;
+}
 
 
 

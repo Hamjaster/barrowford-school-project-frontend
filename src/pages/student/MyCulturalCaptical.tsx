@@ -1,6 +1,6 @@
 import type React from "react";
 
-import { useState } from "react";
+import { useState,useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -27,122 +27,186 @@ import {
   Lightbulb,
   Music,
   Plus,
+  RotateCcw,
   Upload,
   User,
   Video,
+  XCircle
 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { API_BASE_URL } from '@/constants';
+import { unwrapResult } from "@reduxjs/toolkit";
+
+  //for api handling 
+import { useDispatch, useSelector } from "react-redux";
+import { createReflection,fetchActiveTopics, fetchMyReflections,fetchComments } from "@/store/slices/reflectionSlice";
+import type { RootState, AppDispatch } from "@/store";
+import type {ReflectionItem,TableEntry} from '@/types'
+
+
 
 interface CulturalCapitalEntry {
   id: string;
   date: string;
-  topic: string;
+  title : string;
   status: "Approved" | "Pending" | "Draft";
   week: string;
+  content : string;
+  attachment_url : string;
 }
 
-const sampleData: CulturalCapitalEntry[] = [
-  {
-    id: "1",
-    date: "14/10/2025 (Week 2)",
-    topic: "Lyfta",
-    status: "Approved",
-    week: "Week 2",
-  },
-  {
-    id: "2",
-    date: "14/10/2025 (Week 2)",
-    topic: "Lyfta",
-    status: "Approved",
-    week: "Week 2",
-  },
-  {
-    id: "3",
-    date: "14/10/2025 (Week 2)",
-    topic: "Poem of the Week",
-    status: "Approved",
-    week: "Week 2",
-  },
-  {
-    id: "4",
-    date: "15/11/2025 (Week 4)",
-    topic: "Artist of the Week",
-    status: "Pending",
-    week: "Week 4",
-  },
-  {
-    id: "5",
-    date: "15/11/2025 (Week 4)",
-    topic: "Artist of the Week",
-    status: "Pending",
-    week: "Week 4",
-  },
-  {
-    id: "6",
-    date: "15/11/2025 (Week 4)",
-    topic: "Artist of the Week",
-    status: "Pending",
-    week: "Week 4",
-  },
-  {
-    id: "7",
-    date: "15/11/2025 (Week 4)",
-    topic: "Artist of the Week",
-    status: "Pending",
-    week: "Week 4",
-  },
-  {
-    id: "8",
-    date: "15/11/2025 (Week 4)",
-    topic: "Artist of the Week",
-    status: "Pending",
-    week: "Week 4",
-  },
-  {
-    id: "9",
-    date: "15/11/2025 (Week 4)",
-    topic: "Artist of the Week",
-    status: "Pending",
-    week: "Week 4",
-  },
-];
+// const sampleData: CulturalCapitalEntry[] = [
+//   {
+//     id: "1",
+//     date: "14/10/2025 (Week 2)",
+//     topic: "Lyfta",
+//     status: "Approved",
+//     week: "Week 2",
+//   },
+//   {
+//     id: "2",
+//     date: "14/10/2025 (Week 2)",
+//     topic: "Lyfta",
+//     status: "Approved",
+//     week: "Week 2",
+//   },
+//   {
+//     id: "3",
+//     date: "14/10/2025 (Week 2)",
+//     topic: "Poem of the Week",
+//     status: "Approved",
+//     week: "Week 2",
+//   },
+//   {
+//     id: "4",
+//     date: "15/11/2025 (Week 4)",
+//     topic: "Artist of the Week",
+//     status: "Pending",
+//     week: "Week 4",
+//   },
+//   {
+//     id: "5",
+//     date: "15/11/2025 (Week 4)",
+//     topic: "Artist of the Week",
+//     status: "Pending",
+//     week: "Week 4",
+//   },
+//   {
+//     id: "6",
+//     date: "15/11/2025 (Week 4)",
+//     topic: "Artist of the Week",
+//     status: "Pending",
+//     week: "Week 4",
+//   },
+//   {
+//     id: "7",
+//     date: "15/11/2025 (Week 4)",
+//     topic: "Artist of the Week",
+//     status: "Pending",
+//     week: "Week 4",
+//   },
+//   {
+//     id: "8",
+//     date: "15/11/2025 (Week 4)",
+//     topic: "Artist of the Week",
+//     status: "Pending",
+//     week: "Week 4",
+//   },
+//   {
+//     id: "9",
+//     date: "15/11/2025 (Week 4)",
+//     topic: "Artist of the Week",
+//     status: "Pending",
+//     week: "Week 4",
+//   },
+// ];
 
 export default function CulturalCapitalPage() {
-  const [data, setData] = useState(sampleData);
-  const [filteredData, setFilteredData] = useState(sampleData);
+  const [data, setData] = useState<TableEntry[]>([]);
+  const [filteredData, setFilteredData] = useState<TableEntry[]>([]);
   const [weekFilter, setWeekFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [topicFilter, setTopicFilter] = useState<string>("");
+  const [topicFilter, setTopicFilter] = useState<string>("all");
   const [isNewReflectionOpen, setIsNewReflectionOpen] = useState(false);
   const [selectedReflection, setSelectedReflection] =
     useState<CulturalCapitalEntry | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  
   const [newReflection, setNewReflection] = useState({
-    title: "",
-    description: "",
+    topicID: "",
+    content : "",
     files: [] as File[],
   });
 
-  const applyFilters = () => {
+    //dispatch
+    const dispatch = useDispatch<AppDispatch>();
+    const { activeTitles,reflections,comments, loading, topics } = useSelector(
+      (state: RootState) => state.reflection
+    );
+  
+    //useEffect of feching projects 
+useEffect(() => {
+  const fetchData = async () => {
+    await dispatch(fetchActiveTopics());
+    await dispatch(fetchMyReflections());
+  };
+  
+  fetchData();
+}, [dispatch]);
+
+useEffect(() => {
+  if (reflections.length) {
+    // Make sure reflections array matches TableEntry[]
+    const tableData: TableEntry[] = reflections.map((item) => ({
+      id: item.id,
+      date: formatDate(item.created_at),
+      topic: item.reflectiontopics.title,
+      status: item.status,
+      content : item.content,
+      attachment_url: item.attachment_url,
+    }));
+
+    setData(tableData);
+    setFilteredData(tableData);
+  }
+}, [reflections]);
+
+const formatDate = (timestamp: string) => {
+  const date = new Date(timestamp);
+  return date.toLocaleDateString("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
+
+  const applyFiltersAfterChange = (
+    week: string,
+    status: string,
+    topic: string
+  ) => {
     let filtered = data;
 
-    if (weekFilter !== "all") {
-      filtered = filtered.filter((item) => item.week === weekFilter);
+    if (week !== "all") {
+      filtered = filtered.filter((item) => item.week === week);
     }
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((item) => item.status === statusFilter);
+    if (status !== "all") {
+      filtered = filtered.filter((item) => item.status === status);
     }
-    if (topicFilter && topicFilter !== "all") {
+    if (topic && topic !== "all") {
       filtered = filtered.filter((item) =>
-        item.topic.toLowerCase().includes(topicFilter.toLowerCase())
+        item.topic.toLowerCase().includes(topic.toLowerCase())
       );
     }
 
     setFilteredData(filtered);
   };
+
 
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -152,12 +216,31 @@ export default function CulturalCapitalPage() {
     }));
   };
 
-  const handleSubmitReflection = () => {
-    // Here you would typically submit to your backend
-    console.log("New reflection:", newReflection);
+
+
+const handleSubmitReflection = async () => {
+  try {
+    const resultAction = await dispatch(
+      createReflection({
+        topicID: newReflection.topicID,
+        content: newReflection.content,
+        file: newReflection.files[0],
+      })
+    );
+
+    // unwrap will throw if rejected
+    unwrapResult(resultAction);
+
+    // Only runs on success ✅
     setIsNewReflectionOpen(false);
-    setNewReflection({ title: "", description: "", files: [] });
-  };
+    setNewReflection({ topicID: "", content: "", files: [] });
+  } catch (err) {
+    console.error("Error while submitting the reflection:", err);
+  }
+};
+
+ 
+  
 
   const uniqueWeeks = Array.from(new Set(data.map((item) => item.week)));
   const uniqueStatuses = Array.from(new Set(data.map((item) => item.status)));
@@ -224,6 +307,8 @@ export default function CulturalCapitalPage() {
   };
   const handleViewReflection = (reflection: CulturalCapitalEntry) => {
     setSelectedReflection(reflection);
+    dispatch(fetchComments(reflection.id))
+    
     setIsDetailModalOpen(true);
   };
 
@@ -269,58 +354,99 @@ export default function CulturalCapitalPage() {
 
       {/* Main Content */}
       <div className="p-6 space-y-6">
+
         {/* Filters */}
         <div className="bg-white flex items-center justify-between rounded-2xl p-6 shadow-sm">
-          <div className="flex gap-4 items-center justify-start">
-            <Select value={weekFilter}  onValueChange={setWeekFilter}>
-              <SelectTrigger className="cursor-pointer">
-                <SelectValue  placeholder="Select week..." className="cursor-pointer" />
+
+
+
+          <div className="flex gap-4 items-center justify-start  w-full">
+          <div className="flex flex-col w-full">
+
+            {/* <Label htmlFor="week-filter">Filter By Week</Label> */}
+            <Select
+              value={weekFilter}
+              onValueChange={(value) => {
+                setWeekFilter(value);
+                applyFiltersAfterChange(value, statusFilter, topicFilter);
+              }}
+            >
+              <SelectTrigger className="cursor-pointer m-2">
+                <SelectValue placeholder="Select week..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem className="cursor-pointer" value="all">Filter By Week</SelectItem>
+                <SelectItem value="all">Filter By Week</SelectItem>
                 {uniqueWeeks.map((week) => (
-                  <SelectItem className="cursor-pointer" key={week} value={week }>
-                    {week}
+                  <SelectItem key={week} value={week}>
+                    {week} 
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
+            </div>
+            <div className="flex flex-col w-full">
+
+            
+            <Select
+              value={statusFilter}
+              onValueChange={(value) => {
+                setStatusFilter(value);
+                applyFiltersAfterChange(weekFilter, value, topicFilter);
+              }}
+            >
               <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder="Select status..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem className="cursor-pointer" value="all">Filter by Status</SelectItem>
+                <SelectItem value="all">Filter by Status</SelectItem>
                 {uniqueStatuses.map((status) => (
-                  <SelectItem className="cursor-pointer" key={status} value={status}>
+                  <SelectItem key={status} value={status}>
                     {status}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-            <Select value={topicFilter} onValueChange={setTopicFilter}>
+            </div>
+            <div className="flex flex-col w-full">
+
+            <Select
+              value={topicFilter}
+              onValueChange={(value) => {
+                setTopicFilter(value);
+                applyFiltersAfterChange(weekFilter, statusFilter, value);
+              }}
+            >
               <SelectTrigger className="cursor-pointer">
                 <SelectValue placeholder="Select topic..." />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem className="cursor-pointer" value="all">Filter by Topic</SelectItem>
+              <SelectItem value="all">Filter by Topic</SelectItem>
+
                 {uniqueTopics.map((topic) => (
-                  <SelectItem className="cursor-pointer" key={topic} value={topic}>
+                  <SelectItem key={topic} value={topic}>
                     {topic}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
-
-            <Button
-              onClick={applyFilters}
-              className="bg-pink-500 hover:bg-pink-600 text-white 6 cursor-pointer"
+            </div>
+            <div className=" w-full flex flex-row gap-2">
+                        {/* Clear Filters button */}
+                        <Button
+              variant="destructive"
+              onClick={() => {
+                setWeekFilter("all");
+                setStatusFilter("all");
+                setTopicFilter("all");
+                setFilteredData(data);
+              }}
+              className="bg-red-500 hover:bg-red-600 text-white px-6 cursor-pointer"
             >
-              Filter
+              <RotateCcw className="w-4 h-4" />
+              Clear Filters
             </Button>
-          </div>
-          {/* Create new reflection */}
-          <Dialog
+                      
+            <Dialog
             open={isNewReflectionOpen}
             onOpenChange={setIsNewReflectionOpen}
           >
@@ -335,34 +461,49 @@ export default function CulturalCapitalPage() {
                 <DialogTitle>Add New Reflection</DialogTitle>
               </DialogHeader>
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="reflection-title">Title</Label>
-                  <Input
-                    id="reflection-title"
-                    value={newReflection.title}
-                    onChange={(e) =>
+               
+           <div className="w-full">
+                <Label htmlFor="reflection-title">Title</Label>
+
+                {activeTitles.length > 0 ? (
+                  <Select
+                    onValueChange={(value) =>
                       setNewReflection((prev) => ({
                         ...prev,
-                        title: e.target.value,
+                        topicID: value, // <-- store selected topic ID here
                       }))
                     }
-                    placeholder="Enter reflection title..."
-                    className="mt-1"
-                  />
-                </div>
-                <div>
+                  >
+                    <SelectTrigger id="reflection-title" className="mt-2 w-full">
+                      <SelectValue placeholder="Choose a reflection title..." />
+                    </SelectTrigger>
+                    <SelectContent className="w-full">
+                      {activeTitles.map((topic, index) => (
+                        <SelectItem key={index} value={topic.id}>
+                          {topic.title}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                ) : (
+                  <p className="mt-2 text-sm text-gray-500 italic">
+                    No active reflection topics available.
+                  </p>
+                )}
+              </div>
+
+                 <div>
                   <Label htmlFor="reflection-description">Description</Label>
                   <Textarea
                     id="reflection-description"
-                    value={newReflection.description}
+                    value={newReflection.content}
                     onChange={(e) =>
-                      setNewReflection((prev) => ({
-                        ...prev,
-                        description: e.target.value,
-                      }))
-                    }
-                    placeholder="Write your reflection..."
-                    className="mt-1 min-h-[100px]"
+                    setNewReflection((prev) => ({
+                      ...prev,
+                      content: e.target.value, // ✅ matches state
+                    }))
+                  } placeholder="Write your reflection..."
+                    className="mt-2 min-h-[100px]"
                   />
                 </div>
                 <div>
@@ -373,7 +514,7 @@ export default function CulturalCapitalPage() {
                       type="file"
                       multiple
                       onChange={handleFileUpload}
-                      className="hidden"
+                      className="hidden "
                     />
                     <Button
                       type="button"
@@ -381,18 +522,45 @@ export default function CulturalCapitalPage() {
                       onClick={() =>
                         document.getElementById("reflection-files")?.click()
                       }
-                      className="w-full cursor-pointer"
-                    >
+                      className="w-full cursor-pointer mt-2"
+                    > 
                       <Upload className="w-4 h-4 mr-2" />
                       Upload Files
                     </Button>
+
                     {newReflection.files.length > 0 && (
-                      <div className="mt-2 text-sm text-gray-600">
-                        {newReflection.files.length} file(s) selected
+                      <div className="mt-2 text-sm text-gray-600 space-y-1">
+                        <p className="font-medium">
+                          {newReflection.files.length} file(s) selected:
+                        </p>
+                        <ul className="space-y-1">
+                          {newReflection.files.map((file, idx) => (
+                            <li
+                              key={idx}
+                              className="flex items-center justify-between bg-gray-100 px-2 py-1 rounded"
+                            >
+                              <span className="truncate text-xs">{file.name}</span>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setNewReflection((prev) => ({
+                                    ...prev,
+                                    files: prev.files.filter((_, i) => i !== idx),
+                                  }))
+                                }
+                                className="text-red-500 hover:text-red-700 text-xs ml-2 cursor-pointer"
+                              >
+                                ✕
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
                       </div>
                     )}
                   </div>
                 </div>
+
+
                 <div className="flex gap-2 pt-4">
                   <Button
                     variant="outline"
@@ -411,6 +579,10 @@ export default function CulturalCapitalPage() {
               </div>
             </DialogContent>
           </Dialog>
+          </div>
+          </div>
+          {/* Create new reflection */}
+          
 
           {/* Reflection Detail Modal */}
           <Dialog open={isDetailModalOpen} onOpenChange={setIsDetailModalOpen}>
@@ -438,10 +610,6 @@ export default function CulturalCapitalPage() {
                         <Calendar className="w-4 h-4" />
                         {selectedReflection.date}
                       </div>
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <User className="w-4 h-4" />
-                        Emma Doe
-                      </div>
                     </div>
                   </div>
 
@@ -462,13 +630,14 @@ export default function CulturalCapitalPage() {
                     </CardHeader>
                     <CardContent>
                       <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
-                        {mockReflection.reflection}
+                        {selectedReflection.content??""}
                       </p>
                     </CardContent>
                   </Card>
 
+
                   {/* Attachments */}
-                  {mockReflection.attachments.length > 0 && (
+                  {selectedReflection.attachment_url.length > 0 && (
                     <Card>
                       <CardHeader>
                         <CardTitle className="text-lg text-cyan-600">
@@ -476,32 +645,54 @@ export default function CulturalCapitalPage() {
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {mockReflection.attachments.map(
-                            (attachment, index) => (
-                              <div
-                                key={index}
-                                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-gray-50"
-                              >
-                                {getAttachmentIcon(attachment.type)}
-                                <div className="flex-1">
-                                  <p className="font-medium text-sm">
-                                    {attachment.name}
-                                  </p>
-                                  <p className="text-xs text-gray-500 capitalize">
-                                    {attachment.type}
-                                  </p>
-                                </div>
-                              </div>
-                            )
-                          )}
-                        </div>
+                     {selectedReflection.attachment_url && (
+  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <a
+      href={selectedReflection.attachment_url}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="p-2 flex items-center gap-3 border rounded-lg hover:bg-gray-50 transition-colors"
+    >
+      {(() => {
+        const url = selectedReflection.attachment_url;
+
+        // Extract raw file name
+        const parts = url.split("/");
+        const rawFileName = parts[parts.length - 1];
+
+        // Decode URI (%20 -> space, %27 -> ')
+        let cleanedName = decodeURIComponent(rawFileName);
+
+        // Remove Cloudinary’s random suffix (e.g. --aaee before .pdf)
+        cleanedName = cleanedName.replace(/--[a-z0-9]+(?=\.)/, "");
+
+        // Get extension
+        const extension = cleanedName.split(".").pop() || "file";
+
+        return (
+          <>
+            {getAttachmentIcon(extension)}
+            <div className="flex-1">
+              <p className="p-2 font-medium text-sm truncate">
+                {cleanedName}
+              </p>
+            </div>
+          </>
+        );
+      })()}
+    </a>
+  </div>
+)}
+
+
+
+
+
                       </CardContent>
                     </Card>
                   )}
-
                   {/* Approval Info */}
-                  {selectedReflection.status === "Approved" &&
+                  {/* {selectedReflection.status === "Approved" &&
                     mockReflection.approvedBy && (
                       <Card className="bg-green-50 border-green-200">
                         <CardHeader>
@@ -522,7 +713,52 @@ export default function CulturalCapitalPage() {
                           </div>
                         </CardContent>
                       </Card>
-                    )}
+                    )} */}
+        {/* <Dialog open={comment} onOpenChange={setComment}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          Comments
+        </Button>
+      </DialogTrigger>
+
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>View Comments</DialogTitle>
+        </DialogHeader> */}
+
+        {/* Existing Comments */}
+        {comments.length > 0 && (
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+              <MessageSquare className="w-4 h-4" />
+              Comments ({comments.length})
+            </div>
+
+            {comments.map((comment) => (
+              <div
+                key={comment.id}
+                className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-sm font-semibold text-gray-800">
+                    {comment.user_role}
+                  </span>
+                  <span className="text-xs text-gray-500">
+                    {new Date(comment.created_at).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-700">{comment.comment}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      {/* </DialogContent>
+    </Dialog> */}
 
                   {/* Close Button */}
                   <div className="flex justify-end pt-4">
@@ -538,16 +774,30 @@ export default function CulturalCapitalPage() {
             </DialogContent>
           </Dialog>
         </div>
+<div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+  {loading ? (
+      <div className="flex justify-center items-center py-10">
+    <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+  </div>
 
+  ) : (
+    <DataTable
+      data={filteredData}
+      columns={columns}
+      showPagination={true}
+      itemsPerPage={9}
+    />
+  )}
+</div>
         {/* Data Table */}
-        <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
+        {/* <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
           <DataTable
             data={filteredData}
             columns={columns}
             showPagination={true}
             itemsPerPage={9}
           />
-        </div>
+        </div> */}
       </div>
 
       {/* Footer */}

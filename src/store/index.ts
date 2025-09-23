@@ -1,6 +1,7 @@
 import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import userManagementReducer from './slices/userManagementSlice';
+import reflectionReducer from './slices/reflectionSlice'
 import yearDataReducer from './slices/yearDataSlice';
 import studentReducer from './slices/studentSlice';
 import personalSectionReducer from './slices/personalSectionSlice'
@@ -9,6 +10,7 @@ export const store = configureStore({
   reducer: {
     auth: authReducer,
     userManagement: userManagementReducer,
+    reflection: reflectionReducer,
     yearData: yearDataReducer,
     student: studentReducer,
     personalSection : personalSectionReducer

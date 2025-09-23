@@ -120,8 +120,7 @@ const StaffDashboard: React.FC = () => {
   const [selectedCard , setSelectedCard] = useState<number | null>(null)
   const [newTitle,setNewTitle] = useState<string>("")
   const dispatch = useDispatch<AppDispatch>();
-    // Grab state from Redux
-  const { topics, loading, error } = useSelector((state:RootState) => state.personalSection);
+  
 
 
   const [pendingContent, setPendingContent] = useState(mockPendingContent);
@@ -132,10 +131,7 @@ const StaffDashboard: React.FC = () => {
     (item) => item.status === "pending"
   ).length;
 
-  //use effect to fetch the Topics 
-  useEffect(() => {
-    dispatch(fetchTopics());
-  }, [dispatch]);
+
 
   // Quick stats data
   const quickStats = [
@@ -457,7 +453,7 @@ const StaffDashboard: React.FC = () => {
                           <p className="text-sm text-muted-foreground">
                             {student.grade} • Age {student.age}
                           </p>
-                          {/* <p className="text-sm text-muted-foreground">Parent: {student.parent_id}</p> */}
+                         
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -542,10 +538,7 @@ const StaffDashboard: React.FC = () => {
                               ))}
                             </div>
                             </div>
-                            {/* <DialogFooter>
-                              <Button variant="outline" className="cursor-pointer">Cancel</Button>
-                              <Button className="cursor-pointer">Save Changes</Button>
-                            </DialogFooter> */}
+                            
                           </DialogContent>
                         </Dialog>
                       </div>

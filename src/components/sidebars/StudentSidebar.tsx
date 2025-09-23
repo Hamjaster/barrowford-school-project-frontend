@@ -13,6 +13,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/slices/authSlice";
 import { Button } from "@/components/ui/button";
 import LearningDropdown from "@/components/LearningDropdown";
+import ImagesDropdown from "@/components/ImagesDropdown";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -103,8 +104,12 @@ const StudentSidebar: React.FC = () => {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
+                  {/* I also want to show a dropdown on My Images page */}
+
                   {item.label === "My Learning" ? (
                     <LearningDropdown className="w-full" />
+                  ) : item.label === "My Images" ? (
+                    <ImagesDropdown className="w-full" />
                   ) : (
                     <SidebarMenuButton className="h-16" asChild size="lg">
                       <Link

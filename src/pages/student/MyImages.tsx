@@ -176,11 +176,11 @@ export default function MyImages() {
             <div>
               <Button
                 onClick={triggerFileInput}
-                disabled={isSubmitting}
+                loading={isSubmitting}
                 className="bg-white text-orange-500 hover:bg-orange-50 font-semibold shadow-lg cursor-pointer"
               >
-                {isSubmitting ? <></> : <Upload className="w-4 h-4 mr-2" />}
-                {isSubmitting ? "Uploading..." : "Upload Images"}
+                <Upload className="w-4 h-4 mr-2" />
+                Upload Images
               </Button>
             </div>
           </div>
@@ -226,9 +226,9 @@ export default function MyImages() {
             <Button
               onClick={triggerFileInput}
               className="bg-orange-500 hover:bg-orange-600"
-              disabled={isSubmitting}
+              loading={isSubmitting}
             >
-              {isSubmitting ? "Uploading..." : "Upload Images"}
+              Upload Images
             </Button>
           </div>
         ) : (
@@ -301,14 +301,10 @@ export default function MyImages() {
                       variant="outline"
                       size="sm"
                       onClick={() => handleDelete(selectedImage.id)}
-                      disabled={isDeleting}
+                      loading={isDeleting}
                       className="text-red-500 flex justify-center items-center hover:text-red-700 border-red-200 hover:border-red-300"
                     >
-                      {isDeleting ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
+                      <Trash2 className="w-4 h-4" />
                       Delete
                     </Button>
                   </div>

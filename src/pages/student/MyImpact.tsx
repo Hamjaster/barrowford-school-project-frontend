@@ -93,10 +93,10 @@ export default function MyImpact() {
           <h1 className="text-3xl font-bold">My Impact</h1>
           <Button
             onClick={handleSave}
-            disabled={isSubmitting}
+            loading={isSubmitting}
             className="bg-white text-cyan-500 hover:bg-gray-100"
           >
-            {isSubmitting ? "Saving..." : "Save Impact"}
+            Save Impact
           </Button>
         </div>
       </div>

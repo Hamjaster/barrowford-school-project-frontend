@@ -4,7 +4,8 @@ import userManagementReducer from './slices/userManagementSlice';
 import reflectionReducer from './slices/reflectionSlice'
 import yearDataReducer from './slices/yearDataSlice';
 import studentReducer from './slices/studentSlice';
-import personalSectionReducer from './slices/personalSectionSlice'
+import personalSectionReducer from './slices/personalSectionSlice';
+import parentReducer from './slices/parentSlice';
 
 export const store = configureStore({
   reducer: {
@@ -13,7 +14,8 @@ export const store = configureStore({
     reflection: reflectionReducer,
     yearData: yearDataReducer,
     student: studentReducer,
-    personalSection : personalSectionReducer
+    personalSection: personalSectionReducer,
+    parent: parentReducer,
   },
 });
 

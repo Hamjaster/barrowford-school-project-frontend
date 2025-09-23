@@ -85,14 +85,11 @@ const ForgotPasswordForm: React.FC = () => {
           )}
           <Button
             onClick={handleSubmit}
-            disabled={isLoadingForgotPassword || isOnCooldown}
+            disabled={isOnCooldown}
+            loading={isLoadingForgotPassword}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoadingForgotPassword
-              ? "Sending Instructions..."
-              : isOnCooldown
-              ? `Request Password Reset`
-              : "Request Password Reset"}
+            {isOnCooldown ? `Request Password Reset` : "Request Password Reset"}
           </Button>
         </div>
       ) : (
@@ -132,12 +129,11 @@ const ForgotPasswordForm: React.FC = () => {
             <div className="pt-4">
               <Button
                 type="submit"
-                disabled={isLoadingForgotPassword || isOnCooldown}
+                disabled={isOnCooldown}
+                loading={isLoadingForgotPassword}
                 className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {isLoadingForgotPassword
-                  ? "Sending Instructions..."
-                  : isOnCooldown
+                {isOnCooldown
                   ? `Wait ${cooldownTime}s to request again`
                   : "Request Password Reset"}
               </Button>

@@ -7,18 +7,15 @@
  * 5. Update TypeScript types to include these tabs in activeTab state
  */
 
-import React, { useState,useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Users,
-  UserPlus,
   BookOpen,
-  Calendar,
   GraduationCap,
   Clock,
   MessageSquare,
   ImageIcon,
   Plus,
-  Trash2,
   CheckCircle,
   XCircle,
 } from "lucide-react";
@@ -27,11 +24,9 @@ import CreateUserForm from "../components/forms/CreateUserForm";
 // import ResetPasswordForm from "../components/forms/ResetPasswordForm";
 import ForgotPasswordForm from "../components/forms/ForgotPasswordForm";
 import {
-  DEFAULT_AVATAR_URL,
   mockChildren,
   mockPendingContent,
   mockReflectionTopics,
-  ROLEWISE_INFORMATION,
 } from "@/constants";
 import { getTabDisplayName } from "@/lib/utils";
 import type { UserRole } from "@/types";
@@ -50,7 +45,6 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -60,12 +54,11 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit3 } from "lucide-react";
 import ReflectionTopicsManagement from "@/components/ReflectionTopicsManagement";
+import PersonalSectionTopicsManagement from "@/components/PersonalSectionTopicsManagement";
 
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTopics, createTopic, updateTopic, deleteTopic } from "@/store/slices/personalSectionSlice";
+import { fetchTopics, createTopic } from "@/store/slices/personalSectionSlice";
 import type { RootState, AppDispatch } from "../store";
-
-
 
 const mockStudents = [
   {
@@ -115,23 +108,18 @@ const StaffDashboard: React.FC = () => {
   );
   const [activeTab, setActiveTab] = useState("students");
 
-  // this  state will maintain the persoal section topic 
-  const [createTitleModel,setCreateTitleModel] = useState(false)
-  const [selectedCard , setSelectedCard] = useState<number | null>(null)
-  const [newTitle,setNewTitle] = useState<string>("")
+  // this  state will maintain the persoal section topic
+  const [createTitleModel, setCreateTitleModel] = useState(false);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
+  const [newTitle, setNewTitle] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
-  
-
 
   const [pendingContent, setPendingContent] = useState(mockPendingContent);
-  const [reflectionTopics, setReflectionTopics] =
-    useState(mockReflectionTopics);
+  const [reflectionTopics] = useState(mockReflectionTopics);
 
   const pendingCount = pendingContent.filter(
     (item) => item.status === "pending"
   ).length;
-
-
 
   // Quick stats data
   const quickStats = [
@@ -169,14 +157,14 @@ const StaffDashboard: React.FC = () => {
     },
   ];
 
-  const createNewtitle = async ()=>{
-   if (newTitle.trim() === "") return;
+  const createNewtitle = async () => {
+    if (newTitle.trim() === "") return;
     dispatch(createTopic({ title: newTitle }));
     setNewTitle(""); // clear input
-  }
+  };
   const handleContentModeration = (contentId: number, action: string) => {
-    setPendingContent((prev) =>
-      prev.map((item) =>
+    setPendingContent((prev: any[]) =>
+      prev.map((item: any) =>
         item.id === contentId
           ? { ...item, status: action === "approve" ? "approved" : "rejected" }
           : item
@@ -190,6 +178,7 @@ const StaffDashboard: React.FC = () => {
     "students",
     "content-review",
     "reflection-topics",
+    "personal-section-topics",
     "account-management",
     "create-user",
   ];
@@ -220,6 +209,8 @@ const StaffDashboard: React.FC = () => {
         );
       case "reflection-topics":
         return <ReflectionTopicsManagement />;
+      case "personal-section-topics":
+        return <PersonalSectionTopicsManagement />;
       case "content-review":
         return (
           <div>
@@ -229,10 +220,8 @@ const StaffDashboard: React.FC = () => {
                 <CardDescription>
                   Review and approve student submissions
                 </CardDescription>
-                  {/* Add Topic Button */}
-                <button
-                  className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition"
-                >
+                {/* Add Topic Button */}
+                <button className="flex items-center gap-1 px-3 py-1 text-sm font-medium text-white bg-blue-600 rounded hover:bg-blue-700 transition">
                   <Plus size={16} /> Add Topic
                 </button>
               </CardHeader>
@@ -453,7 +442,6 @@ const StaffDashboard: React.FC = () => {
                           <p className="text-sm text-muted-foreground">
                             {student.grade} • Age {student.age}
                           </p>
-                         
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
@@ -462,7 +450,11 @@ const StaffDashboard: React.FC = () => {
                         </Badge>
                         <Dialog>
                           <DialogTrigger asChild>
-                            <Button variant="outline" size="sm" className="cursor-pointer">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="cursor-pointer"
+                            >
                               <Edit3 className="h-4 w-4 mr-2" />
                               Edit Sections
                             </Button>
@@ -470,75 +462,91 @@ const StaffDashboard: React.FC = () => {
                           <DialogContent className="max-w-2xl">
                             <DialogHeader className="flex items-center justify-between">
                               <div>
-                              <DialogTitle>
-                                Edit Personal Sections - {student.firstName}{" "}
-                                {student.lastName}
-                              </DialogTitle>
-                              <DialogDescription>
-                                Manage the student's personal sections and
-                                content
-                              </DialogDescription>
+                                <DialogTitle>
+                                  Edit Personal Sections - {student.firstName}{" "}
+                                  {student.lastName}
+                                </DialogTitle>
+                                <DialogDescription>
+                                  Manage the student's personal sections and
+                                  content
+                                </DialogDescription>
                               </div>
-                                {/* Add button */}
-                                <Button 
-                                  variant="default"
-                                  className="cursor-pointer" 
-                                  onClick={()=>setCreateTitleModel(true)}
-                                >
-                                  + Add New Topic
-                                </Button>
+                              {/* Add button */}
+                              <Button
+                                variant="default"
+                                className="cursor-pointer"
+                                onClick={() => setCreateTitleModel(true)}
+                              >
+                                + Add New Topic
+                              </Button>
                             </DialogHeader>
                             <div className="space-y-4 max-h-96 overflow-y-auto">
-                            {createTitleModel && (
-                              <div className="p-4 border rounded-lg space-y-2">
+                              {createTitleModel && (
+                                <div className="p-4 border rounded-lg space-y-2">
                                   <Label>New Topic Title</Label>
-                                  <Input 
-                                  placeholder="Topic Title"
-                                  value={newTitle}
-                                  onChange={(e)=>setNewTitle(e.target.value)}
+                                  <Input
+                                    placeholder="Topic Title"
+                                    value={newTitle}
+                                    onChange={(e) =>
+                                      setNewTitle(e.target.value)
+                                    }
                                   />
                                   <div className="p-1 flex justify-end gap-2">
-                                  <Button variant="outline" className="cursor-pointer" onClick={()=>setCreateTitleModel(false)}>Cancel</Button>
-                                  <Button className="cursor-pointer" onClick={createNewtitle}>Create Topic</Button>
+                                    <Button
+                                      variant="outline"
+                                      className="cursor-pointer"
+                                      onClick={() => setCreateTitleModel(false)}
+                                    >
+                                      Cancel
+                                    </Button>
+                                    <Button
+                                      className="cursor-pointer"
+                                      onClick={createNewtitle}
+                                    >
+                                      Create Topic
+                                    </Button>
                                   </div>
-                                  
-                              </div>
-                            )}
-                            <div >
-                              {student.personalSections.map((section) => (
-                                <div
-                                onClick={()=>setSelectedCard(section.id)}
-                                  key={section.id}
-                                  className="p-4 border rounded-lg space-y-2"
-                                >
-                                  <Label htmlFor={`topic-${section.id}`}>
-                                    Topic
-                                  </Label>
-                                  <Input
-                                    id={`topic-${section.id}`}
-                                    defaultValue={section.topic}
-                                  />
-                                  <Label htmlFor={`desc-${section.id}`}>
-                                    Description
-                                  </Label>
-                                  <Textarea
-                                    id={`desc-${section.id}`}
-                                    defaultValue={section.description}
-                                    rows={3}
-                                  />
-                                  {selectedCard == section.id  && (
-                                     <div className="p-1 flex justify-end gap-2">
-
-                                    <Button className="cursor-pointer">Save Changes</Button>
-                                    <Button variant="destructive"  className="cursor-pointer">Delete Topic</Button>
-                                    </div>
-                                  )}
-                                 
                                 </div>
-                              ))}
+                              )}
+                              <div>
+                                {student.personalSections.map((section) => (
+                                  <div
+                                    onClick={() => setSelectedCard(section.id)}
+                                    key={section.id}
+                                    className="p-4 border rounded-lg space-y-2"
+                                  >
+                                    <Label htmlFor={`topic-${section.id}`}>
+                                      Topic
+                                    </Label>
+                                    <Input
+                                      id={`topic-${section.id}`}
+                                      defaultValue={section.topic}
+                                    />
+                                    <Label htmlFor={`desc-${section.id}`}>
+                                      Description
+                                    </Label>
+                                    <Textarea
+                                      id={`desc-${section.id}`}
+                                      defaultValue={section.description}
+                                      rows={3}
+                                    />
+                                    {selectedCard == section.id && (
+                                      <div className="p-1 flex justify-end gap-2">
+                                        <Button className="cursor-pointer">
+                                          Save Changes
+                                        </Button>
+                                        <Button
+                                          variant="destructive"
+                                          className="cursor-pointer"
+                                        >
+                                          Delete Topic
+                                        </Button>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
                             </div>
-                            </div>
-                            
                           </DialogContent>
                         </Dialog>
                       </div>

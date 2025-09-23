@@ -27,7 +27,7 @@ interface DataTableProps<T> {
 }
 
 export function DataTable<T extends Record<string, any>>({
-  data,
+  data ,
   columns,
   showPagination = true,
   itemsPerPage = 10,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   ArrowLeft,
   BookOpen,
@@ -24,6 +24,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { useNavigate, useParams } from "react-router-dom";
 import { mockChildren } from "@/constants";
+ import { useDispatch, useSelector } from "react-redux";
+ import type { RootState, AppDispatch } from "@/store";
+import { fetchComments,fetchReflectionsByStudentId } from "@/store/slices/reflectionSlice";
 
 const tabs = [
   { id: "learning", label: "Learning", icon: BookOpen },
@@ -46,26 +49,38 @@ export default function ChildDetailsPage() {
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("learning");
 
-  const [comments, setComments] = useState<Comment[]>([
-    {
-      id: 1,
-      reflectionId: 1,
-      author: "Sarah Johnson (Parent)",
-      content:
-        "I'm so proud of how you approached this challenge! Your understanding of fractions has really improved. Keep up the great work!",
-      date: "2024-01-22T14:30:00Z",
-      avatar: "/loving-parent.png",
-    },
-    {
-      id: 2,
-      reflectionId: 2,
-      author: "Angela Jolie (Teacher)",
-      content:
-        "What an exciting experiment! I love how curious you are about science.",
-      date: "2024-01-21T16:45:00Z",
-      avatar: "/loving-parent.png",
-    },
-  ]);
+  //for api 
+ 
+        //dispatch
+      const dispatch = useDispatch<AppDispatch>();
+      const { reflections,comments, error, topics } = useSelector(
+        (state: RootState) => state.reflection
+      );
+
+      useEffect(()=>{
+        dispatch(fetchReflectionsByStudentId('10'))
+        dispatch(fetchComments('6'))
+      },[dispatch])
+  // const [comments, setComments] = useState<Comment[]>([
+  //   {
+  //     id: 1,
+  //     reflectionId: 1,
+  //     author: "Sarah Johnson (Parent)",
+  //     content:
+  //       "I'm so proud of how you approached this challenge! Your understanding of fractions has really improved. Keep up the great work!",
+  //     date: "2024-01-22T14:30:00Z",
+  //     avatar: "/loving-parent.png",
+  //   },
+  //   {
+  //     id: 2,
+  //     reflectionId: 2,
+  //     author: "Angela Jolie (Teacher)",
+  //     content:
+  //       "What an exciting experiment! I love how curious you are about science.",
+  //     date: "2024-01-21T16:45:00Z",
+  //     avatar: "/loving-parent.png",
+  //   },
+  // ]);
 
   const [newComments, setNewComments] = useState<{ [key: number]: string }>({});
   const [showCommentInput, setShowCommentInput] = useState<{
@@ -90,6 +105,7 @@ export default function ChildDetailsPage() {
       </div>
     );
   }
+
 
   const handleAddComment = (reflectionId: number) => {
     const commentText = newComments[reflectionId]?.trim();
@@ -181,9 +197,9 @@ export default function ChildDetailsPage() {
             </div>
 
             <div className="grid gap-6">
-              {mockReflections.map((reflection) => {
+              {reflections.map((reflection) => {
                 const reflectionComments = comments.filter(
-                  (c) => c.reflectionId === reflection.id
+                  (c) => c.reflection_id === reflection.id
                 );
 
                 return (
@@ -196,18 +212,18 @@ export default function ChildDetailsPage() {
                         <div className="flex items-center gap-3">
                           <div>
                             <h4 className="font-semibold text-gray-800 text-base">
-                              {reflection.topic}
+                              {reflection.reflectiontopics.title}
                             </h4>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge
                                 variant="secondary"
                                 className="text-xs bg-gray-100"
                               >
-                                {reflection.week}
+                                {reflection.week ?? "weeek 1"}
                               </Badge>
                               <span className="text-xs text-gray-500 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {new Date(reflection.date).toLocaleDateString(
+                                {new Date(reflection.created_at).toLocaleDateString(
                                   "en-US",
                                   {
                                     weekday: "long",
@@ -224,7 +240,7 @@ export default function ChildDetailsPage() {
 
                       <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
                         <p className="text-sm text-gray-700 leading-relaxed">
-                          {reflection.reflection}
+                          {reflection.content}
                         </p>
                       </div>
 
@@ -235,13 +251,13 @@ export default function ChildDetailsPage() {
                             Comments ({reflectionComments.length})
                           </div>
 
-                          {reflectionComments.map((comment) => (
+                          {comments.map((comment) => (
                             <div
                               key={comment.id}
                               className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-200"
                             >
                               <div className="flex items-start gap-3">
-                                <Avatar className="w-8 h-8">
+                                {/* <Avatar className="w-8 h-8">
                                   <AvatarImage
                                     src={comment.avatar || "/placeholder.svg"}
                                     alt={comment.author}
@@ -249,15 +265,15 @@ export default function ChildDetailsPage() {
                                   <AvatarFallback className="text-xs">
                                     <User className="w-4 h-4" />
                                   </AvatarFallback>
-                                </Avatar>
+                                </Avatar> */}
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="text-sm font-medium text-gray-800">
-                                      {comment.author}
+                                      {comment.user_role}
                                     </span>
                                     <span className="text-xs text-gray-500">
                                       {new Date(
-                                        comment.date
+                                        comment.created_at
                                       ).toLocaleDateString("en-US", {
                                         month: "short",
                                         day: "numeric",
@@ -267,7 +283,7 @@ export default function ChildDetailsPage() {
                                     </span>
                                   </div>
                                   <p className="text-sm text-gray-700 leading-relaxed">
-                                    {comment.content}
+                                    {comment.comment}
                                   </p>
                                 </div>
                               </div>

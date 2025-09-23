@@ -121,7 +121,7 @@ const StaffDashboard: React.FC = () => {
   const [newTitle,setNewTitle] = useState<string>("")
   const dispatch = useDispatch<AppDispatch>();
     // Grab state from Redux
-  const { topics, loading, error } = useSelector((state:RootState) => state.personalSection);
+  // const  {, loading, error } = useSelector((state:RootState) => state.personalSection);
 
 
   const [pendingContent, setPendingContent] = useState(mockPendingContent);
@@ -133,9 +133,9 @@ const StaffDashboard: React.FC = () => {
   ).length;
 
   //use effect to fetch the Topics 
-  useEffect(() => {
-    dispatch(fetchTopics());
-  }, [dispatch]);
+  // useEffect(() => {
+  //   dispatch(fetchTopics());
+  // }, [dispatch]);
 
   // Quick stats data
   const quickStats = [

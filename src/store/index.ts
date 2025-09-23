@@ -2,12 +2,14 @@ import { configureStore } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import userManagementReducer from './slices/userManagementSlice';
 import studentReducer from './slices/personalSectionSlice'
+import reflectionReducer from './slices/reflectionSlice'
 
 export const store = configureStore({
   reducer: {
     auth: authReducer,
     userManagement: userManagementReducer,
-    personalSection : studentReducer
+    personalSection : studentReducer,
+    reflection: reflectionReducer,
   },
 });
 

@@ -61,26 +61,6 @@ export default function ChildDetailsPage() {
         dispatch(fetchReflectionsByStudentId('10'))
         dispatch(fetchComments('6'))
       },[dispatch])
-  // const [comments, setComments] = useState<Comment[]>([
-  //   {
-  //     id: 1,
-  //     reflectionId: 1,
-  //     author: "Sarah Johnson (Parent)",
-  //     content:
-  //       "I'm so proud of how you approached this challenge! Your understanding of fractions has really improved. Keep up the great work!",
-  //     date: "2024-01-22T14:30:00Z",
-  //     avatar: "/loving-parent.png",
-  //   },
-  //   {
-  //     id: 2,
-  //     reflectionId: 2,
-  //     author: "Angela Jolie (Teacher)",
-  //     content:
-  //       "What an exciting experiment! I love how curious you are about science.",
-  //     date: "2024-01-21T16:45:00Z",
-  //     avatar: "/loving-parent.png",
-  //   },
-  // ]);
 
   const [newComments, setNewComments] = useState<{ [key: number]: string }>({});
   const [showCommentInput, setShowCommentInput] = useState<{

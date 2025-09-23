@@ -76,12 +76,6 @@ export default function ReflectionTopicsManagement() {
 
   const handleCreateTopic = () => {
     if (newTopicTitle.trim()) {
-      // const newTopic = {
-      //   id: Math.max(...reflectionTopics.map((t) => t.id)) + 1,
-      //   title: newTopicTitle.trim(),
-      //   description: newTopicDescription.trim(),
-      // };
-      // setReflectionTopics((prev) => [...prev, newTopic]);
        dispatch(createTopic( {title : newTopicTitle }));
 
       setNewTopicTitle("");
@@ -108,10 +102,6 @@ export default function ReflectionTopicsManagement() {
     
   };
 
-  // const handleDeleteTopic = (topicId: string) => {
-  //   // setReflectionTopics((prev) => prev.filter((topic) => topic.id !== topicId));
-  //   dispatch(deleteReflection(topicId as string))
-  // };
   const handleDeleteClick = (reflectionId: string) => {
   setReflectionToDelete(reflectionId);
   setDeleteDialogOpen(true);

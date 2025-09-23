@@ -10,12 +10,15 @@
 import React, { useState, useEffect } from "react";
 import {
   Users,
+  UserPlus,
   BookOpen,
+  Calendar,
   GraduationCap,
   Clock,
   MessageSquare,
   ImageIcon,
   Plus,
+  Trash2,
   CheckCircle,
   XCircle,
 } from "lucide-react";
@@ -24,9 +27,11 @@ import CreateUserForm from "../components/forms/CreateUserForm";
 // import ResetPasswordForm from "../components/forms/ResetPasswordForm";
 import ForgotPasswordForm from "../components/forms/ForgotPasswordForm";
 import {
+  DEFAULT_AVATAR_URL,
   mockChildren,
   mockPendingContent,
   mockReflectionTopics,
+  ROLEWISE_INFORMATION,
 } from "@/constants";
 import { getTabDisplayName } from "@/lib/utils";
 import type { UserRole } from "@/types";
@@ -45,6 +50,7 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
@@ -54,11 +60,16 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit3 } from "lucide-react";
 import ReflectionTopicsManagement from "@/components/ReflectionTopicsManagement";
-import PersonalSectionTopicsManagement from "@/components/PersonalSectionTopicsManagement";
 
 import { useDispatch, useSelector } from "react-redux";
-import { fetchTopics, createTopic } from "@/store/slices/personalSectionSlice";
+import {
+  fetchTopics,
+  createTopic,
+  updateTopic,
+  deleteTopic,
+} from "@/store/slices/personalSectionSlice";
 import type { RootState, AppDispatch } from "../store";
+import PersonalSectionTopicsManagement from "@/components/PersonalSectionTopicsManagement";
 
 const mockStudents = [
   {
@@ -115,7 +126,8 @@ const StaffDashboard: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
 
   const [pendingContent, setPendingContent] = useState(mockPendingContent);
-  const [reflectionTopics] = useState(mockReflectionTopics);
+  const [reflectionTopics, setReflectionTopics] =
+    useState(mockReflectionTopics);
 
   const pendingCount = pendingContent.filter(
     (item) => item.status === "pending"
@@ -163,8 +175,8 @@ const StaffDashboard: React.FC = () => {
     setNewTitle(""); // clear input
   };
   const handleContentModeration = (contentId: number, action: string) => {
-    setPendingContent((prev: any[]) =>
-      prev.map((item: any) =>
+    setPendingContent((prev) =>
+      prev.map((item) =>
         item.id === contentId
           ? { ...item, status: action === "approve" ? "approved" : "rejected" }
           : item
@@ -178,16 +190,17 @@ const StaffDashboard: React.FC = () => {
     "students",
     "content-review",
     "reflection-topics",
-    "personal-section-topics",
     "account-management",
     "create-user",
+    "personal-section-topics",
   ];
 
   const renderTabContent = () => {
     switch (activeTab) {
       case "create-user":
         return <CreateUserForm allowedRoles={allowedCreatableRoles} />;
-
+      case "personal-section-topics":
+        return <PersonalSectionTopicsManagement />;
       case "account-management":
         return (
           <div className="space-y-6">
@@ -209,8 +222,6 @@ const StaffDashboard: React.FC = () => {
         );
       case "reflection-topics":
         return <ReflectionTopicsManagement />;
-      case "personal-section-topics":
-        return <PersonalSectionTopicsManagement />;
       case "content-review":
         return (
           <div>

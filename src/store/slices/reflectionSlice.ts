@@ -50,8 +50,8 @@ export const createTopic = createAsyncThunk<
         const errorData = await response.json();
         return rejectWithValue(errorData.error || "Failed to create topic");
       }
-
-      return (await response.json()) as ReflectionTopic;
+      let  data =  await response.json()
+      return  data.data as ReflectionTopic;
     } catch (error: any) {
       return rejectWithValue(error.message || "Network error");
     }

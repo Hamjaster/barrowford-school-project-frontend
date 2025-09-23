@@ -183,6 +183,25 @@ const formatDate = (timestamp: string) => {
     year: "numeric",
   });
 };
+// utils/fileUtils.ts
+const   parseAttachmentUrl = (url: string)=> {
+  if (!url) return { cleanedName: "Unknown file", extension: "file" };
+
+  // Extract raw file name
+  const parts = url.split("/");
+  const rawFileName = parts[parts.length - 1];
+
+  // Decode URI (%20 -> space, %27 -> ')
+  let cleanedName = decodeURIComponent(rawFileName);
+
+  // Remove Cloudinary’s random suffix (e.g. --aaee before .pdf)
+  cleanedName = cleanedName.replace(/--[a-z0-9]+(?=\.)/, "");
+
+  // Get extension
+  const extension = cleanedName.split(".").pop() || "file";
+
+  return { cleanedName, extension };
+}
 
 
   const applyFiltersAfterChange = (
@@ -653,33 +672,21 @@ const handleSubmitReflection = async () => {
       rel="noopener noreferrer"
       className="p-2 flex items-center gap-3 border rounded-lg hover:bg-gray-50 transition-colors"
     >
-      {(() => {
-        const url = selectedReflection.attachment_url;
+      {selectedReflection?.attachment_url && (
+  (() => {
+    const { cleanedName, extension } = parseAttachmentUrl(selectedReflection.attachment_url);
 
-        // Extract raw file name
-        const parts = url.split("/");
-        const rawFileName = parts[parts.length - 1];
+    return (
+      <>
+        {getAttachmentIcon(extension)}
+        <div className="flex-1">
+          <p className="p-2 font-medium text-sm truncate">{cleanedName}</p>
+        </div>
+      </>
+    );
+  })()
+)}
 
-        // Decode URI (%20 -> space, %27 -> ')
-        let cleanedName = decodeURIComponent(rawFileName);
-
-        // Remove Cloudinary’s random suffix (e.g. --aaee before .pdf)
-        cleanedName = cleanedName.replace(/--[a-z0-9]+(?=\.)/, "");
-
-        // Get extension
-        const extension = cleanedName.split(".").pop() || "file";
-
-        return (
-          <>
-            {getAttachmentIcon(extension)}
-            <div className="flex-1">
-              <p className="p-2 font-medium text-sm truncate">
-                {cleanedName}
-              </p>
-            </div>
-          </>
-        );
-      })()}
     </a>
   </div>
 )}

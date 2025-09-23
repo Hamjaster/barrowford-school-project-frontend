@@ -181,8 +181,19 @@ export interface Child {
 export interface Topic {
   id: number; // assuming backend returns id
   title: string;
+  description?: string;
   created_at : string;
   status: string;
+}
+
+// Define PersonalSection type
+export interface PersonalSection {
+  id: number;
+  topic_id: number;
+  student_id: string;
+  content: string;
+  created_at: string;
+  updated_at: string;
 }
 
 // Define state type

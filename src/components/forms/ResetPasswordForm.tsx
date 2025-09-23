@@ -160,10 +160,10 @@ const ResetPasswordForm: React.FC = () => {
         <div className="pt-4">
           <Button
             type="submit"
-            disabled={isLoading}
+            loading={isLoading}
             className="w-full bg-orange-600 hover:bg-orange-700 text-white"
           >
-            {isLoading ? "Resetting Password..." : "Reset Password"}
+            Reset Password
           </Button>
         </div>
       </form>

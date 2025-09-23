@@ -1,36 +1,38 @@
-import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import React, { useEffect } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import {
-  User,
   Calendar,
-  MessageSquare,
-  Camera,
   Heart,
   ArrowLeft,
-  BookOpen,
   Users,
   CheckCircle,
   GraduationCap,
-  Activity,
+  Loader2,
 } from "lucide-react";
-import type { RootState } from "../store";
-import {
-  ROLEWISE_INFORMATION,
-  DEFAULT_AVATAR_URL,
-  mockChildren,
-} from "@/constants";
-import { getTabDisplayName } from "@/lib/utils";
-import type { Child } from "../types";
+import type { RootState, AppDispatch } from "../store";
+import { DEFAULT_AVATAR_URL } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { fetchMyChildren } from "../store/slices/parentSlice";
+import type { ParentChild } from "../store/slices/parentSlice";
 
 const ParentDashboard: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
+  const { children, isLoadingChildren, error } = useSelector(
+    (state: RootState) => state.parent
+  );
+  const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
-  const renderChildCard = (child: Child) => (
+  useEffect(() => {
+    if (isAuthenticated && user?.role === "parent") {
+      dispatch(fetchMyChildren());
+    }
+  }, [isAuthenticated, user?.role, dispatch]);
+
+  const renderChildCard = (child: ParentChild) => (
     <div
       key={child.id}
       onClick={() => navigate(`/child-details/${child.id}`)}
@@ -39,7 +41,7 @@ const ParentDashboard: React.FC = () => {
       <div className="flex items-center space-x-4">
         <div className="relative">
           <img
-            src={child.avatar}
+            src={DEFAULT_AVATAR_URL}
             alt={`${child.first_name} ${child.last_name}`}
             className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
           />
@@ -54,16 +56,20 @@ const ParentDashboard: React.FC = () => {
           <div className="flex items-center space-x-4 mt-1">
             <div className="flex items-center text-gray-600">
               <GraduationCap className="w-4 h-4 mr-1" />
-              <span className="text-sm">{child.grade}</span>
+              <span className="text-sm">
+                Year {child.year_group_id || "N/A"}
+              </span>
             </div>
             <div className="flex items-center text-gray-600">
               <Users className="w-4 h-4 mr-1" />
-              <span className="text-sm">Class {child.class}</span>
+              <span className="text-sm">Class {child.class_id || "N/A"}</span>
             </div>
           </div>
           <div className="flex items-center text-gray-500 mt-1">
             <Calendar className="w-4 h-4 mr-1" />
-            <span className="text-xs">Age {child.age}</span>
+            <span className="text-xs">
+              Joined {new Date(child.created_at).toLocaleDateString()}
+            </span>
           </div>
         </div>
         <div className="text-blue-500 group-hover:text-blue-600 transition-colors">
@@ -101,9 +107,33 @@ const ParentDashboard: React.FC = () => {
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-gray-800">My Children</h2>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {mockChildren.map(renderChildCard)}
-          </div>
+          {isLoadingChildren ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+              <span className="ml-2 text-gray-600">Loading children...</span>
+            </div>
+          ) : error ? (
+            <div className="text-center py-8">
+              <p className="text-red-600 mb-4">{error}</p>
+              <Button onClick={() => dispatch(fetchMyChildren())}>
+                Try Again
+              </Button>
+            </div>
+          ) : children.length === 0 ? (
+            <div className="text-center py-8">
+              <Users className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-600 mb-2">
+                No Children Found
+              </h3>
+              <p className="text-sm text-gray-500">
+                No children are currently associated with your account.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {children.map(renderChildCard)}
+            </div>
+          )}
         </div>
 
         {/* Quick Stats */}
@@ -115,7 +145,7 @@ const ParentDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-blue-800 font-semibold text-lg">
-                  {mockChildren.length}
+                  {children.length}
                 </p>
                 <p className="text-blue-600 text-sm">Children Enrolled</p>
               </div>
@@ -129,7 +159,11 @@ const ParentDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-green-800 font-semibold text-lg">
-                  {mockChildren.filter((child) => child.is_active).length}
+                  {
+                    children.filter(
+                      (child) => !child.status || child.status === "active"
+                    ).length
+                  }
                 </p>
                 <p className="text-green-600 text-sm">Active Students</p>
               </div>
@@ -143,9 +177,9 @@ const ParentDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-purple-800 font-semibold text-lg">
-                  {new Set(mockChildren.map((child) => child.grade)).size}
+                  {new Set(children.map((child) => child.year_group_id)).size}
                 </p>
-                <p className="text-purple-600 text-sm">Different Grades</p>
+                <p className="text-purple-600 text-sm">Different Year Groups</p>
               </div>
             </div>
           </div>

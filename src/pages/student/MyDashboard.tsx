@@ -1,4 +1,3 @@
-import type React from "react";
 import { useState, useEffect } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -8,6 +7,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Heart,
   Lightbulb,
@@ -17,126 +18,164 @@ import {
   Zap,
   GraduationCap,
   Shield,
+  Edit3,
+  Save,
+  Loader2,
 } from "lucide-react";
 import Footer from "@/components/footer";
 //import for personal section
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchTopics,
-  createTopic,
-  updateTopic,
-  deleteTopic,
+  getPersonalSectionByTopic,
+  createPersonalSection,
+  updatePersonalSection,
 } from "@/store/slices/personalSectionSlice";
 import type { RootState, AppDispatch } from "../../store";
+import type { Topic, PersonalSection } from "@/types";
 import supabase from "@/lib/supabse";
+import { toast } from "sonner";
 
-interface CardData {
-  id: string;
-  title: string;
-  icon: React.ReactNode;
-  color: string;
-  iconColor: string;
-  description: string;
-}
+// Icon mapping for different topics
+const getTopicIcon = (title: string) => {
+  const lowerTitle = title.toLowerCase();
+  if (lowerTitle.includes("love") || lowerTitle.includes("me"))
+    return <Heart className="w-6 h-6" />;
+  if (lowerTitle.includes("read") || lowerTitle.includes("book"))
+    return <BookOpen className="w-6 h-6" />;
+  if (lowerTitle.includes("ambition") || lowerTitle.includes("dream"))
+    return <Lightbulb className="w-6 h-6" />;
+  if (lowerTitle.includes("step") || lowerTitle.includes("next"))
+    return <ArrowRight className="w-6 h-6" />;
+  if (lowerTitle.includes("teacher") || lowerTitle.includes("adult"))
+    return <Users className="w-6 h-6" />;
+  if (lowerTitle.includes("strength") || lowerTitle.includes("good"))
+    return <Zap className="w-6 h-6" />;
+  if (lowerTitle.includes("school") || lowerTitle.includes("education"))
+    return <GraduationCap className="w-6 h-6" />;
+  if (lowerTitle.includes("safety") || lowerTitle.includes("people"))
+    return <Shield className="w-6 h-6" />;
+  return <Heart className="w-6 h-6" />; // Default icon
+};
 
-const cardData: CardData[] = [
-  {
-    id: "love-about-me",
-    title: "What I Love About Me",
-    icon: <Heart className="w-6 h-6" />,
-    color: "border-orange-400 bg-orange-100 ",
-    iconColor: "bg-orange-400",
-    description:
-      "I love my creativity and how I can make people laugh. I'm really good at drawing and I always try to help my friends when they need it. I think I'm brave and I'm not afraid to try new things!",
-  },
-  {
-    id: "read-pleasure",
-    title: "What I Read for Pleasure",
-    icon: <BookOpen className="w-6 h-6" />,
-    color: "border-sky-300 bg-sky-100 ",
-    iconColor: "bg-sky-300",
-    description:
-      "I love reading adventure books, especially stories about pirates and treasure hunts. My favorite series is Captain Underpants and I also enjoy comic books about superheroes. I like funny books that make me giggle!",
-  },
-  {
-    id: "read-school",
-    title: "What I Read at School",
-    icon: <BookOpen className="w-6 h-6" />,
-    color: "border-blue-500 bg-blue-100 ",
-    iconColor: "bg-blue-500",
-    description:
-      "At school, I'm reading chapter books about friendship and animals. We're currently reading Charlotte's Web as a class, and I really like learning about different countries in our geography books.",
-  },
-  {
-    id: "ambitions",
-    title: "My Ambitions",
-    icon: <Lightbulb className="w-6 h-6" />,
-    color: "border-pink-500 bg-pink-100 ",
-    iconColor: "bg-pink-500",
-    description:
-      "I want to become a video game designer when I grow up! I love creating stories and characters, and I think it would be amazing to make games that other kids would enjoy playing. I also want to learn how to code.",
-  },
-  {
-    id: "next-steps",
-    title: "My Next Steps",
-    icon: <ArrowRight className="w-6 h-6" />,
-    color: "border-orange-500 bg-orange-100 ",
-    iconColor: "bg-orange-500",
-    description:
-      "I want to get better at math, especially multiplication tables. I'm also working on reading longer books and I want to join the school's art club next term. I'm practicing drawing every day!",
-  },
-  {
-    id: "teachers-know",
-    title: "Things I Want my Teachers to Know About Me",
-    icon: <Users className="w-6 h-6" />,
-    color: "border-green-500 bg-green-100 ",
-    iconColor: "bg-green-500",
-    description:
-      "Sometimes I need extra time to think about my answers, but I always try my best. I learn better when I can move around a bit, and I love working in groups. If I seem quiet, it doesn't mean I don't understand - I'm just thinking!",
-  },
-  {
-    id: "strengths",
-    title: "My Strengths",
-    icon: <Zap className="w-6 h-6" />,
-    color: "border-blue-500 bg-blue-100 ",
-    iconColor: "bg-blue-500",
-    description:
-      "I'm really good at art and being creative. I'm a good friend who listens to others, and I'm great at solving puzzles. I'm also good at making people feel better when they're sad, and I never give up when something is hard.",
-  },
-  {
-    id: "adults-school",
-    title: "My Adults in School",
-    icon: <GraduationCap className="w-6 h-6" />,
-    color: "border-amber-500 bg-amber-100 ",
-    iconColor: "bg-amber-500",
-    description:
-      "My teacher Mrs. Johnson is really kind and helps me when I'm stuck. Mr. Davis the art teacher encourages my drawing, and Mrs. Smith the librarian always finds me the best books. The school counselor Ms. Brown is someone I can talk to about anything.",
-  },
-  {
-    id: "people-safety",
-    title: "My People of Safety",
-    icon: <Shield className="w-6 h-6" />,
-    color: "border-pink-400 bg-pink-100 ",
-    iconColor: "bg-pink-400",
-    description:
-      "My mom and dad always make me feel safe and loved. My grandma gives the best hugs, and my big sister helps me with homework. At school, I feel safe with my teacher and my best friends Emma and Sam always look out for me.",
-  },
-];
+// Color mapping for different topics
+const getTopicColors = (index: number) => {
+  const colors = [
+    { border: "border-orange-400", bg: "bg-orange-100", icon: "bg-orange-400" },
+    { border: "border-sky-300", bg: "bg-sky-100", icon: "bg-sky-300" },
+    { border: "border-blue-500", bg: "bg-blue-100", icon: "bg-blue-500" },
+    { border: "border-pink-500", bg: "bg-pink-100", icon: "bg-pink-500" },
+    { border: "border-green-500", bg: "bg-green-100", icon: "bg-green-500" },
+    { border: "border-amber-500", bg: "bg-amber-100", icon: "bg-amber-500" },
+    { border: "border-purple-500", bg: "bg-purple-100", icon: "bg-purple-500" },
+    { border: "border-red-500", bg: "bg-red-100", icon: "bg-red-500" },
+  ];
+  return colors[index % colors.length];
+};
 
 export default function StudentDashboard() {
-  const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
+  const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
+  const [editingContent, setEditingContent] = useState<string>("");
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+  const [existingPersonalSection, setExistingPersonalSection] =
+    useState<PersonalSection | null>(null);
+
   const dispatch = useDispatch<AppDispatch>();
+
   // Grab state from Redux
-  const { topics, loading, error } = useSelector(
-    (state: RootState) => state.personalSection
-  );
+  const {
+    topics,
+    personalSections,
+    loading,
+    personalSectionLoading,
+    personalSectionSubmitting,
+    error,
+    message,
+  } = useSelector((state: RootState) => state.personalSection);
+
+  // Fetch topics on component mount
   useEffect(() => {
     dispatch(fetchTopics());
   }, [dispatch]);
 
+  // Handle success/error messages
+  useEffect(() => {
+    if (message) {
+      toast.success(message);
+    }
+    if (error) {
+      toast.error(error);
+    }
+  }, [message, error]);
+
+  // Handle topic selection
+  const handleTopicClick = async (topic: Topic) => {
+    setSelectedTopic(topic);
+    setIsEditing(false);
+    setEditingContent("");
+
+    // Check if personal section exists for this topic
+    try {
+      const result = await dispatch(
+        getPersonalSectionByTopic({ topicId: topic.id })
+      ).unwrap();
+      if (result) {
+        setExistingPersonalSection(result);
+        setEditingContent(result.content);
+      } else {
+        setExistingPersonalSection(null);
+        setEditingContent("");
+      }
+    } catch (error) {
+      console.error("Error fetching personal section:", error);
+      setExistingPersonalSection(null);
+      setEditingContent("");
+    }
+  };
+
+  // Handle save content
+  const handleSaveContent = async () => {
+    if (!selectedTopic || !editingContent.trim()) return;
+
+    try {
+      if (existingPersonalSection) {
+        // Update existing personal section
+        await dispatch(
+          updatePersonalSection({
+            id: existingPersonalSection.id,
+            content: editingContent,
+          })
+        ).unwrap();
+      } else {
+        // Create new personal section
+        const result = await dispatch(
+          createPersonalSection({
+            topicId: selectedTopic.id,
+            content: editingContent,
+          })
+        ).unwrap();
+        setExistingPersonalSection(result);
+      }
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Error saving personal section:", error);
+    }
+  };
+
+  // Handle edit mode
+  const handleEdit = () => {
+    setIsEditing(true);
+  };
+
+  // Handle cancel edit
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditingContent(existingPersonalSection?.content || "");
+  };
+
   useEffect(() => {
     async function getUser() {
-      const { data, error } = await supabase.auth.getUser();
+      const { data } = await supabase.auth.getUser();
       console.log(data, "user data");
     }
     getUser();
@@ -206,53 +245,152 @@ export default function StudentDashboard() {
           </div>
         </div>
 
-        {/* Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {cardData.map((card) => (
-            <Card
-              key={card.id}
-              className={`${card.color} font-medium p-6 cursor-pointer hover:shadow-md transition-all duration-300 border shadow-lg min-h-[120px]`}
-              onClick={() => setSelectedCard(card)}
-            >
-              <div className="flex items-center gap-3">
-                <div
-                  className={`${card.iconColor} text-white p-5 rounded-full`}
+        {/* Loading State */}
+        {loading ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-pink-500" />
+              <p className="text-gray-600">Loading topics...</p>
+            </div>
+          </div>
+        ) : error ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Error loading topics: {error}</p>
+              <Button onClick={() => dispatch(fetchTopics())}>Try Again</Button>
+            </div>
+          </div>
+        ) : topics.length === 0 ? (
+          <div className="flex items-center justify-center py-12">
+            <div className="text-center">
+              <p className="text-gray-600">
+                No topics available yet. Check back later!
+              </p>
+            </div>
+          </div>
+        ) : (
+          /* Topics Grid */
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {topics.map((topic, index) => {
+              const colors = getTopicColors(index);
+              const icon = getTopicIcon(topic.title);
+              const hasContent = personalSections.some(
+                (ps) => ps.topic_id === topic.id
+              );
+
+              return (
+                <Card
+                  key={topic.id}
+                  className={`${colors.border} ${colors.bg} font-medium p-6 cursor-pointer hover:shadow-md transition-all duration-300 border shadow-lg min-h-[120px] `}
+                  onClick={() => handleTopicClick(topic)}
                 >
-                  {card.icon}
-                </div>
-                <h3 className="font-semibold text-xl leading-tight">
-                  {card.title}
-                </h3>
-              </div>
-            </Card>
-          ))}
-        </div>
+                  <div className="flex items-center gap-3">
+                    <div
+                      className={`${colors.icon} text-white p-5 rounded-full`}
+                    >
+                      {icon}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-xl leading-tight">
+                        {topic.title}
+                      </h3>
+                      {topic.description && (
+                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                          {topic.description}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {/* Footer */}
       <Footer />
 
-      {/* Modal */}
-      <Dialog open={!!selectedCard} onOpenChange={() => setSelectedCard(null)}>
-        <DialogContent className="max-w-md">
+      {/* Content Editing Modal */}
+      <Dialog
+        open={!!selectedTopic}
+        onOpenChange={() => setSelectedTopic(null)}
+      >
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-3">
-              {selectedCard && (
+              {selectedTopic && (
                 <>
-                  <div
-                    className={`${selectedCard.iconColor} text-white p-4 rounded-full`}
-                  >
-                    {selectedCard.icon}
+                  <div className="bg-pink-500 text-white p-4 rounded-full">
+                    {getTopicIcon(selectedTopic.title)}
                   </div>
-                  {selectedCard.title}
+                  <div>
+                    <h3 className="text-xl font-semibold">
+                      {selectedTopic.title}
+                    </h3>
+                    {selectedTopic.description && (
+                      <p className="text-sm text-gray-600 mt-1">
+                        {selectedTopic.description}
+                      </p>
+                    )}
+                  </div>
                 </>
               )}
             </DialogTitle>
           </DialogHeader>
+
           <div className="py-4">
-            <p className="text-gray-700 leading-relaxed">
-              {selectedCard?.description}
-            </p>
+            {personalSectionLoading ? (
+              <div className="flex items-center  justify-center ">
+                <div>
+                  <Loader2 className="h-5 w-5 mt-3 animate-spin " />
+                </div>
+                <span>Loading content...</span>
+              </div>
+            ) : isEditing ? (
+              <div className="space-y-4">
+                <Textarea
+                  value={editingContent}
+                  onChange={(e) => setEditingContent(e.target.value)}
+                  placeholder="Write your thoughts about this topic..."
+                  className="min-h-[200px] resize-none"
+                />
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" onClick={handleCancelEdit}>
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={handleSaveContent}
+                    loading={personalSectionSubmitting}
+                    disabled={!editingContent.trim()}
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {existingPersonalSection ? "Update" : "Save"}
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {existingPersonalSection ? (
+                  <div className="bg-gray-50 p-4 rounded-lg">
+                    <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
+                      {existingPersonalSection.content}
+                    </p>
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <p>You haven't written anything about this topic yet.</p>
+                    <p className="text-sm mt-1">Click "Edit" to get started!</p>
+                  </div>
+                )}
+                <div className="flex justify-end">
+                  <Button onClick={handleEdit}>
+                    <Edit3 className="w-4 h-4 mr-2" />
+                    {existingPersonalSection ? "Edit" : "Write"}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </DialogContent>
       </Dialog>

@@ -448,19 +448,11 @@ export default function StudentContentPage() {
                           </Button>
                           <Button
                             onClick={handleWritingSubmit}
-                            disabled={
-                              !writingTitle || !writingContent || isSubmitting
-                            }
+                            disabled={!writingTitle || !writingContent}
+                            loading={isSubmitting}
                             className="bg-pink-500 hover:bg-pink-600"
                           >
-                            {isSubmitting ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Adding...
-                              </>
-                            ) : (
-                              "Add to Collection"
-                            )}
+                            Add to Collection
                           </Button>
                         </div>
                       </div>
@@ -595,7 +587,7 @@ export default function StudentContentPage() {
                                   variant="ghost"
                                   size="sm"
                                   onClick={() => removeFile(file.id)}
-                                  disabled={file.isUploading}
+                                  loading={file.isUploading}
                                   className="h-6 w-6 p-0 hover:bg-red-100 text-red-500 disabled:opacity-50"
                                 >
                                   <X className="h-3 w-3" />
@@ -616,20 +608,12 @@ export default function StudentContentPage() {
                           <Button
                             onClick={handleUploadSubmit}
                             disabled={
-                              !uploadTitle ||
-                              uploadedFiles.length === 0 ||
-                              isSubmitting
+                              !uploadTitle || uploadedFiles.length === 0
                             }
+                            loading={isSubmitting}
                             className="bg-blue-500 hover:bg-blue-600"
                           >
-                            {isSubmitting ? (
-                              <>
-                                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                                Adding...
-                              </>
-                            ) : (
-                              "Add to Collection"
-                            )}
+                            Add to Collection
                           </Button>
                         </div>
                       </div>
@@ -696,14 +680,13 @@ export default function StudentContentPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeContentItem(learning.id)}
-                          disabled={isSubmitting || isDeleting}
+                          disabled={isSubmitting}
+                          loading={
+                            isDeleting && itemBeingDeleted === learning.id
+                          }
                           className="h-7 w-7 p-0 hover:bg-red-100 text-red-400 hover:text-red-600 flex-shrink-0"
                         >
-                          {isDeleting && itemBeingDeleted === learning.id ? (
-                            <Loader2 className="h-6 w-6 ml-3 mt-2 animate-spin" />
-                          ) : (
-                            <X className="h-3 w-3" />
-                          )}
+                          <X className="h-3 w-3" />
                         </Button>
                       </div>
                     </CardHeader>

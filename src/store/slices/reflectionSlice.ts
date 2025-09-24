@@ -508,7 +508,7 @@ const reflectionSlice = createSlice({
       })
       .addCase(createReflection.fulfilled, (state, action) => {
         state.loading = false;
-        state.reflections = [...state.reflections, ...action.payload.data];
+        state.reflections = [...state.reflections, ...action.payload];
       })
       .addCase(createReflection.rejected, (state, action) => {
         state.loading = false;

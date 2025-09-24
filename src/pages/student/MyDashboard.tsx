@@ -127,9 +127,9 @@ export default function StudentDashboard() {
   const [selectedCard, setSelectedCard] = useState<CardData | null>(null);
   const dispatch = useDispatch<AppDispatch>();
   // Grab state from Redux
-  const { topics, loading, error } = useSelector(
-    (state: RootState) => state.personalSection
-  );
+  // const { topics, loading, error } = useSelector(
+  //   (state: RootState) => state.personalSection
+  // );
   useEffect(() => {
     dispatch(fetchTopics());
   }, [dispatch]);

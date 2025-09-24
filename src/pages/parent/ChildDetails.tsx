@@ -30,8 +30,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useNavigate, useParams } from "react-router-dom";
 import { mockChildren } from "@/constants";
- import type { RootState, AppDispatch } from "@/store";
-import { fetchComments,fetchReflectionsByStudentId } from "@/store/slices/reflectionSlice";
+import type { RootState, AppDispatch } from "@/store";
+import {
+  fetchComments,
+  fetchReflectionsByStudentId,
+} from "@/store/slices/reflectionSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchChildDetails } from "@/store/slices/parentSlice";
 import { DEFAULT_AVATAR_URL } from "@/constants";
@@ -76,14 +79,14 @@ export default function ChildDetailsPage() {
     (state: RootState) => state.parent
   );
 
-      const { reflections,comments, error, topics } = useSelector(
-        (state: RootState) => state.reflection
-      );
+  const { reflections, comments, error, topics } = useSelector(
+    (state: RootState) => state.reflection
+  );
 
-      useEffect(()=>{
-        dispatch(fetchReflectionsByStudentId('10'))
-        dispatch(fetchComments('6'))
-      },[dispatch])
+  useEffect(() => {
+    dispatch(fetchReflectionsByStudentId("10"));
+    dispatch(fetchComments("6"));
+  }, [dispatch]);
 
   const [newComments, setNewComments] = useState<{ [key: number]: string }>({});
   const [showCommentInput, setShowCommentInput] = useState<{
@@ -155,7 +158,6 @@ export default function ChildDetailsPage() {
     500: 1,
   };
 
-
   const handleAddComment = (reflectionId: number) => {
     const commentText = newComments[reflectionId]?.trim();
     if (!commentText) return;
@@ -169,7 +171,10 @@ export default function ChildDetailsPage() {
       avatar: "/loving-parent.png",
     };
 
-    setNewComments((prev: { [key: number]: string }) => ({ ...prev, [reflectionId]: "" }));
+    setNewComments((prev: { [key: number]: string }) => ({
+      ...prev,
+      [reflectionId]: "",
+    }));
     setNewComments((prev) => ({ ...prev, [reflectionId]: "" }));
     setShowCommentInput((prev) => ({ ...prev, [reflectionId]: false }));
   };
@@ -346,19 +351,19 @@ export default function ChildDetailsPage() {
                               </Badge>
                               <span className="text-xs text-gray-500 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {new Date(reflection.created_at).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    weekday: "long",
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  })}
-                                </span>
-                              </div>
+                                {new Date(
+                                  reflection.created_at
+                                ).toLocaleDateString("en-US", {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </span>
                             </div>
                           </div>
                         </div>
+                      </div>
 
                       <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
                         <p className="text-sm text-gray-700 leading-relaxed">
@@ -366,12 +371,12 @@ export default function ChildDetailsPage() {
                         </p>
                       </div>
 
-                        {reflectionComments.length > 0 && (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                              <MessageSquare className="w-4 h-4" />
-                              Comments ({reflectionComments.length})
-                            </div>
+                      {reflectionComments.length > 0 && (
+                        <div className="mt-4 space-y-3">
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <MessageSquare className="w-4 h-4" />
+                            Comments ({reflectionComments.length})
+                          </div>
 
                           {comments.map((comment) => (
                             <div
@@ -414,93 +419,90 @@ export default function ChildDetailsPage() {
                         </div>
                       )}
 
-                        {showCommentInput[reflection.id] && (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                              <MessageSquare className="w-4 h-4" />
-                              Add a comment
-                            </div>
-                            <div className="flex gap-3">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage
-                                  src="/loving-parent.png"
-                                  alt="Parent"
-                                />
-                                <AvatarFallback className="text-xs">
-                                  <User className="w-4 h-4" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 space-y-2">
-                                <Textarea
-                                  placeholder="Share your thoughts about this reflection..."
-                                  value={newComments[reflection.id] || ""}
-                                  onChange={(e) =>
-                                    setNewComments((prev) => ({
-                                      ...prev,
-                                      [reflection.id]: e.target.value,
-                                    }))
+                      {showCommentInput[reflection.id] && (
+                        <div className="mt-4 space-y-3">
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <MessageSquare className="w-4 h-4" />
+                            Add a comment
+                          </div>
+                          <div className="flex gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage
+                                src="/loving-parent.png"
+                                alt="Parent"
+                              />
+                              <AvatarFallback className="text-xs">
+                                <User className="w-4 h-4" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-2">
+                              <Textarea
+                                placeholder="Share your thoughts about this reflection..."
+                                value={newComments[reflection.id] || ""}
+                                onChange={(e) =>
+                                  setNewComments((prev) => ({
+                                    ...prev,
+                                    [reflection.id]: e.target.value,
+                                  }))
+                                }
+                                className="min-h-[80px] text-sm resize-none"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleAddComment(reflection.id)
                                   }
-                                  className="min-h-[80px] text-sm resize-none"
-                                />
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAddComment(reflection.id)
-                                    }
-                                    disabled={
-                                      !newComments[reflection.id]?.trim()
-                                    }
-                                    className="h-8"
-                                  >
-                                    <Send className="w-3 h-3 mr-1" />
-                                    Post Comment
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() =>
-                                      toggleCommentInput(reflection.id)
-                                    }
-                                    className="h-8"
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
+                                  disabled={!newComments[reflection.id]?.trim()}
+                                  className="h-8"
+                                >
+                                  <Send className="w-3 h-3 mr-1" />
+                                  Post Comment
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    toggleCommentInput(reflection.id)
+                                  }
+                                  className="h-8"
+                                >
+                                  Cancel
+                                </Button>
                               </div>
                             </div>
                           </div>
-                        )}
+                        </div>
+                      )}
 
-                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>Student Reflection</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => toggleCommentInput(reflection.id)}
-                              className="h-7 px-2 text-xs text-gray-600 hover:text-blue-600"
-                            >
-                              <MessageSquare className="w-3 h-3 mr-1" />
-                              {reflectionComments.length > 0
-                                ? `${reflectionComments.length} Comments`
-                                : "Add Comment"}
-                            </Button>
-                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                              <Heart className="w-3 h-3" />
-                              <span>Shared with love</span>
-                            </div>
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <MessageSquare className="w-3 h-3" />
+                          <span>Student Reflection</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => toggleCommentInput(reflection.id)}
+                            className="h-7 px-2 text-xs text-gray-600 hover:text-blue-600"
+                          >
+                            <MessageSquare className="w-3 h-3 mr-1" />
+                            {reflectionComments.length > 0
+                              ? `${reflectionComments.length} Comments`
+                              : "Add Comment"}
+                          </Button>
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <Heart className="w-3 h-3" />
+                            <span>Shared with love</span>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         );
 

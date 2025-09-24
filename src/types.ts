@@ -207,7 +207,7 @@ export interface ReflectionTopic {
   id : number;
   title : string;
   created_by : string;
-  is_active : string;
+  is_active : boolean;
   created_at : string;
 }
 
@@ -244,6 +244,7 @@ export interface ReflectionItem {
   reflectiontopics: {
     title: string;
   };
+  reflectioncomments: ReflectionComment[];
 }
 
 export interface TableEntry {

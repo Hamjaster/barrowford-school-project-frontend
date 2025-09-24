@@ -60,6 +60,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Edit3 } from "lucide-react";
 import ReflectionTopicsManagement from "@/components/ReflectionTopicsManagement";
+import StudentManagement from "@/components/StudentManagement";
 
 import { useDispatch, useSelector } from "react-redux";
 import {
@@ -71,57 +72,11 @@ import {
 import type { RootState, AppDispatch } from "../store";
 import PersonalSectionTopicsManagement from "@/components/PersonalSectionTopicsManagement";
 
-const mockStudents = [
-  {
-    id: 1,
-    firstName: "Emma",
-    lastName: "Johnson",
-    age: 8,
-    grade: "3rd Grade",
-    parentName: "Sarah Johnson",
-    parentEmail: "sarah.johnson@email.com",
-    avatar: "/girl-student.png",
-    personalSections: [
-      {
-        id: 1,
-        topic: "My Hobbies",
-        description: "I love painting and reading books about animals.",
-      },
-      {
-        id: 2,
-        topic: "My Goals",
-        description: "I want to become a veterinarian when I grow up.",
-      },
-    ],
-  },
-  {
-    id: 2,
-    firstName: "Liam",
-    lastName: "Smith",
-    age: 9,
-    grade: "4th Grade",
-    parentName: "Michael Smith",
-    parentEmail: "michael.smith@email.com",
-    avatar: "/boy-student.png",
-    personalSections: [
-      {
-        id: 3,
-        topic: "My Interests",
-        description: "I enjoy building with LEGO and playing soccer.",
-      },
-    ],
-  },
-];
-
 const StaffDashboard: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
     (state: RootState) => state.auth
   );
   const [activeTab, setActiveTab] = useState("students");
-
-  // this  state will maintain the persoal section topic
-  const [createTitleModel, setCreateTitleModel] = useState(false);
-  const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [newTitle, setNewTitle] = useState<string>("");
   const dispatch = useDispatch<AppDispatch>();
 
@@ -169,11 +124,6 @@ const StaffDashboard: React.FC = () => {
     },
   ];
 
-  const createNewtitle = async () => {
-    if (newTitle.trim() === "") return;
-    dispatch(createTopic({ title: newTitle }));
-    setNewTitle(""); // clear input
-  };
   const handleContentModeration = (contentId: number, action: string) => {
     setPendingContent((prev) =>
       prev.map((item) =>
@@ -420,154 +370,7 @@ const StaffDashboard: React.FC = () => {
           </div>
         );
       case "students":
-        return (
-          <div>
-            <Card>
-              <CardHeader>
-                <CardTitle>Student Management</CardTitle>
-                <CardDescription>
-                  View and edit student information and personal sections
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {mockStudents.map((student) => (
-                    <div
-                      key={student.id}
-                      className="flex items-center justify-between p-4 border rounded-lg"
-                    >
-                      <div className="flex items-center gap-4">
-                        <Avatar>
-                          <AvatarImage
-                            src={student.avatar || "/placeholder.svg"}
-                          />
-                          <AvatarFallback>
-                            {student.firstName[0]}
-                            {student.lastName[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-semibold">
-                            {student.firstName} {student.lastName}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {student.grade} • Age {student.age}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge variant="default">
-                          {student.personalSections.length} Sections
-                        </Badge>
-                        <Dialog>
-                          <DialogTrigger asChild>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="cursor-pointer"
-                            >
-                              <Edit3 className="h-4 w-4 mr-2" />
-                              Edit Sections
-                            </Button>
-                          </DialogTrigger>
-                          <DialogContent className="max-w-2xl">
-                            <DialogHeader className="flex items-center justify-between">
-                              <div>
-                                <DialogTitle>
-                                  Edit Personal Sections - {student.firstName}{" "}
-                                  {student.lastName}
-                                </DialogTitle>
-                                <DialogDescription>
-                                  Manage the student's personal sections and
-                                  content
-                                </DialogDescription>
-                              </div>
-                              {/* Add button */}
-                              <Button
-                                variant="default"
-                                className="cursor-pointer"
-                                onClick={() => setCreateTitleModel(true)}
-                              >
-                                + Add New Topic
-                              </Button>
-                            </DialogHeader>
-                            <div className="space-y-4 max-h-96 overflow-y-auto">
-                              {createTitleModel && (
-                                <div className="p-4 border rounded-lg space-y-2">
-                                  <Label>New Topic Title</Label>
-                                  <Input
-                                    placeholder="Topic Title"
-                                    value={newTitle}
-                                    onChange={(e) =>
-                                      setNewTitle(e.target.value)
-                                    }
-                                  />
-                                  <div className="p-1 flex justify-end gap-2">
-                                    <Button
-                                      variant="outline"
-                                      className="cursor-pointer"
-                                      onClick={() => setCreateTitleModel(false)}
-                                    >
-                                      Cancel
-                                    </Button>
-                                    <Button
-                                      className="cursor-pointer"
-                                      onClick={createNewtitle}
-                                    >
-                                      Create Topic
-                                    </Button>
-                                  </div>
-                                </div>
-                              )}
-                              <div>
-                                {student.personalSections.map((section) => (
-                                  <div
-                                    onClick={() => setSelectedCard(section.id)}
-                                    key={section.id}
-                                    className="p-4 border rounded-lg space-y-2"
-                                  >
-                                    <Label htmlFor={`topic-${section.id}`}>
-                                      Topic
-                                    </Label>
-                                    <Input
-                                      id={`topic-${section.id}`}
-                                      defaultValue={section.topic}
-                                    />
-                                    <Label htmlFor={`desc-${section.id}`}>
-                                      Description
-                                    </Label>
-                                    <Textarea
-                                      id={`desc-${section.id}`}
-                                      defaultValue={section.description}
-                                      rows={3}
-                                    />
-                                    {selectedCard == section.id && (
-                                      <div className="p-1 flex justify-end gap-2">
-                                        <Button className="cursor-pointer">
-                                          Save Changes
-                                        </Button>
-                                        <Button
-                                          variant="destructive"
-                                          className="cursor-pointer"
-                                        >
-                                          Delete Topic
-                                        </Button>
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          </DialogContent>
-                        </Dialog>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        );
+        return <StudentManagement />;
       default:
         return <div>No tab selected</div>;
     }

@@ -31,7 +31,7 @@ import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useNavigate, useParams } from "react-router-dom";
 import { mockChildren } from "@/constants";
  import type { RootState, AppDispatch } from "@/store";
-import { fetchComments,fetchReflectionsByStudentId } from "@/store/slices/reflectionSlice";
+import { addComment, fetchComments,fetchReflectionsByStudentId } from "@/store/slices/reflectionSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchChildDetails } from "@/store/slices/parentSlice";
 import { DEFAULT_AVATAR_URL } from "@/constants";
@@ -57,14 +57,7 @@ const tabs = [
   { id: "reflections", label: "Reflections", icon: MessageSquare },
 ];
 
-interface Comment {
-  id: number;
-  reflectionId: number;
-  author: string;
-  content: string;
-  date: string;
-  avatar?: string;
-}
+
 
 export default function ChildDetailsPage() {
   const params = useParams();
@@ -72,20 +65,25 @@ export default function ChildDetailsPage() {
   const dispatch = useDispatch<AppDispatch>();
   const [activeTab, setActiveTab] = useState("learning");
 
+  const [fetchError, setFetchError] = useState<string>("")
+  const [addcommentError,setAddCommentError] = useState<string>("")
+
+
   const { selectedChild, isLoadingChildDetails } = useSelector(
     (state: RootState) => state.parent
   );
 
-      const { reflections,comments, error, topics } = useSelector(
+      const { reflections,comments,  } = useSelector(
         (state: RootState) => state.reflection
       );
 
-      useEffect(()=>{
-        dispatch(fetchReflectionsByStudentId('10'))
-        dispatch(fetchComments('6'))
-      },[dispatch])
+      useEffect(() => {
+        const studentId = childId; // store in variable
 
-  const [newComments, setNewComments] = useState<{ [key: number]: string }>({});
+        dispatch(fetchReflectionsByStudentId(studentId))
+      }, [dispatch]);
+
+  const [newComments, setNewComments] = useState<{ [key: string]: string }>({});
   const [showCommentInput, setShowCommentInput] = useState<{
     [key: number]: boolean;
   }>({});
@@ -110,22 +108,22 @@ export default function ChildDetailsPage() {
     );
   }
 
-  if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
-            Error Loading Child Details
-          </h1>
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button onClick={() => navigate("/")}>
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Dashboard
-          </Button>
-        </div>
-      </div>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <div className="text-center">
+  //         <h1 className="text-2xl font-bold text-gray-800 mb-4">
+  //           Error Loading Child Details
+  //         </h1>
+  //         <p className="text-red-600 mb-4">{error}</p>
+  //         <Button onClick={() => navigate("/")}>
+  //           <ArrowLeft className="w-4 h-4 mr-2" />
+  //           Back to Dashboard
+  //         </Button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   if (!selectedChild) {
     return (
@@ -156,30 +154,47 @@ export default function ChildDetailsPage() {
   };
 
 
-  const handleAddComment = (reflectionId: number) => {
-    const commentText = newComments[reflectionId]?.trim();
-    if (!commentText) return;
+const handleAddComment = async (reflectionId: number) => {
+  const commentText = newComments[reflectionId]?.trim();
+  if (!commentText) return;
 
-    const newComment: Comment = {
-      id: Date.now(),
-      reflectionId,
-      author: "Sarah Johnson (Parent)",
-      content: commentText,
-      date: new Date().toISOString(),
-      avatar: "/loving-parent.png",
-    };
+  try {
+    // clear old error before request
+    setAddCommentError("")
 
-    setNewComments((prev: { [key: number]: string }) => ({ ...prev, [reflectionId]: "" }));
+    // ✅ unwrap so errors can be caught
+    await dispatch(addComment({ reflectionId, content: commentText })).unwrap();
+
+    // ✅ clear input and close box on success
     setNewComments((prev) => ({ ...prev, [reflectionId]: "" }));
     setShowCommentInput((prev) => ({ ...prev, [reflectionId]: false }));
-  };
+  } catch (err: any) {
+    // ❌ show backend error for this reflection
+    setAddCommentError("Failed while uploading comments")
+  }
+};
 
-  const toggleCommentInput = (reflectionId: number) => {
-    setShowCommentInput((prev) => ({
-      ...prev,
-      [reflectionId]: !prev[reflectionId],
-    }));
-  };
+
+
+const toggleCommentInput = async (reflectionId: number) => {
+  setShowCommentInput((prev) => ({
+    ...prev,
+    [reflectionId]: !prev[reflectionId],
+  }));
+  setFetchError("")
+  setAddCommentError("")
+
+  // If opening comment input, fetch comments for this reflection
+  if (!showCommentInput[reflectionId]) {
+    setFetchError(""); // clear previous error
+    try {
+      await dispatch(fetchComments(reflectionId)).unwrap();
+    } catch (err: any) {
+      setFetchError(err.message || "Failed to fetch comments. Please try again.");
+    }
+  }
+};
+
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -318,6 +333,11 @@ export default function ChildDetailsPage() {
                 {selectedChild.reflections.length} total reflections
               </Badge>
             </div>
+              {fetchError && (
+            <div className="p-3 mb-4 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm">
+              {fetchError}
+            </div>
+          )}
 
             <div className="grid gap-6">
               {reflections.map((reflection) => {
@@ -342,7 +362,8 @@ export default function ChildDetailsPage() {
                                 variant="secondary"
                                 className="text-xs bg-gray-100"
                               >
-                                {reflection.week ?? "week 1"}
+                                {/* {reflection.week ?? "week 1"} */}
+                                {"week 1"}
                               </Badge>
                               <span className="text-xs text-gray-500 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
@@ -379,15 +400,7 @@ export default function ChildDetailsPage() {
                               className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-200"
                             >
                               <div className="flex items-start gap-3">
-                                {/* <Avatar className="w-8 h-8">
-                                  <AvatarImage
-                                    src={comment.avatar || "/placeholder.svg"}
-                                    alt={comment.author}
-                                  />
-                                  <AvatarFallback className="text-xs">
-                                    <User className="w-4 h-4" />
-                                  </AvatarFallback>
-                                </Avatar> */}
+                               
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="text-sm font-medium text-gray-800">
@@ -414,7 +427,7 @@ export default function ChildDetailsPage() {
                         </div>
                       )}
 
-                        {showCommentInput[reflection.id] && (
+                        {showCommentInput[Number(reflection.id)] && (
                           <div className="mt-4 space-y-3">
                             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                               <MessageSquare className="w-4 h-4" />
@@ -431,6 +444,11 @@ export default function ChildDetailsPage() {
                                 </AvatarFallback>
                               </Avatar>
                               <div className="flex-1 space-y-2">
+                                {addcommentError && (
+                                <div className="p-3 mb-4 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm">
+                                  {addcommentError}
+                                </div>
+                              )}
                                 <Textarea
                                   placeholder="Share your thoughts about this reflection..."
                                   value={newComments[reflection.id] || ""}
@@ -446,7 +464,7 @@ export default function ChildDetailsPage() {
                                   <Button
                                     size="sm"
                                     onClick={() =>
-                                      handleAddComment(reflection.id)
+                                      handleAddComment(Number(reflection.id))
                                     }
                                     disabled={
                                       !newComments[reflection.id]?.trim()
@@ -460,7 +478,7 @@ export default function ChildDetailsPage() {
                                     size="sm"
                                     variant="outline"
                                     onClick={() =>
-                                      toggleCommentInput(reflection.id)
+                                      toggleCommentInput(Number(reflection.id))
                                     }
                                     className="h-8"
                                   >
@@ -481,13 +499,13 @@ export default function ChildDetailsPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              onClick={() => toggleCommentInput(reflection.id)}
+                              onClick={() => toggleCommentInput(Number(reflection.id))}
                               className="h-7 px-2 text-xs text-gray-600 hover:text-blue-600"
                             >
                               <MessageSquare className="w-3 h-3 mr-1" />
                               {reflectionComments.length > 0
                                 ? `${reflectionComments.length} Comments`
-                                : "Add Comment"}
+                                : "Comment"}
                             </Button>
                             <div className="flex items-center gap-1 text-xs text-gray-400">
                               <Heart className="w-3 h-3" />
@@ -500,7 +518,7 @@ export default function ChildDetailsPage() {
                   );
                 })}
               </div>
-            )}
+          
           </div>
         );
 

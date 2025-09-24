@@ -267,7 +267,7 @@ export interface UpdateReflectionResponse {
 
 //for add comments
 export interface AddCommentRequest {
-  reflectionId: string;
+  reflectionId: number;
   content: string;
 }
 

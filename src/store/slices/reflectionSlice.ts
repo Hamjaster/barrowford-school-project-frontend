@@ -210,13 +210,6 @@ export const fetchReflectionsByStudentId = createAsyncThunk<
   method: "GET",
   headers: getAuthHeaders(token),
 });
-  //  const response = await fetch(
-  //       `${API_BASE_URL}/reflection/comment?reflectionId=${reflectionId}`,
-  //       {
-  //         method: "GET",
-  //         headers: getAuthHeaders(token),
-  //       }
-  //     ); 
 
       let result: any;
       try {
@@ -383,7 +376,7 @@ export const addComment = createAsyncThunk<
 );
 export const fetchComments = createAsyncThunk<
   ReflectionComment[], 
-  string,         
+  number,         
   { state: RootState; rejectValue: string }
 >(
   "reflection/comment",

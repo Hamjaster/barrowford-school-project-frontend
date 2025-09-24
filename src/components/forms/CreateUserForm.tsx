@@ -317,14 +317,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           <Button
             type="submit"
             disabled={
-              isLoading ||
-              !formData.first_name ||
-              !formData.password ||
-              !formData.role
+              !formData.first_name || !formData.password || !formData.role
             }
+            loading={isLoading}
             className="w-full bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
           >
-            {isLoading ? "Creating User..." : "Create User"}
+            Create User
           </Button>
         </div>
       </form>

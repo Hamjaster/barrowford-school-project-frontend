@@ -95,7 +95,7 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
       },
      
     ],
-    availableTabs: ['overview', 'create-user'],
+    availableTabs: ['overview', 'create-user', 'personal-section-topics'],
   },
   parent: {
     displayName: 'Parent',
@@ -171,6 +171,7 @@ export const TAB_DISPLAY_NAMES: Record<string, string> = {
   'my-learning': 'My Learning',
   'my-experiences': 'My Experiences',
   'what-i-read': 'What I Read',
+  'personal-section-topics': 'Personal Section Topics',
 } as const;
 
 // Default Avatar URL

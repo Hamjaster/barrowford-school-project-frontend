@@ -494,18 +494,11 @@ const UsersTable: React.FC = () => {
                 disabled={
                   !newPassword ||
                   !confirmPassword ||
-                  newPassword !== confirmPassword ||
-                  isLoading
+                  newPassword !== confirmPassword
                 }
+                loading={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Resetting...
-                  </>
-                ) : (
-                  "Reset Password"
-                )}
+                Reset Password
               </Button>
             </div>
           </div>

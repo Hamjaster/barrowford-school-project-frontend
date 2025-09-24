@@ -93,10 +93,10 @@ export default function MyExperiences() {
           <h1 className="text-3xl font-bold">My Experiences</h1>
           <Button
             onClick={handleSave}
-            disabled={isSubmitting}
+            loading={isSubmitting}
             className="bg-white text-purple-500 hover:bg-gray-100"
           >
-            {isSubmitting ? "Saving..." : "Save Experiences"}
+            Save Experiences
           </Button>
         </div>
       </div>

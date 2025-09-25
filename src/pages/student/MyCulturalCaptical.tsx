@@ -252,7 +252,7 @@ const handleSubmitReflection = async () => {
       className: "text-left",
     },
     {
-      key: "title" as keyof CulturalCapitalEntry,
+      key: "topic" as keyof CulturalCapitalEntry,
       header: "Topic",
       className: "text-left",
     },
@@ -526,7 +526,7 @@ const handleSubmitReflection = async () => {
             <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold text-cyan-600">
-                  {selectedReflection?.title}
+                  {selectedReflection?.topic}
                 </DialogTitle>
               </DialogHeader>
 
@@ -555,7 +555,7 @@ const handleSubmitReflection = async () => {
                   {/* Topic and Description */}
 
                   <div className="text-xl font-semibold text-pink-600">
-                    Topic: {selectedReflection.title}
+                    Topic: {selectedReflection.topic}
                   </div>
 
                   {/* Reflection */}

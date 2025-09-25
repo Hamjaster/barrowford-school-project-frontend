@@ -217,6 +217,7 @@ export interface ReflectionState {
   comments : ReflectionComment[];
   reflections: ReflectionItem[]  ;
   loading: boolean;
+  fetchreflectionsloading : boolean;
   error: string | null;
 }
 
@@ -249,11 +250,15 @@ export interface ReflectionItem {
 export interface TableEntry {
   id: string;
   date: string;
-  topic: string;
-  status: "Approved" | "Pending" | "Draft";
-  week: string;
-  title?: string; // optional if needed
+  topic: string;   // ✅ instead of title
+  status: string;
+  content: string;
+  attachment_url: string;
+  week?: string;   // optional if sometimes missing
 }
+
+export type CulturalCapitalEntry = Required<TableEntry>; 
+
 
 export interface UpdateReflectionPayload {
   id: string;

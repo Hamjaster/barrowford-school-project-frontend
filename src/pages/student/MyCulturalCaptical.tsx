@@ -9,7 +9,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -26,10 +25,8 @@ import {
   ImageIcon,
   Lightbulb,
   Music,
-  Plus,
   RotateCcw,
   Upload,
-  User,
   Video,
   XCircle
 } from "lucide-react";
@@ -38,15 +35,14 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { MessageSquare } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { API_BASE_URL } from '@/constants';
 import { unwrapResult } from "@reduxjs/toolkit";
 
   //for api handling 
 import { useDispatch, useSelector } from "react-redux";
 import { createReflection,fetchActiveTopics, fetchMyReflections,fetchComments } from "@/store/slices/reflectionSlice";
 import type { RootState, AppDispatch } from "@/store";
-import type {ReflectionItem,TableEntry} from '@/types'
-
+import type {TableEntry} from '@/types'
+import { showToast } from "@/utils/showToast";
 
 
 interface CulturalCapitalEntry {
@@ -58,73 +54,6 @@ interface CulturalCapitalEntry {
   content : string;
   attachment_url : string;
 }
-
-// const sampleData: CulturalCapitalEntry[] = [
-//   {
-//     id: "1",
-//     date: "14/10/2025 (Week 2)",
-//     topic: "Lyfta",
-//     status: "Approved",
-//     week: "Week 2",
-//   },
-//   {
-//     id: "2",
-//     date: "14/10/2025 (Week 2)",
-//     topic: "Lyfta",
-//     status: "Approved",
-//     week: "Week 2",
-//   },
-//   {
-//     id: "3",
-//     date: "14/10/2025 (Week 2)",
-//     topic: "Poem of the Week",
-//     status: "Approved",
-//     week: "Week 2",
-//   },
-//   {
-//     id: "4",
-//     date: "15/11/2025 (Week 4)",
-//     topic: "Artist of the Week",
-//     status: "Pending",
-//     week: "Week 4",
-//   },
-//   {
-//     id: "5",
-//     date: "15/11/2025 (Week 4)",
-//     topic: "Artist of the Week",
-//     status: "Pending",
-//     week: "Week 4",
-//   },
-//   {
-//     id: "6",
-//     date: "15/11/2025 (Week 4)",
-//     topic: "Artist of the Week",
-//     status: "Pending",
-//     week: "Week 4",
-//   },
-//   {
-//     id: "7",
-//     date: "15/11/2025 (Week 4)",
-//     topic: "Artist of the Week",
-//     status: "Pending",
-//     week: "Week 4",
-//   },
-//   {
-//     id: "8",
-//     date: "15/11/2025 (Week 4)",
-//     topic: "Artist of the Week",
-//     status: "Pending",
-//     week: "Week 4",
-//   },
-//   {
-//     id: "9",
-//     date: "15/11/2025 (Week 4)",
-//     topic: "Artist of the Week",
-//     status: "Pending",
-//     week: "Week 4",
-//   },
-// ];
-
 export default function CulturalCapitalPage() {
   const [data, setData] = useState<TableEntry[]>([]);
   const [filteredData, setFilteredData] = useState<TableEntry[]>([]);
@@ -135,6 +64,8 @@ export default function CulturalCapitalPage() {
   const [selectedReflection, setSelectedReflection] =
     useState<CulturalCapitalEntry | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [submissionfetchreflectionsloading,setSubmissionfetchreflectionsloading] = useState(false)
+
   
   const [newReflection, setNewReflection] = useState({
     topicID: "",
@@ -144,15 +75,16 @@ export default function CulturalCapitalPage() {
 
     //dispatch
     const dispatch = useDispatch<AppDispatch>();
-    const { activeTitles,reflections,comments, loading, topics } = useSelector(
+    const { activeTitles,reflections,comments, fetchreflectionsloading } = useSelector(
       (state: RootState) => state.reflection
     );
   
     //useEffect of feching projects 
 useEffect(() => {
   const fetchData = async () => {
+     await dispatch(fetchMyReflections());
     await dispatch(fetchActiveTopics());
-    await dispatch(fetchMyReflections());
+   
   };
   
   fetchData();
@@ -160,20 +92,21 @@ useEffect(() => {
 
 useEffect(() => {
   if (reflections.length) {
-    // Make sure reflections array matches TableEntry[]
     const tableData: TableEntry[] = reflections.map((item) => ({
-      id: item.id,
+      id: String(item.id),
       date: formatDate(item.created_at),
-      topic: item.reflectiontopics.title,
-      status: item.status,
-      content : item.content,
-      attachment_url: item.attachment_url,
+      topic: item.reflectiontopics?.title ?? "Unknown",  // ✅ use topic
+      status: item.status ?? "Pending",
+      content: item.content ?? "",
+      attachment_url: item.attachment_url ?? "",
     }));
 
     setData(tableData);
     setFilteredData(tableData);
   }
 }, [reflections]);
+
+
 
 const formatDate = (timestamp: string) => {
   const date = new Date(timestamp);
@@ -239,6 +172,7 @@ const   parseAttachmentUrl = (url: string)=> {
 
 const handleSubmitReflection = async () => {
   try {
+    setSubmissionfetchreflectionsloading(true)
     const resultAction = await dispatch(
       createReflection({
         topicID: newReflection.topicID,
@@ -249,12 +183,18 @@ const handleSubmitReflection = async () => {
 
     // unwrap will throw if rejected
     unwrapResult(resultAction);
+    showToast("Reflection submitted successfully!", true);
 
     // Only runs on success ✅
     setIsNewReflectionOpen(false);
-    setNewReflection({ topicID: "", content: "", files: [] });
+    setNewReflection({ topicID: "", content: "", files: [] }); // clear object
   } catch (err) {
+    showToast("failed in submiiting relfections",false)
     console.error("Error while submitting the reflection:", err);
+  }
+  finally{
+      setIsNewReflectionOpen(false);
+      setNewReflection({ topicID: "", content: "", files: [] }); // clear object
   }
 };
 
@@ -277,38 +217,6 @@ const handleSubmitReflection = async () => {
     }
   };
 
-  const mockReflection = {
-    id: "1",
-    date: "14/10/2025 (Week 2)",
-    topic: "Lyfta",
-    status: "Approved",
-    week: "Week 2",
-    title: "Exploring Global Perspectives through Lyfta",
-    description:
-      "An immersive journey exploring different cultures and perspectives around the world using the Lyfta platform.",
-    reflection:
-      "Through this Lyfta experience, I discovered how different communities around the world approach daily challenges. The 360° videos helped me understand that despite our differences, we share many common values and aspirations. I was particularly moved by the story of the young entrepreneur in Kenya who started a recycling business to help her community.",
-    learningOutcomes: [
-      "Cultural awareness",
-      "Global citizenship",
-      "Empathy development",
-      "Critical thinking",
-    ],
-    attachments: [
-      {
-        name: "lyfta-screenshot.jpg",
-        type: "image",
-        url: "/placeholder-1nmoh.png",
-      },
-      { name: "reflection-notes.pdf", type: "document", url: "#" },
-    ],
-    submittedBy: "Emma Thompson",
-    submittedDate: "14/10/2025",
-    approvedBy: "Ms. Johnson",
-    approvedDate: "15/10/2025",
-    feedback:
-      "Excellent reflection showing deep understanding of cultural diversity. Well done!",
-  };
 
   const getAttachmentIcon = (type: string) => {
     switch (type) {
@@ -324,12 +232,18 @@ const handleSubmitReflection = async () => {
         return <File className="w-4 h-4" />;
     }
   };
-  const handleViewReflection = (reflection: CulturalCapitalEntry) => {
+ const handleViewReflection = async (reflection: CulturalCapitalEntry) => {
+  try {
     setSelectedReflection(reflection);
-    dispatch(fetchComments(reflection.id))
-    
+    const result = await dispatch(fetchComments(Number(reflection.id)));
+    unwrapResult(result);
     setIsDetailModalOpen(true);
-  };
+  } catch (err) {
+    showToast("Failed to load reflections and comments", false);
+    console.error(err);
+  }
+};
+
 
   const columns = [
     {
@@ -338,7 +252,7 @@ const handleSubmitReflection = async () => {
       className: "text-left",
     },
     {
-      key: "topic" as keyof CulturalCapitalEntry,
+      key: "title" as keyof CulturalCapitalEntry,
       header: "Topic",
       className: "text-left",
     },
@@ -588,12 +502,16 @@ const handleSubmitReflection = async () => {
                   >
                     Cancel
                   </Button>
-                  <Button
-                    onClick={handleSubmitReflection}
-                    className="flex-1 bg-pink-500 hover:bg-pink- cursor-pointer"
-                  >
-                    Add Reflection
-                  </Button>
+                 <Button
+                  onClick={handleSubmitReflection}
+                  disabled={submissionfetchreflectionsloading}
+                  className={`flex-1 cursor-pointer ${
+                    submissionfetchreflectionsloading ? "bg-gray-400 cursor-not-allowed" : "bg-pink-500 hover:bg-pink-600"
+                  }`}
+                >
+                  {submissionfetchreflectionsloading ? "Adding..." : "Add Reflection"}
+                </Button>
+
                 </div>
               </div>
             </DialogContent>
@@ -608,7 +526,7 @@ const handleSubmitReflection = async () => {
             <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle className="text-2xl font-bold text-cyan-600">
-                  {selectedReflection?.topic}
+                  {selectedReflection?.title}
                 </DialogTitle>
               </DialogHeader>
 
@@ -637,7 +555,7 @@ const handleSubmitReflection = async () => {
                   {/* Topic and Description */}
 
                   <div className="text-xl font-semibold text-pink-600">
-                    Topic: {selectedReflection.topic}
+                    Topic: {selectedReflection.title}
                   </div>
 
                   {/* Reflection */}
@@ -698,40 +616,8 @@ const handleSubmitReflection = async () => {
                       </CardContent>
                     </Card>
                   )}
-                  {/* Approval Info */}
-                  {/* {selectedReflection.status === "Approved" &&
-                    mockReflection.approvedBy && (
-                      <Card className="bg-green-50 border-green-200">
-                        <CardHeader>
-                          <CardTitle className="text-lg text-green-700">
-                            Approval Details
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="space-y-2">
-                            <p className="text-sm">
-                              <span className="font-medium">Approved by:</span>{" "}
-                              {mockReflection.approvedBy}
-                            </p>
-                            <p className="text-sm">
-                              <span className="font-medium">Approved on:</span>{" "}
-                              {mockReflection.approvedDate}
-                            </p>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )} */}
-        {/* <Dialog open={comment} onOpenChange={setComment}>
-      <DialogTrigger asChild>
-        <Button variant="outline" size="sm">
-          Comments
-        </Button>
-      </DialogTrigger>
-
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>View Comments</DialogTitle>
-        </DialogHeader> */}
+ 
+    
 
         {/* Existing Comments */}
         {comments.length > 0 && (
@@ -782,7 +668,7 @@ const handleSubmitReflection = async () => {
           </Dialog>
         </div>
 <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-  {loading ? (
+  {fetchreflectionsloading ? (
       <div className="flex justify-center items-center py-10">
     <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
   </div>
@@ -796,15 +682,7 @@ const handleSubmitReflection = async () => {
     />
   )}
 </div>
-        {/* Data Table */}
-        {/* <div className="bg-white rounded-2xl shadow-sm overflow-hidden">
-          <DataTable
-            data={filteredData}
-            columns={columns}
-            showPagination={true}
-            itemsPerPage={9}
-          />
-        </div> */}
+
       </div>
 
       {/* Footer */}

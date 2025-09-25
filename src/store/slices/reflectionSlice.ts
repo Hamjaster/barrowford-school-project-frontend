@@ -3,7 +3,6 @@ import { API_BASE_URL } from '@/constants';
 import { type RootState } from "..";
 import type  { ReflectionTopic, ReflectionState,ReflectionItem ,UpdateReflectionResponse,
   UpdateReflectionPayload,AddCommentRequest,ReflectionComment } from '@/types'
-import { Upload } from "lucide-react";
 
 // Helper function to get auth headers
 const getAuthHeaders = (token: string) => ({
@@ -17,6 +16,7 @@ const initialState: ReflectionState = {
   comments:[],
   reflections:[],
   loading: false,
+  fetchreflectionsloading:false,
   error: null,
 };
 
@@ -101,7 +101,7 @@ export const fetchActiveTopics = createAsyncThunk<
 
 //createReflection thunk
 export const createReflection = createAsyncThunk<
-  any, // you can replace `any` with a proper type for reflection response
+  ReflectionItem, // you can replace `any` with a proper type for reflection response
   { topicID: string; content: string; file?: File },
   { state: RootState; rejectValue: string }
 >(
@@ -325,13 +325,9 @@ export const updateReflection = createAsyncThunk<
         return rejectWithValue("Update failed");
       }
 
-      const data: { success: boolean; reflection: ReflectionItem } = await response.json();
+      const data = await response.json();
 
-      if (!data.reflection) {
-        return rejectWithValue("No reflection returned from API");
-      }
-
-      return data.reflection; 
+      return data.data; 
     } catch (err) {
       console.error(" updateReflection error", err);
       return rejectWithValue("Failed updating reflection");
@@ -438,6 +434,7 @@ const reflectionSlice = createSlice({
     builder
       .addCase(fetchActiveTopics.pending, (state) => {
         state.loading = true;
+        state.activeTitles = []
         state.error = null;
       })
       .addCase(fetchActiveTopics.fulfilled, (state, action) => {
@@ -446,11 +443,13 @@ const reflectionSlice = createSlice({
       })
       .addCase(fetchActiveTopics.rejected, (state, action) => {
         state.loading = false;
+        state.activeTitles = []
         state.error = action.payload || "Failed to fetch active topics";
       });
   builder
   .addCase(fetchComments.pending, (state) => {
     state.loading = true;
+    state.comments = [];
     state.error = null;
   })
   .addCase(fetchComments.fulfilled, (state, action) => {
@@ -459,6 +458,7 @@ const reflectionSlice = createSlice({
   })
   .addCase(fetchComments.rejected, (state, action) => {
     state.loading = false;
+    state.comments = [];
     state.error = action.payload || "Failed to fetch comments";
   });
 
@@ -487,6 +487,7 @@ const reflectionSlice = createSlice({
  builder
       .addCase(fetchReflectionsByStudentId.pending, (state) => {
         state.loading = true;
+        state.reflections = []
         state.error = null;
       })
       .addCase(
@@ -498,6 +499,7 @@ const reflectionSlice = createSlice({
       )
       .addCase(fetchReflectionsByStudentId.rejected, (state, action) => {
         state.loading = false;
+         state.reflections = []
         state.error = action.payload || "Something went wrong";
       });
     // --- createReflection handlers ---
@@ -507,8 +509,13 @@ const reflectionSlice = createSlice({
         state.error = null;
       })
       .addCase(createReflection.fulfilled, (state, action) => {
-        state.loading = false;
-        state.reflections = [...state.reflections, ...action.payload];
+         state.loading = false;
+        const newreflection = action.payload
+        console.log("fetchMyReflections payload:", newreflection);
+        if(newreflection){
+           state.reflections.push(action.payload)
+        }
+       
       })
       .addCase(createReflection.rejected, (state, action) => {
         state.loading = false;
@@ -518,29 +525,33 @@ const reflectionSlice = createSlice({
     // --- fetchAllReflections handlers ---
   builder
   .addCase(fetchAllReflections.pending, (state) => {
-    state.loading = true;
+    state.fetchreflectionsloading = true;
+    state.reflections = []
     state.error = null;
   })
   .addCase(fetchAllReflections.fulfilled, (state, action) => {
-    state.loading = false;
+    state.fetchreflectionsloading = false;
     state.reflections = action.payload; // <-- store reflections separately
   })
   .addCase(fetchAllReflections.rejected, (state, action) => {
-    state.loading = false;
+    state.fetchreflectionsloading = false;
+    state.reflections = []
     state.error = action.payload || "Failed to fetch reflections";
   });
   //fetch student reflection 
     builder
   .addCase(fetchMyReflections.pending, (state) => {
-    state.loading = true;
+    state.fetchreflectionsloading = true;
+    state.reflections = []
     state.error = null;
   })
   .addCase(fetchMyReflections.fulfilled, (state, action) => {
-    state.loading = false;
+    state.fetchreflectionsloading = false;
     state.reflections = action.payload; // <-- store reflections separately
   })
   .addCase(fetchMyReflections.rejected, (state, action) => {
-    state.loading = false;
+    state.fetchreflectionsloading = false;
+    state.reflections = []
     state.error = action.payload || "Failed to fetch reflections";
   });
   //for update

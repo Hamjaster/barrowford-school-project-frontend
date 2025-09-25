@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import { API_BASE_URL } from '@/constants';
 import { type RootState } from "..";
-import type  { ReflectionTopic, ReflectionState,ReflectionItem ,UpdateReflectionResponse,
+import type  { ReflectionTopic, ReflectionState,ReflectionItem,
   UpdateReflectionPayload,AddCommentRequest,ReflectionComment } from '@/types'
 
 // Helper function to get auth headers
@@ -50,8 +50,119 @@ export const createTopic = createAsyncThunk<
         const errorData = await response.json();
         return rejectWithValue(errorData.error || "Failed to create topic");
       }
-      let  data =  await response.json()
-      return  data.data as ReflectionTopic;
+
+      return (await response.json()).data as ReflectionTopic;
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Network error");
+    }
+  }
+);
+
+export const fetchAllTopics = createAsyncThunk<
+  ReflectionTopic[],
+  void,
+  { rejectValue: string; state: RootState }
+>(
+  "reflection/fetchAllTopics",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reflection/topics`, {
+        method: "GET",
+        headers: getAuthHeaders(token),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue("Too many requests. Please try again later.");
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to fetch topics");
+      }
+
+      const result = await response.json();
+      return result.data as ReflectionTopic[];
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Network error");
+    }
+  }
+);
+
+export const updateTopic = createAsyncThunk<
+  ReflectionTopic,
+  { id: string; title: string; is_active?: boolean },
+  { rejectValue: string; state: RootState }
+>(
+  "reflection/updateTopic",
+  async ({ id, title, is_active }, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reflection/topics/${id}`, {
+        method: "PUT",
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({ title, is_active }),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue("Too many requests. Please try again later.");
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to update topic");
+      }
+
+      const result = await response.json();
+      return result.data as ReflectionTopic;
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Network error");
+    }
+  }
+);
+
+export const deleteTopic = createAsyncThunk<
+  { topicId: string },
+  string,
+  { rejectValue: string; state: RootState }
+>(
+  "reflection/deleteTopic",
+  async (topicId, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reflection/topics/${topicId}`, {
+        method: "DELETE",
+        headers: getAuthHeaders(token),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue("Too many requests. Please try again later.");
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to delete topic");
+      }
+
+      return { topicId };
     } catch (error: any) {
       return rejectWithValue(error.message || "Network error");
     }
@@ -206,7 +317,7 @@ export const fetchReflectionsByStudentId = createAsyncThunk<
         return rejectWithValue("No authentication token found");
       }
 
- const response = await fetch(`${API_BASE_URL}/reflection?studentId=${studentId}`, {
+ const response = await fetch(`${API_BASE_URL}/reflection/${studentId}`, {
   method: "GET",
   headers: getAuthHeaders(token),
 });
@@ -384,7 +495,7 @@ export const fetchComments = createAsyncThunk<
      
      
       const response = await fetch(
-        `${API_BASE_URL}/reflection/comment?reflectionId=${reflectionId}`,
+        `${API_BASE_URL}/reflection/comment/${reflectionId}`,
         {
           method: "GET",
           headers: getAuthHeaders(token),
@@ -413,6 +524,7 @@ const reflectionSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+   
   },
   extraReducers: (builder) => {
     // --- createTopic handlers ---
@@ -428,6 +540,56 @@ const reflectionSlice = createSlice({
       .addCase(createTopic.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to create topic";
+      });
+
+    // --- fetchAllTopics handlers ---
+    builder
+      .addCase(fetchAllTopics.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllTopics.fulfilled, (state, action) => {
+        state.loading = false;
+        state.topics = action.payload;
+      })
+      .addCase(fetchAllTopics.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch topics";
+      });
+
+    // --- updateTopic handlers ---
+    builder
+      .addCase(updateTopic.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(updateTopic.fulfilled, (state, action) => {
+        state.loading = false;
+        const updatedTopic = action.payload;
+        state.topics = state.topics.map((topic) =>
+          topic.id === updatedTopic.id ? updatedTopic : topic
+        );
+      })
+      .addCase(updateTopic.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to update topic";
+      });
+
+    // --- deleteTopic handlers ---
+    builder
+      .addCase(deleteTopic.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(deleteTopic.fulfilled, (state, action) => {
+        state.loading = false;
+        state.topics = state.topics.filter(
+          (topic) => topic.id.toString() !== action.payload.topicId
+        );
+      })
+      .addCase(deleteTopic.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to delete topic";
       });
 
     // --- fetchActiveTopics handlers ---
@@ -578,7 +740,7 @@ builder
         })
 
       // rejected
-      .addCase(updateReflection.rejected, (state, action) => {
+      .addCase(updateReflection.rejected, (state) => {
         state.loading = false;
         state.error =  "Failed to update reflection";
       });
@@ -603,6 +765,7 @@ builder
     
 
 
+export const { clearError } = reflectionSlice.actions;
 
 
 export default reflectionSlice.reducer;

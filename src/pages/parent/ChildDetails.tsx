@@ -33,6 +33,7 @@ import { mockChildren } from "@/constants";
 import type { RootState, AppDispatch } from "@/store";
 import {
   addComment,
+  addComment,
   fetchComments,
   fetchReflectionsByStudentId,
 } from "@/store/slices/reflectionSlice";
@@ -81,6 +82,8 @@ export default function ChildDetailsPage() {
   useEffect(() => {
     const studentId = childId; // store in variable
 
+    dispatch(fetchReflectionsByStudentId(studentId));
+  }, [dispatch]);
     dispatch(fetchReflectionsByStudentId(studentId));
   }, [dispatch]);
 

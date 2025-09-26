@@ -22,14 +22,13 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { Edit3, Save, Loader2, MessageSquare, Eye, Send } from "lucide-react";
+import { Edit3, Save, Loader2, MessageSquare, Send } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "@/store";
 import { API_BASE_URL } from "@/constants";
 import {
   fetchReflectionsByStudentId,
   addComment,
-  fetchComments,
 } from "@/store/slices/reflectionSlice";
 import type { ReflectionItem, ReflectionComment } from "@/types";
 
@@ -233,7 +232,14 @@ export default function StudentManagement() {
         fetchReflectionsByStudentId(studentId as string)
       );
       if (fetchReflectionsByStudentId.fulfilled.match(resultAction)) {
-        setStudentReflections(resultAction.payload);
+        // Ensure each reflection has a reflectioncomments array
+        const reflectionsWithComments = resultAction.payload.map(
+          (reflection) => ({
+            ...reflection,
+            reflectioncomments: reflection.reflectioncomments || [],
+          })
+        );
+        setStudentReflections(reflectionsWithComments);
       } else {
         setError("Failed to fetch reflections");
       }
@@ -241,27 +247,6 @@ export default function StudentManagement() {
       setError(err.message || "Failed to fetch reflections");
     } finally {
       setReflectionsLoading(false);
-    }
-  };
-
-  // Fetch comments for a reflection
-  const fetchReflectionComments = async (reflectionId: string) => {
-    if (!token) return;
-
-    try {
-      const resultAction = await dispatch(fetchComments(reflectionId));
-      if (fetchComments.fulfilled.match(resultAction)) {
-        // Update the reflection with comments
-        setStudentReflections((prev) =>
-          prev.map((reflection) =>
-            reflection.id === reflectionId
-              ? { ...reflection, comments: resultAction.payload }
-              : reflection
-          )
-        );
-      }
-    } catch (err: any) {
-      setError(err.message || "Failed to fetch comments");
     }
   };
 
@@ -276,11 +261,26 @@ export default function StudentManagement() {
 
     try {
       const resultAction = await dispatch(
-        addComment({ reflectionId, content })
+        addComment({ reflectionId: Number(reflectionId), content })
       );
       if (addComment.fulfilled.match(resultAction)) {
-        // Refresh comments for this reflection
-        await fetchReflectionComments(reflectionId);
+        const newComment = resultAction.payload;
+
+        // Update the local studentReflections state immediately
+        setStudentReflections((prev) =>
+          prev.map((reflection) =>
+            reflection.id === reflectionId
+              ? {
+                  ...reflection,
+                  reflectioncomments: [
+                    ...(reflection.reflectioncomments || []),
+                    newComment,
+                  ],
+                }
+              : reflection
+          )
+        );
+
         // Clear the comment input
         setNewComment((prev) => ({
           ...prev,

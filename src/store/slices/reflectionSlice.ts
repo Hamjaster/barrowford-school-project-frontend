@@ -17,7 +17,9 @@ const initialState: ReflectionState = {
   reflections:[],
   loading: false,
   fetchreflectionsloading:false,
+  postingCommentLoading : false,
   error: null,
+  message: null,
 };
 
 
@@ -212,12 +214,12 @@ export const fetchActiveTopics = createAsyncThunk<
 
 //createReflection thunk
 export const createReflection = createAsyncThunk<
-  ReflectionItem, // you can replace `any` with a proper type for reflection response
-  { topicID: string; content: string; file?: File },
+  { message: string; moderation_id: string; requires_moderation: boolean }, // Updated return type for moderation response
+  { topicID: string; content: string; attachmentUrl?: string },
   { state: RootState; rejectValue: string }
 >(
   "reflection/createreflection",
-  async ({ topicID, content, file }, { rejectWithValue, getState }) => {
+  async ({ topicID, content, attachmentUrl }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const token = state.auth.token;
@@ -230,20 +232,22 @@ export const createReflection = createAsyncThunk<
         console.log("no topic id found")
       }
       
-      // Build FormData
-      const formData = new FormData();
-      formData.append("topicID", topicID);
-      formData.append("content", content);
-      if (file) formData.append("file", file);
+      // Build JSON payload instead of FormData
+      const payload = {
+        topicID,
+        content,
+        attachmentUrl: attachmentUrl || ""
+      };
 
-      console.log("form data in frontend",formData)
+      console.log("payload in frontend", payload)
 
       const response = await fetch(`${API_BASE_URL}/reflection/createreflection`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${token}`, // only Authorization
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
-        body: formData,
+        body: JSON.stringify(payload),
       });
 
       if (response.status === 429) {
@@ -256,7 +260,11 @@ export const createReflection = createAsyncThunk<
       }
 
       const result = await response.json();
-      return result.data; // reflection object from backend
+      return {
+        message: result.message,
+        moderation_id: result.moderation_id,
+        requires_moderation: result.requires_moderation
+      };
     } catch (error: any) {
       return rejectWithValue(error.message || "Network error");
     }
@@ -296,6 +304,50 @@ export const deleteReflection = createAsyncThunk<
       }
 
       return { reflectionId }; // return deleted reflection ID
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Network error");
+    }
+  }
+);
+
+// Student request to delete reflection (creates moderation request)
+export const requestDeleteReflection = createAsyncThunk<
+  { message: string; moderation_id: string; requires_moderation: boolean },
+  string, // reflectionId to delete
+  { state: RootState; rejectValue: string }
+>(
+  "reflection/requestDeleteReflection",
+  async (reflectionId, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reflection/student/${reflectionId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue("Too many requests. Please try again later.");
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to request reflection deletion");
+      }
+
+      const result = await response.json();
+      return {
+        message: result.message,
+        moderation_id: result.moderation_id,
+        requires_moderation: result.requires_moderation
+      };
     } catch (error: any) {
       return rejectWithValue(error.message || "Network error");
     }
@@ -380,11 +432,9 @@ export const fetchMyReflections = createAsyncThunk<
   { state: RootState, rejectValue: string }
 >(
   "reflection/my",
-  async (_, { rejectWithValue,getState }) => {
+  async (_, { rejectWithValue }) => {
     try {
-
-      const state = getState();
-      const token = state.auth.token;
+      const token = localStorage.getItem('auth_token');
 
       if (!token) {
         return rejectWithValue("No authentication token found");
@@ -610,27 +660,28 @@ const reflectionSlice = createSlice({
       });
   builder
   .addCase(fetchComments.pending, (state) => {
-    state.loading = true;
+    state.postingCommentLoading = true;
     state.comments = [];
     state.error = null;
   })
   .addCase(fetchComments.fulfilled, (state, action) => {
-    state.loading = false;
+    state.postingCommentLoading = false;
     state.comments = action.payload
   })
   .addCase(fetchComments.rejected, (state, action) => {
-    state.loading = false;
+    state.postingCommentLoading = false;
     state.comments = [];
     state.error = action.payload || "Failed to fetch comments";
   });
 
   builder
     .addCase(addComment.pending, (state) => {
-      state.loading = true;
+    
       state.error = null;
+      state.postingCommentLoading = true;
     })
     .addCase(addComment.fulfilled, (state, action) => {
-  state.loading = false;
+
   const newComment = action.payload;
 
   if (!newComment || !newComment.id) {
@@ -640,10 +691,12 @@ const reflectionSlice = createSlice({
 
   // Push the new comment into the global comments array
   state.comments.push(newComment);
+  state.postingCommentLoading = false;
 })
     .addCase(addComment.rejected, (state, action) => {
-      state.loading = false;
+    
       state.error = action.payload || "Something went wrong";
+      state.postingCommentLoading = false;
     });
 //for fetching student 
  builder
@@ -672,12 +725,9 @@ const reflectionSlice = createSlice({
       })
       .addCase(createReflection.fulfilled, (state, action) => {
          state.loading = false;
-        const newreflection = action.payload
-        console.log("fetchMyReflections payload:", newreflection);
-        if(newreflection){
-           state.reflections.push(action.payload)
-        }
-       
+        // No longer adding to reflections array since it's now moderated
+        // The reflection will appear after teacher approval
+        console.log("Reflection sent for moderation:", action.payload);
       })
       .addCase(createReflection.rejected, (state, action) => {
         state.loading = false;
@@ -759,6 +809,22 @@ builder
       .addCase(deleteReflection.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to delete reflection";
+      });
+
+    // --- requestDeleteReflection handlers ---
+    builder
+      .addCase(requestDeleteReflection.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(requestDeleteReflection.fulfilled, (state, action) => {
+        state.loading = false;
+        // No immediate removal since it's sent for moderation
+        console.log("Delete request sent for moderation:", action.payload);
+      })
+      .addCase(requestDeleteReflection.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to request reflection deletion";
       });
   },
 });

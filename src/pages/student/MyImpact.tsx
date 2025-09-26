@@ -18,23 +18,7 @@ export default function MyImpact() {
   );
 
   // Initialize with empty content or provide default content
-  const [editorContent, setEditorContent] = useState<any>({
-    type: "doc",
-    content: [
-      {
-        type: "paragraph",
-        attrs: {
-          textAlign: null,
-        },
-        content: [
-          {
-            type: "text",
-            text: "Start writing your impact story...",
-          },
-        ],
-      },
-    ],
-  });
+  const [editorContent, setEditorContent] = useState<null | any>(null);
 
   // Load impact data on component mount
   useEffect(() => {
@@ -43,9 +27,11 @@ export default function MyImpact() {
 
   // Update editor content when impact data is loaded
   useEffect(() => {
+    console.log("impact", impact);
     if (impact && impact.content) {
       try {
         const parsedContent = JSON.parse(impact.content);
+        console.log("parsedContent setting to :--", parsedContent);
         setEditorContent(parsedContent);
       } catch (error) {
         console.error("Error parsing impact content:", error);
@@ -101,10 +87,14 @@ export default function MyImpact() {
         </div>
       </div>
       <div className="mt-4">
-        <SimpleEditor
-          content={editorContent}
-          onContentChange={handleContentChange}
-        />
+        {/* I want to re-redner it when ever editorContent changes */}
+        {editorContent && (
+          <SimpleEditor
+            key={editorContent.id}
+            content={editorContent}
+            onContentChange={handleContentChange}
+          />
+        )}
       </div>
     </div>
   );

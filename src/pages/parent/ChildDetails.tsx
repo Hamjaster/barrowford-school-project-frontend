@@ -33,6 +33,7 @@ import { mockChildren } from "@/constants";
 import type { RootState, AppDispatch } from "@/store";
 import {
   addComment,
+  addComment,
   fetchComments,
   fetchReflectionsByStudentId,
 } from "@/store/slices/reflectionSlice";
@@ -74,16 +75,15 @@ export default function ChildDetailsPage() {
     (state: RootState) => state.parent
   );
 
-  const { reflections, comments, error, topics } = useSelector(
-    (state: RootState) => state.reflection
-  );
-  const { reflections, comments } = useSelector(
+  const { comments, error, topics, postingCommentLoading } = useSelector(
     (state: RootState) => state.reflection
   );
 
   useEffect(() => {
     const studentId = childId; // store in variable
 
+    dispatch(fetchReflectionsByStudentId(studentId));
+  }, [dispatch]);
     dispatch(fetchReflectionsByStudentId(studentId));
   }, [dispatch]);
 
@@ -344,11 +344,11 @@ export default function ChildDetailsPage() {
             )}
 
             <div className="grid gap-6">
-              {reflections.map((reflection) => {
+              {selectedChild.reflections.map((reflection) => {
                 const reflectionComments = comments.filter(
                   (c) => c.reflection_id === reflection.id
                 );
-
+                console.log(reflection, "REFLECTION in loop !");
                 return (
                   <Card
                     key={reflection.id}
@@ -359,7 +359,7 @@ export default function ChildDetailsPage() {
                         <div className="flex items-center gap-3">
                           <div>
                             <h4 className="font-semibold text-gray-800 text-base">
-                              {reflection.reflectiontopics.title}
+                              {/* {reflection.reflectiontopics.title} */}
                             </h4>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge
@@ -471,6 +471,7 @@ export default function ChildDetailsPage() {
                                   }
                                   disabled={!newComments[reflection.id]?.trim()}
                                   className="h-8"
+                                  loading={postingCommentLoading}
                                 >
                                   <Send className="w-3 h-3 mr-1" />
                                   Post Comment

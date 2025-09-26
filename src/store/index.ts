@@ -6,6 +6,7 @@ import yearDataReducer from './slices/yearDataSlice';
 import studentReducer from './slices/studentSlice';
 import personalSectionReducer from './slices/personalSectionSlice';
 import parentReducer from './slices/parentSlice';
+import moderationReducer from './slices/moderationSlice';
 
 export const store = configureStore({
   reducer: {
@@ -16,6 +17,7 @@ export const store = configureStore({
     student: studentReducer,
     personalSection: personalSectionReducer,
     parent: parentReducer,
+    moderation: moderationReducer,
   },
 });
 

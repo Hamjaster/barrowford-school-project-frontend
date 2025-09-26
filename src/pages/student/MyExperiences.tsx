@@ -18,23 +18,7 @@ export default function MyExperiences() {
   );
 
   // Initialize with empty content or provide default content
-  const [editorContent, setEditorContent] = useState<any>({
-    type: "doc",
-    content: [
-      {
-        type: "paragraph",
-        attrs: {
-          textAlign: null,
-        },
-        content: [
-          {
-            type: "text",
-            text: "Tell us about your experiences...",
-          },
-        ],
-      },
-    ],
-  });
+  const [editorContent, setEditorContent] = useState<null | any>(null);
 
   // Load experience data on component mount
   useEffect(() => {
@@ -101,10 +85,13 @@ export default function MyExperiences() {
         </div>
       </div>
       <div className="mt-4">
-        <SimpleEditor
-          content={editorContent}
-          onContentChange={handleContentChange}
-        />
+        {editorContent && (
+          <SimpleEditor
+            key={editorContent.id}
+            content={editorContent}
+            onContentChange={handleContentChange}
+          />
+        )}
       </div>
     </div>
   );

@@ -29,10 +29,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useNavigate, useParams } from "react-router-dom";
-import { mockChildren } from "@/constants";
 import type { RootState, AppDispatch } from "@/store";
 import {
-  addComment,
   addComment,
   fetchComments,
   fetchReflectionsByStudentId,
@@ -66,6 +64,7 @@ export default function ChildDetailsPage() {
   const params = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const childId = params.id as string;
   const [activeTab, setActiveTab] = useState("learning");
 
   const [fetchError, setFetchError] = useState<string>("");
@@ -75,17 +74,9 @@ export default function ChildDetailsPage() {
     (state: RootState) => state.parent
   );
 
-  const { comments, error, topics, postingCommentLoading } = useSelector(
+  const { comments, postingCommentLoading } = useSelector(
     (state: RootState) => state.reflection
   );
-
-  useEffect(() => {
-    const studentId = childId; // store in variable
-
-    dispatch(fetchReflectionsByStudentId(studentId));
-  }, [dispatch]);
-    dispatch(fetchReflectionsByStudentId(studentId));
-  }, [dispatch]);
 
   const [newComments, setNewComments] = useState<{ [key: string]: string }>({});
   const [showCommentInput, setShowCommentInput] = useState<{
@@ -93,7 +84,10 @@ export default function ChildDetailsPage() {
   }>({});
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
 
-  const childId = params.id as string;
+  useEffect(() => {
+    const studentId = childId; // store in variable
+    dispatch(fetchReflectionsByStudentId(studentId));
+  }, [dispatch, childId]);
 
   useEffect(() => {
     if (childId) {
@@ -111,23 +105,6 @@ export default function ChildDetailsPage() {
       </div>
     );
   }
-
-  // if (error) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold text-gray-800 mb-4">
-  //           Error Loading Child Details
-  //         </h1>
-  //         <p className="text-red-600 mb-4">{error}</p>
-  //         <Button onClick={() => navigate("/")}>
-  //           <ArrowLeft className="w-4 h-4 mr-2" />
-  //           Back to Dashboard
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   if (!selectedChild) {
     return (
@@ -398,7 +375,7 @@ export default function ChildDetailsPage() {
                             Comments ({reflectionComments.length})
                           </div>
 
-                          {comments.map((comment) => (
+                          {reflectionComments.map((comment) => (
                             <div
                               key={comment.id}
                               className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-200"
@@ -643,17 +620,6 @@ export default function ChildDetailsPage() {
           background-clip: padding-box;
         }
       `}</style>
-      {/* Header */}
-      {/* <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-      </div> */}
 
       <div className="w-full mx-auto px-6 py-8">
         {/* Child Profile Header */}

@@ -29,9 +29,12 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { useNavigate, useParams } from "react-router-dom";
-import { mockChildren } from "@/constants";
- import type { RootState, AppDispatch } from "@/store";
-import { addComment, fetchComments,fetchReflectionsByStudentId } from "@/store/slices/reflectionSlice";
+import type { RootState, AppDispatch } from "@/store";
+import {
+  addComment,
+  fetchComments,
+  fetchReflectionsByStudentId,
+} from "@/store/slices/reflectionSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchChildDetails } from "@/store/slices/parentSlice";
 import { DEFAULT_AVATAR_URL } from "@/constants";
@@ -57,31 +60,23 @@ const tabs = [
   { id: "reflections", label: "Reflections", icon: MessageSquare },
 ];
 
-
-
 export default function ChildDetailsPage() {
   const params = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
+  const childId = params.id as string;
   const [activeTab, setActiveTab] = useState("learning");
 
-  const [fetchError, setFetchError] = useState<string>("")
-  const [addcommentError,setAddCommentError] = useState<string>("")
-
+  const [fetchError, setFetchError] = useState<string>("");
+  const [addcommentError, setAddCommentError] = useState<string>("");
 
   const { selectedChild, isLoadingChildDetails } = useSelector(
     (state: RootState) => state.parent
   );
 
-      const { reflections,comments,  } = useSelector(
-        (state: RootState) => state.reflection
-      );
-
-      useEffect(() => {
-        const studentId = childId; // store in variable
-
-        dispatch(fetchReflectionsByStudentId(studentId))
-      }, [dispatch]);
+  const { comments, postingCommentLoading } = useSelector(
+    (state: RootState) => state.reflection
+  );
 
   const [newComments, setNewComments] = useState<{ [key: string]: string }>({});
   const [showCommentInput, setShowCommentInput] = useState<{
@@ -89,7 +84,10 @@ export default function ChildDetailsPage() {
   }>({});
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
 
-  const childId = params.id as string;
+  useEffect(() => {
+    const studentId = childId; // store in variable
+    dispatch(fetchReflectionsByStudentId(studentId));
+  }, [dispatch, childId]);
 
   useEffect(() => {
     if (childId) {
@@ -107,23 +105,6 @@ export default function ChildDetailsPage() {
       </div>
     );
   }
-
-  // if (error) {
-  //   return (
-  //     <div className="min-h-screen flex items-center justify-center">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold text-gray-800 mb-4">
-  //           Error Loading Child Details
-  //         </h1>
-  //         <p className="text-red-600 mb-4">{error}</p>
-  //         <Button onClick={() => navigate("/")}>
-  //           <ArrowLeft className="w-4 h-4 mr-2" />
-  //           Back to Dashboard
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   if (!selectedChild) {
     return (
@@ -153,48 +134,48 @@ export default function ChildDetailsPage() {
     500: 1,
   };
 
+  const handleAddComment = async (reflectionId: number) => {
+    const commentText = newComments[reflectionId]?.trim();
+    if (!commentText) return;
 
-const handleAddComment = async (reflectionId: number) => {
-  const commentText = newComments[reflectionId]?.trim();
-  if (!commentText) return;
-
-  try {
-    // clear old error before request
-    setAddCommentError("")
-
-    // ✅ unwrap so errors can be caught
-    await dispatch(addComment({ reflectionId, content: commentText })).unwrap();
-
-    // ✅ clear input and close box on success
-    setNewComments((prev) => ({ ...prev, [reflectionId]: "" }));
-    setShowCommentInput((prev) => ({ ...prev, [reflectionId]: false }));
-  } catch (err: any) {
-    // ❌ show backend error for this reflection
-    setAddCommentError("Failed while uploading comments")
-  }
-};
-
-
-
-const toggleCommentInput = async (reflectionId: number) => {
-  setShowCommentInput((prev) => ({
-    ...prev,
-    [reflectionId]: !prev[reflectionId],
-  }));
-  setFetchError("")
-  setAddCommentError("")
-
-  // If opening comment input, fetch comments for this reflection
-  if (!showCommentInput[reflectionId]) {
-    setFetchError(""); // clear previous error
     try {
-      await dispatch(fetchComments(reflectionId)).unwrap();
-    } catch (err: any) {
-      setFetchError(err.message || "Failed to fetch comments. Please try again.");
-    }
-  }
-};
+      // clear old error before request
+      setAddCommentError("");
 
+      // ✅ unwrap so errors can be caught
+      await dispatch(
+        addComment({ reflectionId, content: commentText })
+      ).unwrap();
+
+      // ✅ clear input and close box on success
+      setNewComments((prev) => ({ ...prev, [reflectionId]: "" }));
+      setShowCommentInput((prev) => ({ ...prev, [reflectionId]: false }));
+    } catch (err: any) {
+      // ❌ show backend error for this reflection
+      setAddCommentError("Failed while uploading comments");
+    }
+  };
+
+  const toggleCommentInput = async (reflectionId: number) => {
+    setShowCommentInput((prev) => ({
+      ...prev,
+      [reflectionId]: !prev[reflectionId],
+    }));
+    setFetchError("");
+    setAddCommentError("");
+
+    // If opening comment input, fetch comments for this reflection
+    if (!showCommentInput[reflectionId]) {
+      setFetchError(""); // clear previous error
+      try {
+        await dispatch(fetchComments(reflectionId)).unwrap();
+      } catch (err: any) {
+        setFetchError(
+          err.message || "Failed to fetch comments. Please try again."
+        );
+      }
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
@@ -333,18 +314,18 @@ const toggleCommentInput = async (reflectionId: number) => {
                 {selectedChild.reflections.length} total reflections
               </Badge>
             </div>
-              {fetchError && (
-            <div className="p-3 mb-4 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm">
-              {fetchError}
-            </div>
-          )}
+            {fetchError && (
+              <div className="p-3 mb-4 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm">
+                {fetchError}
+              </div>
+            )}
 
             <div className="grid gap-6">
-              {reflections.map((reflection) => {
+              {selectedChild.reflections.map((reflection) => {
                 const reflectionComments = comments.filter(
                   (c) => c.reflection_id === reflection.id
                 );
-
+                console.log(reflection, "REFLECTION in loop !");
                 return (
                   <Card
                     key={reflection.id}
@@ -355,7 +336,7 @@ const toggleCommentInput = async (reflectionId: number) => {
                         <div className="flex items-center gap-3">
                           <div>
                             <h4 className="font-semibold text-gray-800 text-base">
-                              {reflection.reflectiontopics.title}
+                              {/* {reflection.reflectiontopics.title} */}
                             </h4>
                             <div className="flex items-center gap-2 mt-1">
                               <Badge
@@ -367,19 +348,19 @@ const toggleCommentInput = async (reflectionId: number) => {
                               </Badge>
                               <span className="text-xs text-gray-500 flex items-center gap-1">
                                 <Clock className="w-3 h-3" />
-                                {new Date(reflection.created_at).toLocaleDateString(
-                                  "en-US",
-                                  {
-                                    weekday: "long",
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  })}
-                                </span>
-                              </div>
+                                {new Date(
+                                  reflection.created_at
+                                ).toLocaleDateString("en-US", {
+                                  weekday: "long",
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </span>
                             </div>
                           </div>
                         </div>
+                      </div>
 
                       <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
                         <p className="text-sm text-gray-700 leading-relaxed">
@@ -387,20 +368,19 @@ const toggleCommentInput = async (reflectionId: number) => {
                         </p>
                       </div>
 
-                        {reflectionComments.length > 0 && (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                              <MessageSquare className="w-4 h-4" />
-                              Comments ({reflectionComments.length})
-                            </div>
+                      {reflectionComments.length > 0 && (
+                        <div className="mt-4 space-y-3">
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <MessageSquare className="w-4 h-4" />
+                            Comments ({reflectionComments.length})
+                          </div>
 
-                          {comments.map((comment) => (
+                          {reflectionComments.map((comment) => (
                             <div
                               key={comment.id}
                               className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-200"
                             >
                               <div className="flex items-start gap-3">
-                               
                                 <div className="flex-1">
                                   <div className="flex items-center gap-2 mb-1">
                                     <span className="text-sm font-medium text-gray-800">
@@ -427,98 +407,98 @@ const toggleCommentInput = async (reflectionId: number) => {
                         </div>
                       )}
 
-                        {showCommentInput[Number(reflection.id)] && (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                              <MessageSquare className="w-4 h-4" />
-                              Add a comment
-                            </div>
-                            <div className="flex gap-3">
-                              <Avatar className="w-8 h-8">
-                                <AvatarImage
-                                  src="/loving-parent.png"
-                                  alt="Parent"
-                                />
-                                <AvatarFallback className="text-xs">
-                                  <User className="w-4 h-4" />
-                                </AvatarFallback>
-                              </Avatar>
-                              <div className="flex-1 space-y-2">
-                                {addcommentError && (
+                      {showCommentInput[Number(reflection.id)] && (
+                        <div className="mt-4 space-y-3">
+                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                            <MessageSquare className="w-4 h-4" />
+                            Add a comment
+                          </div>
+                          <div className="flex gap-3">
+                            <Avatar className="w-8 h-8">
+                              <AvatarImage
+                                src="/loving-parent.png"
+                                alt="Parent"
+                              />
+                              <AvatarFallback className="text-xs">
+                                <User className="w-4 h-4" />
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-2">
+                              {addcommentError && (
                                 <div className="p-3 mb-4 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm">
                                   {addcommentError}
                                 </div>
                               )}
-                                <Textarea
-                                  placeholder="Share your thoughts about this reflection..."
-                                  value={newComments[reflection.id] || ""}
-                                  onChange={(e) =>
-                                    setNewComments((prev) => ({
-                                      ...prev,
-                                      [reflection.id]: e.target.value,
-                                    }))
+                              <Textarea
+                                placeholder="Share your thoughts about this reflection..."
+                                value={newComments[reflection.id] || ""}
+                                onChange={(e) =>
+                                  setNewComments((prev) => ({
+                                    ...prev,
+                                    [reflection.id]: e.target.value,
+                                  }))
+                                }
+                                className="min-h-[80px] text-sm resize-none"
+                              />
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  onClick={() =>
+                                    handleAddComment(Number(reflection.id))
                                   }
-                                  className="min-h-[80px] text-sm resize-none"
-                                />
-                                <div className="flex gap-2">
-                                  <Button
-                                    size="sm"
-                                    onClick={() =>
-                                      handleAddComment(Number(reflection.id))
-                                    }
-                                    disabled={
-                                      !newComments[reflection.id]?.trim()
-                                    }
-                                    className="h-8"
-                                  >
-                                    <Send className="w-3 h-3 mr-1" />
-                                    Post Comment
-                                  </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() =>
-                                      toggleCommentInput(Number(reflection.id))
-                                    }
-                                    className="h-8"
-                                  >
-                                    Cancel
-                                  </Button>
-                                </div>
+                                  disabled={!newComments[reflection.id]?.trim()}
+                                  className="h-8"
+                                  loading={postingCommentLoading}
+                                >
+                                  <Send className="w-3 h-3 mr-1" />
+                                  Post Comment
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() =>
+                                    toggleCommentInput(Number(reflection.id))
+                                  }
+                                  className="h-8"
+                                >
+                                  Cancel
+                                </Button>
                               </div>
                             </div>
                           </div>
-                        )}
+                        </div>
+                      )}
 
-                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>Student Reflection</span>
-                          </div>
-                          <div className="flex items-center gap-3">
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              onClick={() => toggleCommentInput(Number(reflection.id))}
-                              className="h-7 px-2 text-xs text-gray-600 hover:text-blue-600"
-                            >
-                              <MessageSquare className="w-3 h-3 mr-1" />
-                              {reflectionComments.length > 0
-                                ? `${reflectionComments.length} Comments`
-                                : "Comment"}
-                            </Button>
-                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                              <Heart className="w-3 h-3" />
-                              <span>Shared with love</span>
-                            </div>
+                      <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
+                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                          <MessageSquare className="w-3 h-3" />
+                          <span>Student Reflection</span>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() =>
+                              toggleCommentInput(Number(reflection.id))
+                            }
+                            className="h-7 px-2 text-xs text-gray-600 hover:text-blue-600"
+                          >
+                            <MessageSquare className="w-3 h-3 mr-1" />
+                            {reflectionComments.length > 0
+                              ? `${reflectionComments.length} Comments`
+                              : "Comment"}
+                          </Button>
+                          <div className="flex items-center gap-1 text-xs text-gray-400">
+                            <Heart className="w-3 h-3" />
+                            <span>Shared with love</span>
                           </div>
                         </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-          
+                      </div>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
         );
 
@@ -640,17 +620,6 @@ const toggleCommentInput = async (reflectionId: number) => {
           background-clip: padding-box;
         }
       `}</style>
-      {/* Header */}
-      {/* <div className="bg-white border-b">
-        <div className="max-w-6xl mx-auto px-6 py-4">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => navigate("/")}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Back to Dashboard
-            </Button>
-          </div>
-        </div>
-      </div> */}
 
       <div className="w-full mx-auto px-6 py-8">
         {/* Child Profile Header */}

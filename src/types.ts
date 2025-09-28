@@ -207,7 +207,7 @@ export interface ReflectionTopic {
   id : number;
   title : string;
   created_by : string;
-  is_active : string;
+  is_active : boolean;
   created_at : string;
 }
 
@@ -218,7 +218,9 @@ export interface ReflectionState {
   reflections: ReflectionItem[]  ;
   loading: boolean;
   fetchreflectionsloading : boolean;
+  postingCommentLoading : boolean;
   error: string | null;
+  message: string | null;
 }
 
 
@@ -242,9 +244,11 @@ export interface ReflectionItem {
   created_at: string;
   topic_id: string;
   status: string;
+  week?: string;
   reflectiontopics: {
     title: string;
   };
+  reflectioncomments: ReflectionComment[];
 }
 
 export interface TableEntry {
@@ -254,6 +258,7 @@ export interface TableEntry {
   status: string;
   content: string;
   attachment_url: string;
+  topic_id: string;
   week?: string;   // optional if sometimes missing
 }
 
@@ -278,8 +283,8 @@ export interface AddCommentRequest {
 
 // fetch comments
 export interface ReflectionComment {
-  id: string;
-  reflection_id: string;
+  id: number;
+  reflection_id: number;
   user_role: string;
   comment: string;
   created_at: string;

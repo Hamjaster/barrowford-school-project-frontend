@@ -50,6 +50,7 @@ const UsersTable: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
   const { users, pagination, isLoading, error, resetPasswordSuccess } =
     useSelector((state: RootState) => state.userManagement);
+  const { user: currentUser } = useSelector((state: RootState) => state.auth);
 
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -113,6 +114,18 @@ const UsersTable: React.FC = () => {
       dispatch(clearError());
     }
   }, [error, dispatch]);
+
+  // Reset role filter if current filter is not available for the current user
+  useEffect(() => {
+    const availableRoles = getAvailableRoles();
+    const isCurrentFilterValid =
+      roleFilter === "all" ||
+      availableRoles.some((role) => role.value === roleFilter);
+
+    if (!isCurrentFilterValid) {
+      setRoleFilter("all");
+    }
+  }, [currentUser, roleFilter]);
 
   const handleSort = (column: SortColumn) => {
     if (sortColumn === column) {
@@ -182,7 +195,48 @@ const UsersTable: React.FC = () => {
   };
 
   const capitalizeRole = (role: string) => {
-    return role.charAt(0).toUpperCase() + role.slice(1);
+    console.log(role, "ROLE");
+    console.log(role.charAt(0).toUpperCase() + role.slice(1), "now ROLE");
+
+    // staff_admin --> Staff Admin
+
+    return (
+      role.replace(/_/g, " ").charAt(0).toUpperCase() +
+      role.replace(/_/g, " ").slice(1)
+    );
+  };
+
+  // Get available roles based on current user's role
+  const getAvailableRoles = () => {
+    if (!currentUser) return [];
+
+    const allRoles = [
+      { value: "staff_admin", label: "Staff Admin" },
+      { value: "staff", label: "Staff" },
+      { value: "parent", label: "Parent" },
+      { value: "student", label: "Student" },
+    ];
+
+    // Filter roles based on current user's role
+    switch (currentUser.role) {
+      case "admin":
+        // Admin can see all roles
+        return allRoles;
+      case "staff_admin":
+        // Staff Admin cannot see "Staff Admin" (their own role)
+        return allRoles.filter((role) => role.value !== "staff_admin");
+      case "staff":
+        // Staff cannot see "Staff" or "Staff Admin"
+        return allRoles.filter(
+          (role) => role.value !== "staff" && role.value !== "staff_admin"
+        );
+      case "parent":
+      case "student":
+        // Parents and students typically don't have access to user management
+        return [];
+      default:
+        return [];
+    }
   };
 
   return (
@@ -204,15 +258,22 @@ const UsersTable: React.FC = () => {
           />
         </div>
         <Select value={roleFilter} onValueChange={handleRoleFilter}>
-          <SelectTrigger className="w-full sm:w-[180px]">
+          <SelectTrigger className="cursor-pointer w-full sm:w-[180px]">
             <SelectValue placeholder="Filter by role" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Roles</SelectItem>
-            <SelectItem value="admin">Admin</SelectItem>
-            <SelectItem value="staff">Staff</SelectItem>
-            <SelectItem value="parent">Parent</SelectItem>
-            <SelectItem value="student">Student</SelectItem>
+            <SelectItem className="cursor-pointer" value="all">
+              All Roles
+            </SelectItem>
+            {getAvailableRoles().map((role) => (
+              <SelectItem
+                key={role.value}
+                className="cursor-pointer"
+                value={role.value}
+              >
+                {role.label}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -226,7 +287,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("first_name")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Name {getSortIcon("first_name")}
                 </Button>
@@ -235,7 +296,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("email")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Email {getSortIcon("email")}
                 </Button>
@@ -244,7 +305,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("role")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Role {getSortIcon("role")}
                 </Button>
@@ -253,7 +314,7 @@ const UsersTable: React.FC = () => {
                 <Button
                   variant="ghost"
                   onClick={() => handleSort("created_at")}
-                  className="h-auto p-0 font-medium hover:bg-transparent"
+                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
                 >
                   Created {getSortIcon("created_at")}
                 </Button>
@@ -303,7 +364,7 @@ const UsersTable: React.FC = () => {
                       variant="outline"
                       size="sm"
                       onClick={() => openResetPasswordModal(user)}
-                      className="ml-2"
+                      className="cursor-pointer ml-2"
                     >
                       <KeyRound className="h-4 w-4 mr-1" />
                       Reset Password
@@ -332,6 +393,7 @@ const UsersTable: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
+              className="cursor-pointer"
               onClick={() => setCurrentPage(currentPage - 1)}
               disabled={!pagination.hasPrevPage}
             >
@@ -346,6 +408,7 @@ const UsersTable: React.FC = () => {
             <Button
               variant="outline"
               size="sm"
+              className="cursor-pointer"
               onClick={() => setCurrentPage(currentPage + 1)}
               disabled={!pagination.hasNextPage}
             >
@@ -415,6 +478,7 @@ const UsersTable: React.FC = () => {
             <div className="flex justify-end space-x-2">
               <Button
                 variant="outline"
+                className="cursor-pointer"
                 onClick={() => {
                   setResetPasswordModal(false);
                   setSelectedUser(null);
@@ -426,21 +490,15 @@ const UsersTable: React.FC = () => {
               </Button>
               <Button
                 onClick={handleResetPassword}
+                className="cursor-pointer"
                 disabled={
                   !newPassword ||
                   !confirmPassword ||
-                  newPassword !== confirmPassword ||
-                  isLoading
+                  newPassword !== confirmPassword
                 }
+                loading={isLoading}
               >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    Resetting...
-                  </>
-                ) : (
-                  "Reset Password"
-                )}
+                Reset Password
               </Button>
             </div>
           </div>

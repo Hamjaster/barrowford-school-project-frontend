@@ -13,6 +13,8 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/slices/authSlice";
 import { Button } from "@/components/ui/button";
 import LearningDropdown from "@/components/LearningDropdown";
+import ImagesDropdown from "@/components/ImagesDropdown";
+import barrowfordlogo from "@/assets/barrowforrdlogo.png"
 
 import {
   Sidebar as ShadcnSidebar,
@@ -76,26 +78,16 @@ const StudentSidebar: React.FC = () => {
 
   return (
     <ShadcnSidebar className="border-r" collapsible="offcanvas">
-      <SidebarHeader className="p-4 sm:p-6">
-        <div className="flex items-start gap-3">
-          <div className="flex-shrink-0">
-            <div className="w-10 h-10 bg-pink-600 rounded-full flex items-center justify-center">
-              <GraduationCap size={24} className="text-white" />
-            </div>
-          </div>
-          <div className="flex-1">
-            <div className="text-lg font-bold text-gray-800 leading-tight">
-              Student Portal
-            </div>
-            <div className="text-sm text-gray-600 leading-tight">
-              Your Learning Journey
-            </div>
-            <div className="text-xs text-pink-600 italic mt-1 leading-tight">
-              Dream, Learn, Achieve
-            </div>
-          </div>
-        </div>
-      </SidebarHeader>
+     <SidebarHeader className="p-4 sm:p-6">
+    <div className="flex items-start gap-3">
+      <img 
+        src={barrowfordlogo} 
+        alt="Barrowford Logo"
+        className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+      />
+    </div>
+  </SidebarHeader>
+
 
       <SidebarContent>
         <SidebarGroup>
@@ -103,8 +95,12 @@ const StudentSidebar: React.FC = () => {
             <SidebarMenu>
               {navItems.map((item) => (
                 <SidebarMenuItem key={item.label}>
+                  {/* I also want to show a dropdown on My Images page */}
+
                   {item.label === "My Learning" ? (
                     <LearningDropdown className="w-full" />
+                  ) : item.label === "My Images" ? (
+                    <ImagesDropdown className="w-full" />
                   ) : (
                     <SidebarMenuButton className="h-16" asChild size="lg">
                       <Link

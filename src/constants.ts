@@ -95,7 +95,7 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
       },
      
     ],
-    availableTabs: ['overview', 'create-user'],
+    availableTabs: ['overview', 'create-user', 'personal-section-topics'],
   },
   parent: {
     displayName: 'Parent',
@@ -171,6 +171,7 @@ export const TAB_DISPLAY_NAMES: Record<string, string> = {
   'my-learning': 'My Learning',
   'my-experiences': 'My Experiences',
   'what-i-read': 'What I Read',
+  'personal-section-topics': 'Personal Section Topics',
 } as const;
 
 // Default Avatar URL
@@ -186,7 +187,7 @@ export const mockChildren: Child[] = [
     grade: "Year 1",
     class: "3A",
     avatar: `${DEFAULT_AVATAR_URL}?seed=emma`,
-    parent_id: "",
+    parent_id: "1",
     created_at: "2024-01-15",
     is_active: true,
   },
@@ -199,7 +200,7 @@ export const mockChildren: Child[] = [
     grade: "Year 3",
     class: "5B",
     avatar: `${DEFAULT_AVATAR_URL}?seed=liam`,
-    parent_id:  "",
+    parent_id: "2",
     created_at: "2024-01-15",
     is_active: true,
   },

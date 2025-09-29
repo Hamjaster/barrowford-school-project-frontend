@@ -16,6 +16,7 @@ import type { UserRole } from "@/types";
 import { ROLEWISE_INFORMATION } from "@/constants";
 import { getTabDisplayName } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import ForgotPasswordForm from "@/components/forms/ForgotPasswordForm";
 
 const StaffAdminDashboard: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
@@ -57,6 +58,7 @@ const StaffAdminDashboard: React.FC = () => {
               </div>
               <UsersTable />
             </div>
+            <ForgotPasswordForm />
           </div>
         );
 
@@ -78,7 +80,7 @@ const StaffAdminDashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
-      <div className="max-w-7xl mx-auto">
+      <div className="w-full mx-auto">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">
@@ -96,7 +98,7 @@ const StaffAdminDashboard: React.FC = () => {
               <div
                 key={tab}
                 onClick={() => setActiveTab(tab as any)}
-                className={`border-b-2 p-3 font-medium text-sm ${
+                className={`border-b-2 p-3 font-medium text-sm cursor-pointer ${
                   activeTab === tab
                     ? "border-blue-500 text-blue-600"
                     : "border-transparent"

@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
+import MultiSelect from "@/components/ui/multi-select";
 import {
   createUser,
   clearError,
@@ -12,7 +13,12 @@ import {
 } from "@/store/slices/userManagementSlice";
 import type { RootState } from "@/store";
 import type { CreateUserFormData, UserRole } from "@/types";
-import { validateEmail, validatePassword, validateName } from "@/lib/utils";
+import {
+  validateEmail,
+  validatePassword,
+  validateName,
+  validateUsername,
+} from "@/lib/utils";
 import { ROLEWISE_INFORMATION } from "@/constants";
 
 interface CreateUserFormProps {
@@ -26,11 +32,14 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
 
   const [formData, setFormData] = useState<CreateUserFormData>({
     email: "",
+    username: "",
     password: "",
     first_name: "",
     last_name: "",
     role: allowedRoles[0] || "student",
-    parent_id: "",
+    parent_ids: [],
+    year_group_id: 1,
+    class_id: 1,
   });
 
   const handleInputChange = (
@@ -40,27 +49,52 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     setFormData((prev) => {
       const newFormData = { ...prev, [name]: value };
 
-      // Clear parent_id if role is changed from student to something else
+      // Clear parent_ids if role is changed from student to something else
       if (name === "role" && value !== "student") {
-        newFormData.parent_id = "";
+        newFormData.parent_ids = [];
+      }
+
+      // Clear username/email when switching roles
+      if (name === "role") {
+        if (value === "student") {
+          newFormData.email = "";
+        } else {
+          newFormData.username = "";
+        }
       }
 
       return newFormData;
     });
   };
 
+  const handleParentSelection = (selectedParentIds: (string | number)[]) => {
+    setFormData((prev) => ({
+      ...prev,
+      parent_ids: selectedParentIds.map((id) => Number(id)),
+    }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate all fields
-    const emailValidation = validateEmail(formData.email);
     const passwordValidation = validatePassword(formData.password);
     const firstNameValidation = validateName(formData.first_name, "First name");
     const lastNameValidation = validateName(formData.last_name, "Last name");
 
-    if (!emailValidation.isValid) {
-      toast.error(emailValidation.error);
-      return;
+    // Validate email or username based on role
+    if (formData.role === "student") {
+      const usernameValidation = validateUsername(formData.username || "");
+      if (!usernameValidation.isValid) {
+        toast.error(usernameValidation.error);
+        return;
+      }
+    } else {
+      const emailValidation = validateEmail(formData.email || "");
+      if (!emailValidation.isValid) {
+        toast.error(emailValidation.error);
+        return;
+      }
     }
 
     if (!passwordValidation.isValid) {
@@ -79,8 +113,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     }
 
     // Validate parent selection for student role
-    if (formData.role === "student" && !formData.parent_id) {
-      toast.error("Please select a parent for the student");
+    if (
+      formData.role === "student" &&
+      (!formData.parent_ids || formData.parent_ids.length === 0)
+    ) {
+      toast.error("Please select at least one parent for the student");
       return;
     }
 
@@ -109,11 +146,14 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       toast.success(successMessage || "User created successfully!");
       setFormData({
         email: "",
+        username: "",
         password: "",
         first_name: "",
         last_name: "",
         role: allowedRoles[0] || "student",
-        parent_id: "",
+        parent_ids: [],
+        year_group_id: 1,
+        class_id: 1,
       });
       dispatch(clearSuccess());
     }
@@ -162,23 +202,46 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           </div>
         </div>
 
-        <div>
-          <label
-            htmlFor="email"
-            className="block text-sm font-medium text-gray-700 mb-2"
-          >
-            Email Address
-          </label>
-          <Input
-            id="email"
-            name="email"
-            type="email"
-            value={formData.email}
-            onChange={handleInputChange}
-            placeholder="Enter email address"
-            required
-          />
-        </div>
+        {formData.role === "student" ? (
+          <div>
+            <label
+              htmlFor="username"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Username
+            </label>
+            <Input
+              id="username"
+              name="username"
+              type="text"
+              value={formData.username || ""}
+              onChange={handleInputChange}
+              placeholder="Enter username"
+              required
+            />
+            <p className="text-sm text-gray-500 mt-1">
+              Students use username instead of email for login
+            </p>
+          </div>
+        ) : (
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Email Address
+            </label>
+            <Input
+              id="email"
+              name="email"
+              type="email"
+              value={formData.email || ""}
+              onChange={handleInputChange}
+              placeholder="Enter email address"
+              required
+            />
+          </div>
+        )}
 
         <div>
           <label
@@ -213,11 +276,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
             name="role"
             value={formData.role}
             onChange={handleInputChange}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 cursor-pointer"
             required
           >
             {allowedRoles.map((role) => (
-              <option key={role} value={role}>
+              <option key={role} value={role} className="cursor-pointer">
                 {ROLEWISE_INFORMATION[role].displayName}
               </option>
             ))}
@@ -227,26 +290,21 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         {formData.role === "student" && (
           <div>
             <label
-              htmlFor="parent_id"
-              className="block text-sm font-medium text-gray-700 mb-2"
+              htmlFor="parent_ids"
+              className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer"
             >
-              Select Parent
+              Select Parents
             </label>
-            <select
-              id="parent_id"
-              name="parent_id"
-              value={formData.parent_id}
-              onChange={handleInputChange}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              required
-            >
-              <option value="">Select a parent...</option>
-              {parents.map((parent) => (
-                <option key={parent.id} value={parent.id}>
-                  {parent.first_name} {parent.last_name} ({parent.email})
-                </option>
-              ))}
-            </select>
+            <MultiSelect
+              options={parents.map((parent) => ({
+                value: Number(parent.id),
+                label: `${parent.first_name} ${parent.last_name} (${parent.email})`,
+              }))}
+              value={formData.parent_ids || []}
+              onChange={handleParentSelection}
+              placeholder="Select parents..."
+              className="w-full"
+            />
             {parents.length === 0 && (
               <p className="text-sm text-gray-500 mt-1">
                 No parents available. Please create a parent user first.
@@ -258,10 +316,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         <div className="pt-4">
           <Button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+            disabled={
+              !formData.first_name || !formData.password || !formData.role
+            }
+            loading={isLoading}
+            className="w-full bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
           >
-            {isLoading ? "Creating User..." : "Create User"}
+            Create User
           </Button>
         </div>
       </form>

@@ -37,11 +37,11 @@ const getAuthHeaders = (token: string) => ({
 // ✅ Create Topic
 export const createTopic = createAsyncThunk<
   Topic,
-  { title: string },
+  { title: string;description?: string },
   { rejectValue: string; state: RootState }
 >(
   "student/createTopic",
-  async ({ title }, { rejectWithValue, getState }) => {
+  async ({ title,description  }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const token = state.auth.token;
@@ -49,11 +49,15 @@ export const createTopic = createAsyncThunk<
       if (!token) {
         return rejectWithValue("No authentication token found");
       }
-
+      
+      const body: Record<string, any> = { title };
+      if (description?.trim()) {
+        body.description = description.trim();
+      }
       const response = await fetch(`${API_BASE_URL}/personalSection/topics`, {
         method: "POST",
         headers: getAuthHeaders(token),
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title,description  }),
       });
 
       if (response.status === 429) {
@@ -108,11 +112,11 @@ export const fetchTopics = createAsyncThunk<
 // ✅ Update Topic
 export const updateTopic = createAsyncThunk<
   Topic,
-  { id: number; title: string },
+  { id: number; title: string;description?: string },
   { rejectValue: string; state: RootState }
 >(
   "student/updateTopic",
-  async ({ id, title }, { rejectWithValue, getState }) => {
+  async ({ id, title ,description }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const token = state.auth.token;
@@ -120,11 +124,14 @@ export const updateTopic = createAsyncThunk<
       if (!token) {
         return rejectWithValue("No authentication token found");
       }
-
+      const body: Record<string, any> = { title };
+      if (description?.trim()) {
+        body.description = description.trim();
+      }
       const response = await fetch(`${API_BASE_URL}/personalSection/topics/${id}`, {
         method: "PUT",
         headers: getAuthHeaders(token),
-        body: JSON.stringify({ title }),
+        body: JSON.stringify({ title,description }),
       });
 
       if (!response.ok) {

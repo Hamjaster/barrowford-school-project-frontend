@@ -326,7 +326,7 @@ export const requestDeleteReflection = createAsyncThunk<
         return rejectWithValue("No authentication token found");
       }
 
-      const response = await fetch(`${API_BASE_URL}/reflection/student/${reflectionId}`, {
+      const response = await fetch(`${API_BASE_URL}/reflection/delete-reflection/${reflectionId}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

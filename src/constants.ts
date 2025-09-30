@@ -81,7 +81,7 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
     displayName: 'Staff/Teacher',
     dashboardTitle: 'Staff Dashboard',
     dashboardSubtitle: 'Teaching & Management',
-    dashboardDescription: 'Manage your students and curriculum',
+    dashboardDescription: 'Manage your students',
     sidebarTitle: 'Staff Portal',
     sidebarSubtitle: 'Teaching & Management',
     sidebarDescription: 'Educate & Inspire',

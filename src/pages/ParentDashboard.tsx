@@ -6,6 +6,7 @@ import {
   ArrowLeft,
   Users,
   CheckCircle,
+  UserCircle,
   GraduationCap,
   Loader2,
 } from "lucide-react";
@@ -40,11 +41,14 @@ const ParentDashboard: React.FC = () => {
     >
       <div className="flex items-center space-x-4">
         <div className="relative">
-          <img
+          {/* <img
             src={DEFAULT_AVATAR_URL}
             alt={`${child.first_name} ${child.last_name}`}
             className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
-          />
+          /> */}
+          <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
+  <UserCircle className="w-12 h-12" />
+</div>
           <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
             <CheckCircle className="w-3 h-3 text-white" />
           </div>

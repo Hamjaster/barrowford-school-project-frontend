@@ -28,6 +28,8 @@ import {
   RotateCcw,
   Upload,
   Video,
+  Trash2,
+  Eye
 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { Separator } from "@/components/ui/separator";
@@ -49,6 +51,7 @@ import type { TableEntry } from "@/types";
 import { showToast } from "@/utils/showToast";
 import { validateFile, uploadFileToSupabase } from "@/utils/fileUpload";
 import supabase from "@/lib/supabse";
+import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialogProps";
 
 interface CulturalCapitalEntry {
   id: string;
@@ -82,7 +85,8 @@ export default function CulturalCapitalPage() {
     content: "",
     files: [] as File[],
   });
-
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedReflectionId, setSelectedReflectionId] = useState<string | null>(null);
   //dispatch
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -286,6 +290,7 @@ export default function CulturalCapitalPage() {
   >(null);
   const handleDeleteReflection = async (reflectionId: string) => {
     try {
+      console.log(",,,,,,,,",reflectionId)
       setDeletingReflectionId(reflectionId);
       setSubmissionfetchreflectionsloading(true);
       const resultAction = await dispatch(
@@ -362,7 +367,7 @@ export default function CulturalCapitalPage() {
       header: "Actions",
       className: "text-left",
       render: (item: TableEntry) => (
-        <div className="flex gap-2">
+        <div className="flex gap-">
           <Button
             variant="ghost"
             size="sm"
@@ -372,20 +377,22 @@ export default function CulturalCapitalPage() {
               postingCommentLoading && selectedReflection?.id === item.id
             }
           >
-            View
+            <Eye className="w-4 h-4 text-black" />
+
           </Button>
-          {item.status !== "Approved" && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-red-600 hover:text-red-800"
-              onClick={() => handleDeleteReflection(item.id)}
-              disabled={submissionfetchreflectionsloading}
-              loading={deletingReflectionId === item.id}
-            >
-              Delete
-            </Button>
-          )}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-600 hover:text-red-800"
+            onClick={() => {
+              setSelectedReflectionId(item.id);
+              setIsDeleteDialogOpen(true);
+            }}
+            disabled={submissionfetchreflectionsloading}
+            loading={deletingReflectionId === item.id}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button>
         </div>
       ),
     },
@@ -601,11 +608,10 @@ export default function CulturalCapitalPage() {
                       <Button
                         onClick={handleSubmitReflection}
                         disabled={submissionfetchreflectionsloading}
-                        className={`flex-1 cursor-pointer ${
-                          submissionfetchreflectionsloading
+                        className={`flex-1 cursor-pointer ${submissionfetchreflectionsloading
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-pink-500 hover:bg-pink-600"
-                        }`}
+                          }`}
                       >
                         {submissionfetchreflectionsloading
                           ? "Adding..."
@@ -781,6 +787,22 @@ export default function CulturalCapitalPage() {
           <span>Developed by Nybble</span>
         </div>
       </div>
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSelectedReflectionId(null);
+        }}
+        onConfirm={async () => {
+          if (selectedReflectionId) {
+            await handleDeleteReflection(selectedReflectionId);
+          }
+          setIsDeleteDialogOpen(false);
+          setSelectedReflectionId(null);
+        }}
+        title="Delete Reflection"
+        description="Are you sure you want to delete this reflection? This action cannot be undone."
+      />
     </div>
   );
 }

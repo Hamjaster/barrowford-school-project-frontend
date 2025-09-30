@@ -20,6 +20,7 @@ import {
 } from "@/utils/fileUpload";
 import type { StudentImage } from "@/types";
 import supabase from "@/lib/supabse";
+import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialogProps";
 
 // Convert StudentImage to ImageItem for display
 interface ImageItem {
@@ -49,7 +50,8 @@ export default function MyImages() {
   } = useSelector((state: RootState) => state.student);
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<ImageItem | null>(null);
   // Convert student images to display format
   const images = studentImages.map(convertToImageItem);
 
@@ -146,14 +148,24 @@ export default function MyImages() {
     }
   };
 
-  const handleDelete = (imageId: string) => {
-    const data = dispatch(deleteStudentImage(imageId));
-    // wait for the delete function, then set the selected image to null
-    data.then(() => {
-      setSelectedImage(null);
-    });
+  const handleDeleteClick = (image: ImageItem) => {
+    setImageToDelete(image);
+    setDeleteDialogOpen(true);
   };
-
+  const confirmDeleteImage = async () => {
+    if (!imageToDelete) return;
+    try {
+      await dispatch(deleteStudentImage(imageToDelete.id)).unwrap();
+      toast.success("Image deleted successfully!");
+      setSelectedImage(null);
+    } catch (error) {
+      toast.error("Failed to delete image");
+      console.error("Delete error:", error);
+    } finally {
+      setImageToDelete(null);
+      setDeleteDialogOpen(false);
+    }
+  };
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
@@ -300,7 +312,7 @@ export default function MyImages() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleDelete(selectedImage.id)}
+                      onClick={() => handleDeleteClick(selectedImage)}
                       loading={isDeleting}
                       className="text-red-500 flex justify-center items-center hover:text-red-700 border-red-200 hover:border-red-300"
                     >
@@ -314,6 +326,17 @@ export default function MyImages() {
           </DialogContent>
         </Dialog>
       )}
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDeleteImage}
+        title="Delete Image"
+        description={
+          imageToDelete
+            ? `Are you sure you want to delete "${imageToDelete.title}"? This action cannot be undone.`
+            : "Are you sure you want to delete this image?"
+        }
+      />
     </div>
   );
 }

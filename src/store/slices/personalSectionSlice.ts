@@ -12,6 +12,7 @@ const initialState: {
   addTopicLoading : boolean;
   updateTopicLoading : boolean;
   deleteTopicLoading : boolean;
+  toggleStatusLoading: boolean;
   personalSectionLoading: boolean;
   personalSectionSubmitting: boolean;
   message : string | null;
@@ -23,6 +24,7 @@ const initialState: {
   addTopicLoading : false,
     updateTopicLoading : false,
     deleteTopicLoading : false,
+    toggleStatusLoading: false,
     personalSectionLoading: true,
     personalSectionSubmitting: false,
     message : null,
@@ -105,6 +107,39 @@ export const fetchTopics = createAsyncThunk<
   }
 );
 
+// ✅ Get All Topics (Including inactive - for staff management)
+export const fetchAllTopics = createAsyncThunk<
+  Topic[],
+  void,
+  { rejectValue: string; state: RootState }
+>(
+  "personalSection/fetchAllTopics",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/personalSection/topics/all`, {
+        method: "GET",
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to fetch all topics");
+      }
+
+      return (await response.json()).data as Topic[];
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Network error");
+    }
+  }
+);
+
 // ✅ Update Topic
 export const updateTopic = createAsyncThunk<
   Topic,
@@ -166,6 +201,40 @@ export const deleteTopic = createAsyncThunk<
       }
 
       return id; // return deleted topic id
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Network error");
+    }
+  }
+);
+
+// ✅ Toggle Topic Status
+export const toggleTopicStatus = createAsyncThunk<
+  Topic,
+  { id: number; status: 'active' | 'inactive' },
+  { rejectValue: string; state: RootState }
+>(
+  "personalSection/toggleTopicStatus",
+  async ({ id, status }, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/personalSection/topics/status/${id}`, {
+        method: "PATCH",
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({ status }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to toggle topic status");
+      }
+
+      return (await response.json()).data as Topic;
     } catch (error: any) {
       return rejectWithValue(error.message || "Network error");
     }
@@ -311,10 +380,17 @@ export const updatePersonalSection = createAsyncThunk<
   }
 );
 
-const studentSlice = createSlice({
+const personalSectionSlice = createSlice({
   name: "student",
   initialState,
-  reducers: {},
+  reducers: {
+    clearError: (state) => {
+      state.error = null;
+    },
+    clearMessage: (state) => {
+      state.message = null;
+    },
+  },
   extraReducers: (builder) => {
     // Create Topic
     builder
@@ -342,6 +418,21 @@ const studentSlice = createSlice({
         state.topics = action.payload;
       })
       .addCase(fetchTopics.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload as string;
+      });
+
+    // Fetch All Topics (for staff management)
+    builder
+      .addCase(fetchAllTopics.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllTopics.fulfilled, (state, action: PayloadAction<Topic[]>) => {
+        state.loading = false;
+        state.topics = action.payload;
+      })
+      .addCase(fetchAllTopics.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload as string;
       });
@@ -376,6 +467,24 @@ const studentSlice = createSlice({
       })
       .addCase(deleteTopic.rejected, (state, action) => {
         state.deleteTopicLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Toggle Topic Status
+    builder
+      .addCase(toggleTopicStatus.pending, (state) => {
+        state.toggleStatusLoading = true;
+        state.error = null;
+      })
+      .addCase(toggleTopicStatus.fulfilled, (state, action: PayloadAction<Topic>) => {
+        state.toggleStatusLoading = false;
+        const index = state.topics.findIndex(topic => topic.id === action.payload.id);
+        if (index !== -1) {
+          state.topics[index] = action.payload;
+        }
+      })
+      .addCase(toggleTopicStatus.rejected, (state, action) => {
+        state.toggleStatusLoading = false;
         state.error = action.payload as string;
       });
 
@@ -444,9 +553,9 @@ const studentSlice = createSlice({
         if (index !== -1) {
           state.personalSections[index] = action.payload;
         } else {
+          state.message = "Personal section updated successfully";
           state.personalSections.push(action.payload);
         }
-        state.message = "Personal section updated successfully";
       })
       .addCase(updatePersonalSection.rejected, (state, action) => {
         state.personalSectionSubmitting = false;
@@ -455,4 +564,11 @@ const studentSlice = createSlice({
   },
 });
 
-export default studentSlice.reducer;
+export default personalSectionSlice.reducer;
+
+export const { 
+  
+  clearError, 
+
+  clearMessage
+} = personalSectionSlice.actions;

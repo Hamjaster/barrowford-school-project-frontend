@@ -1,5 +1,7 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { API_BASE_URL } from '../../constants';
+import type { AddCommentRequest, ReflectionComment } from '@/types';
+import type { RootState } from '..';
 
 // Types
 export interface ParentChild {
@@ -34,6 +36,9 @@ export interface StudentReflection {
   attachment_url?: string;
   status: string;
   created_at: string;
+  week : string;
+ 
+  reflectioncomments: ReflectionComment[];
 }
 
 export interface ChildDetails {
@@ -51,7 +56,15 @@ export interface ParentState {
   isLoadingChildDetails: boolean;
   error: string | null;
   successMessage: string | null;
+  addingCommentLoading: boolean;
 }
+
+// Helper function to get auth headers
+const getAuthHeaders = (token: string) => ({
+  "Content-Type": "application/json",
+  "Authorization": `Bearer ${token}`,
+});
+
 
 const initialState: ParentState = {
   children: [],
@@ -61,6 +74,7 @@ const initialState: ParentState = {
   isLoadingChildDetails: false,
   error: null,
   successMessage: null,
+  addingCommentLoading: false,
 };
 
 // Async thunks
@@ -124,6 +138,40 @@ export const fetchChildDetails = createAsyncThunk(
   }
 );
 
+export const addReflectionComment = createAsyncThunk<
+  {data: ReflectionComment, reflectionId: number},         // return type
+  AddCommentRequest,          // payload type
+  {state:RootState, rejectValue: string }     // error type
+>(
+  "parent/addReflectionComment",
+  async ({ reflectionId, content }, { rejectWithValue,getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+    //http://localhost:3000/api/reflection/addcomment
+      const response = await fetch(`${API_BASE_URL}/reflection/addcomment`, {
+        method: "POST",
+        headers:getAuthHeaders(token),
+        body: JSON.stringify({reflectionId, content }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to add comment");
+      }
+
+       const result: {  data: ReflectionComment } = await response.json();
+      return {data : result.data, reflectionId};
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
 const parentSlice = createSlice({
   name: 'parent',
   initialState,
@@ -172,6 +220,40 @@ const parentSlice = createSlice({
       .addCase(fetchChildDetails.rejected, (state, action) => {
         state.isLoadingChildDetails = false;
         state.error = action.payload as string;
+      });
+
+      builder
+      .addCase(addReflectionComment.pending, (state) => {
+      
+        state.error = null;
+        state.addingCommentLoading = true;
+      })
+      .addCase(addReflectionComment.fulfilled, (state, action) => {
+  
+    const newComment = action.payload.data;
+  
+    if (!newComment || !newComment.id) {
+      console.error("Invalid comment returned");
+      return;
+    }
+  
+    console.log(newComment, 'new comment uploaded to BE')
+    const reflectionId = action.payload.reflectionId;
+    state.addingCommentLoading = false;
+  
+    // add the newComment to reflectioncomments of that specific reflection of selectedChild
+    if(!state.selectedChild) return;
+    state.selectedChild.reflections = state.selectedChild.reflections.map((reflection) =>
+      reflection.id === reflectionId ? { ...reflection, reflectioncomments: [...reflection.reflectioncomments, newComment] } : reflection
+    );
+    
+  
+  
+  })
+      .addCase(addReflectionComment.rejected, (state, action) => {
+      
+        state.error = action.payload || "Something went wrong";
+        state.addingCommentLoading = false;
       });
   },
 });

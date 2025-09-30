@@ -80,7 +80,7 @@ export default function MyExperiences() {
             loading={isSubmitting}
             className="bg-white text-purple-500 hover:bg-gray-100"
           >
-            Save Experiences
+            {isSubmitting ? "Saving..." : "Save Experiences"}
           </Button>
         </div>
       </div>

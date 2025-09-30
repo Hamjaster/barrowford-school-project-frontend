@@ -25,7 +25,7 @@ import {
 import Footer from "@/components/footer";
 //import for personal section
 import { useDispatch, useSelector } from "react-redux";
-import {
+import personalSectionSlice, {
   fetchTopics,
   getPersonalSectionByTopic,
   createPersonalSection,
@@ -35,6 +35,7 @@ import type { RootState, AppDispatch } from "../../store";
 import type { Topic, PersonalSection } from "@/types";
 import supabase from "@/lib/supabse";
 import { toast } from "sonner";
+import { clearError, clearMessage } from "@/store/slices/personalSectionSlice";
 
 // Icon mapping for different topics
 const getTopicIcon = (title: string) => {
@@ -100,13 +101,15 @@ export default function StudentDashboard() {
 
   // Handle success/error messages
   useEffect(() => {
-    if (message) {
-      toast.success(message);
-    }
     if (error) {
       toast.error(error);
+      dispatch(clearError());
     }
-  }, [message, error]);
+    if (message) {
+      toast.success(message);
+      dispatch(clearMessage());
+    }
+  }, [error, message, dispatch]);
 
   // Handle topic selection
   const handleTopicClick = async (topic: Topic) => {
@@ -140,12 +143,19 @@ export default function StudentDashboard() {
     try {
       if (existingPersonalSection) {
         // Update existing personal section
-        await dispatch(
+        const result = await dispatch(
           updatePersonalSection({
             id: existingPersonalSection.id,
             content: editingContent,
           })
-        ).unwrap();
+        )
+          .unwrap()
+          .then((result) => {
+            setExistingPersonalSection(result);
+            setEditingContent(result.content);
+            setIsEditing(false);
+            console.log(result, "updated RESULT here !!");
+          });
       } else {
         // Create new personal section
         const result = await dispatch(
@@ -153,10 +163,16 @@ export default function StudentDashboard() {
             topicId: selectedTopic.id,
             content: editingContent,
           })
-        ).unwrap();
-        setExistingPersonalSection(result);
+        )
+          .unwrap()
+          .then((result) => {
+            setExistingPersonalSection(result);
+            setEditingContent(result.content);
+            setIsEditing(false);
+            console.log(result, "result here !!");
+          });
+        console.log(result, "result here !!");
       }
-      setIsEditing(false);
     } catch (error) {
       console.error("Error saving personal section:", error);
     }
@@ -260,7 +276,7 @@ export default function StudentDashboard() {
               <Button onClick={() => dispatch(fetchTopics())}>Try Again</Button>
             </div>
           </div>
-        ) : topics.length === 0 ? (
+        ) : topics.filter((topic) => topic.status === "active").length === 0 ? (
           <div className="flex items-center justify-center py-12">
             <div className="text-center">
               <p className="text-gray-600">
@@ -271,39 +287,41 @@ export default function StudentDashboard() {
         ) : (
           /* Topics Grid */
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {topics.map((topic, index) => {
-              const colors = getTopicColors(index);
-              const icon = getTopicIcon(topic.title);
-              const hasContent = personalSections.some(
-                (ps) => ps.topic_id === topic.id
-              );
+            {topics
+              .filter((topic) => topic.status === "active")
+              .map((topic, index) => {
+                const colors = getTopicColors(index);
+                const icon = getTopicIcon(topic.title);
+                const hasContent = personalSections.some(
+                  (ps) => ps.topic_id === topic.id
+                );
 
-              return (
-                <Card
-                  key={topic.id}
-                  className={`${colors.border} ${colors.bg} font-medium p-6 cursor-pointer hover:shadow-md transition-all duration-300 border shadow-lg min-h-[120px] `}
-                  onClick={() => handleTopicClick(topic)}
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`${colors.icon} text-white p-5 rounded-full`}
-                    >
-                      {icon}
+                return (
+                  <Card
+                    key={topic.id}
+                    className={`${colors.border} ${colors.bg} font-medium p-6 cursor-pointer hover:shadow-md transition-all duration-300 border shadow-lg min-h-[120px] `}
+                    onClick={() => handleTopicClick(topic)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`${colors.icon} text-white p-5 rounded-full`}
+                      >
+                        {icon}
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-xl leading-tight">
+                          {topic.title}
+                        </h3>
+                        {topic.description && (
+                          <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                            {topic.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-xl leading-tight">
-                        {topic.title}
-                      </h3>
-                      {topic.description && (
-                        <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                          {topic.description}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                </Card>
-              );
-            })}
+                  </Card>
+                );
+              })}
           </div>
         )}
       </div>
@@ -341,10 +359,8 @@ export default function StudentDashboard() {
 
           <div className="py-4">
             {personalSectionLoading ? (
-              <div className="flex items-center  justify-center ">
-                <div>
-                  <Loader2 className="h-5 w-5 mt-3 animate-spin " />
-                </div>
+              <div className="flex flex-col items-center justify-center py-4">
+                <Loader2 className="h-5 w-5 animate-spin mb-2" />
                 <span>Loading content...</span>
               </div>
             ) : isEditing ? (
@@ -365,7 +381,13 @@ export default function StudentDashboard() {
                     disabled={!editingContent.trim()}
                   >
                     <Save className="w-4 h-4 mr-2" />
-                    {existingPersonalSection ? "Update" : "Save"}
+                    {personalSectionSubmitting
+                      ? existingPersonalSection
+                        ? "Updating..."
+                        : "Saving..."
+                      : existingPersonalSection
+                      ? "Update"
+                      : "Save"}
                   </Button>
                 </div>
               </div>

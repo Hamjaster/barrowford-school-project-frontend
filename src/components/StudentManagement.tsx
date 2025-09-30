@@ -18,6 +18,7 @@ import {
 } from "./ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import AttachmentDisplay from "./AttachmentDisplay";
 import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
@@ -33,27 +34,23 @@ import {
 import type { ReflectionItem, ReflectionComment } from "@/types";
 
 interface Student {
-  id: string;
+  id: number;
   first_name: string;
   last_name: string;
   email: string;
-  year_group_id: string;
-  class_id: string;
+  year_group_id: number;
+  class_id: number;
   created_at: string;
 }
 
 interface PersonalSection {
-  id: string;
+  id: number;
   content: string;
   created_at: string;
   topic: {
-    id: string;
+    id: number;
     title: string;
   };
-}
-
-interface StudentReflection extends ReflectionItem {
-  comments?: ReflectionComment[];
 }
 
 export default function StudentManagement() {
@@ -63,9 +60,9 @@ export default function StudentManagement() {
     []
   );
   const [studentReflections, setStudentReflections] = useState<
-    StudentReflection[]
+    ReflectionItem[]
   >([]);
-  const [selectedCard, setSelectedCard] = useState<string | null>(null);
+  const [selectedCard, setSelectedCard] = useState<number | null>(null);
   const [activeTab, setActiveTab] = useState<"personal" | "reflections">(
     "personal"
   );
@@ -75,12 +72,12 @@ export default function StudentManagement() {
   const [updateLoading, setUpdateLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [editingContent, setEditingContent] = useState<{
-    [key: string]: string;
+    [key: number]: string;
   }>({});
   const [newComment, setNewComment] = useState<{
-    [key: string]: string;
+    [key: number]: string;
   }>({});
-  const [commentLoading, setCommentLoading] = useState<string | null>(null);
+  const [commentLoading, setCommentLoading] = useState<number | null>(null);
 
   const dispatch = useDispatch<AppDispatch>();
   const { token } = useSelector((state: RootState) => state.auth);
@@ -115,7 +112,7 @@ export default function StudentManagement() {
   };
 
   // Fetch personal sections for a student
-  const fetchPersonalSections = async (studentId: string) => {
+  const fetchPersonalSections = async (studentId: number) => {
     if (!token) return;
 
     setSectionsLoading(true);
@@ -140,7 +137,7 @@ export default function StudentManagement() {
       setPersonalSections(result.data);
 
       // Initialize editing content
-      const initialContent: { [key: string]: string } = {};
+      const initialContent: { [key: number]: string } = {};
       result.data.forEach((section: PersonalSection) => {
         initialContent[section.id] = section.content;
       });
@@ -153,7 +150,7 @@ export default function StudentManagement() {
   };
 
   // Update personal section content
-  const updatePersonalSection = async (sectionId: string, content: string) => {
+  const updatePersonalSection = async (sectionId: number, content: string) => {
     if (!token) return;
 
     setUpdateLoading(true);
@@ -207,14 +204,14 @@ export default function StudentManagement() {
     }
   };
 
-  const handleSaveSection = (sectionId: string) => {
+  const handleSaveSection = (sectionId: number) => {
     const content = editingContent[sectionId];
     if (content && content.trim()) {
       updatePersonalSection(sectionId, content);
     }
   };
 
-  const handleContentChange = (sectionId: string, content: string) => {
+  const handleContentChange = (sectionId: number, content: string) => {
     setEditingContent((prev) => ({
       ...prev,
       [sectionId]: content,
@@ -222,14 +219,14 @@ export default function StudentManagement() {
   };
 
   // Fetch student reflections
-  const fetchStudentReflections = async (studentId: string) => {
+  const fetchStudentReflections = async (studentId: number) => {
     if (!token) return;
 
     setReflectionsLoading(true);
 
     try {
       const resultAction = await dispatch(
-        fetchReflectionsByStudentId(studentId as string)
+        fetchReflectionsByStudentId(studentId)
       );
       if (fetchReflectionsByStudentId.fulfilled.match(resultAction)) {
         // Ensure each reflection has a reflectioncomments array
@@ -252,7 +249,7 @@ export default function StudentManagement() {
 
   // Add comment to reflection
   const addReflectionComment = async (
-    reflectionId: string,
+    reflectionId: number,
     content: string
   ) => {
     if (!token || !content.trim()) return;
@@ -260,35 +257,30 @@ export default function StudentManagement() {
     setCommentLoading(reflectionId);
 
     try {
-      const resultAction = await dispatch(
-        addComment({ reflectionId: Number(reflectionId), content })
+      const newComment = await dispatch(
+        addComment({ reflectionId: reflectionId, content })
+      ).unwrap();
+
+      // Update local studentReflections state with the new comment
+      setStudentReflections((prev) =>
+        prev.map((reflection) =>
+          reflection.id === reflectionId
+            ? {
+                ...reflection,
+                reflectioncomments: [
+                  ...(reflection.reflectioncomments || []),
+                  newComment.data,
+                ],
+              }
+            : reflection
+        )
       );
-      if (addComment.fulfilled.match(resultAction)) {
-        const newComment = resultAction.payload;
 
-        // Update the local studentReflections state immediately
-        setStudentReflections((prev) =>
-          prev.map((reflection) =>
-            reflection.id === reflectionId
-              ? {
-                  ...reflection,
-                  reflectioncomments: [
-                    ...(reflection.reflectioncomments || []),
-                    newComment,
-                  ],
-                }
-              : reflection
-          )
-        );
-
-        // Clear the comment input
-        setNewComment((prev) => ({
-          ...prev,
-          [reflectionId]: "",
-        }));
-      } else {
-        setError("Failed to add comment");
-      }
+      // Clear the comment input
+      setNewComment((prev) => ({
+        ...prev,
+        [reflectionId]: "",
+      }));
     } catch (err: any) {
       setError(err.message || "Failed to add comment");
     } finally {
@@ -296,7 +288,7 @@ export default function StudentManagement() {
     }
   };
 
-  const handleCommentChange = (reflectionId: string, content: string) => {
+  const handleCommentChange = (reflectionId: number, content: string) => {
     setNewComment((prev) => ({
       ...prev,
       [reflectionId]: content,
@@ -522,10 +514,11 @@ export default function StudentManagement() {
 
                                     {reflection.attachment_url && (
                                       <div className="flex justify-center">
-                                        <img
-                                          src={reflection.attachment_url}
+                                        <AttachmentDisplay
+                                          url={reflection.attachment_url}
                                           alt="Reflection attachment"
-                                          className="max-w-full h-48 object-cover rounded-lg border"
+                                          maxHeight="h-48"
+                                          maxWidth="max-w-full"
                                         />
                                       </div>
                                     )}
@@ -544,7 +537,7 @@ export default function StudentManagement() {
                                           0 && (
                                           <div className="space-y-2 mb-3">
                                             {reflection.reflectioncomments.map(
-                                              (comment) => (
+                                              (comment: ReflectionComment) => (
                                                 <div
                                                   key={comment.id}
                                                   className="bg-blue-50 p-2 rounded text-xs"

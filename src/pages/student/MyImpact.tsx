@@ -82,7 +82,7 @@ export default function MyImpact() {
             loading={isSubmitting}
             className="bg-white text-cyan-500 hover:bg-gray-100"
           >
-            Save Impact
+            {isSubmitting ? "Saving..." : "Save Impact"}
           </Button>
         </div>
       </div>

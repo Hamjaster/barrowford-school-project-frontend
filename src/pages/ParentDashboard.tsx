@@ -108,9 +108,9 @@ const ParentDashboard: React.FC = () => {
             <h2 className="text-xl font-semibold text-gray-800">My Children</h2>
           </div>
           {isLoadingChildren ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
-              <span className="ml-2 text-gray-600">Loading children...</span>
+            <div className="flex flex-col items-center justify-center py-8">
+              <Loader2 className="w-8 h-8 animate-spin text-blue-600 mb-2" />
+              <span className="text-gray-600">Loading children...</span>
             </div>
           ) : error ? (
             <div className="text-center py-8">

@@ -58,7 +58,7 @@ function Button({
       disabled={loading || props.disabled}
       {...props}
     >
-      {loading && <Loader2 className="h-4 w-4 ml-3 mt-3 animate-spin" />}
+      {/* {loading && <Loader2 className="h-4 w-4 ml-3 mt-3 animate-spin" />} */}
       {children}
     </Comp>
   );

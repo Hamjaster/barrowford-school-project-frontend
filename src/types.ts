@@ -160,6 +160,7 @@ export interface UserManagementState {
   createUserSuccess: boolean;
   resetPasswordSuccess: boolean;
   successMessage: string;
+  isStatusUpdateLoading : boolean
 }
 
 // Child-related Types
@@ -287,6 +288,7 @@ export interface ReflectionComment {
   id: number;
   reflection_id: number;
   user_role: string;
+  user_name: string;
   comment: string;
   created_at: string;
 }
@@ -316,6 +318,7 @@ export interface YearGroupWithSubjects extends YearGroup {
 export interface YearDataState {
   yearGroups: YearGroup[];
   yearGroupsWithSubjects: YearGroupWithSubjects[];
+  subjects: Subject[];
   isLoading: boolean;
   isLoadingSubjects: boolean;
   error: string | null;

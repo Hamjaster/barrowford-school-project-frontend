@@ -137,21 +137,7 @@ const ParentDashboard: React.FC = () => {
         </div>
 
         {/* Quick Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-6">
-            <div className="flex items-center space-x-3">
-              <div className="p-2 bg-blue-200 rounded-lg">
-                <Users className="w-6 h-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-blue-800 font-semibold text-lg">
-                  {children.length}
-                </p>
-                <p className="text-blue-600 text-sm">Children Enrolled</p>
-              </div>
-            </div>
-          </div>
-
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-6">
             <div className="flex items-center space-x-3">
               <div className="p-2 bg-green-200 rounded-lg">

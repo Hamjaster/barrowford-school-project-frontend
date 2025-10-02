@@ -58,9 +58,7 @@ export const validateUsername = (username: string): { isValid: boolean; error?: 
     return { isValid: false, error: 'Username must be at least 3 characters long' }
   }
   
-  if (username.trim().length > 20) {
-    return { isValid: false, error: 'Username must be no more than 20 characters long' }
-  }
+ 
   
   
   return { isValid: true }

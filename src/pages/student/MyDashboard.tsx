@@ -59,17 +59,57 @@ const getTopicIcon = (title: string) => {
   return <Heart className="w-6 h-6" />; // Default icon
 };
 
-// Color mapping for different topics
+// Color mapping for different topics with gradients
 const getTopicColors = (index: number) => {
   const colors = [
-    { border: "border-orange-400", bg: "bg-orange-100", icon: "bg-orange-400" },
-    { border: "border-sky-300", bg: "bg-sky-100", icon: "bg-sky-300" },
-    { border: "border-blue-500", bg: "bg-blue-100", icon: "bg-blue-500" },
-    { border: "border-pink-500", bg: "bg-pink-100", icon: "bg-pink-500" },
-    { border: "border-green-500", bg: "bg-green-100", icon: "bg-green-500" },
-    { border: "border-amber-500", bg: "bg-amber-100", icon: "bg-amber-500" },
-    { border: "border-purple-500", bg: "bg-purple-100", icon: "bg-purple-500" },
-    { border: "border-red-500", bg: "bg-red-100", icon: "bg-red-500" },
+    {
+      border: "border-orange-400",
+      bg: "bg-gradient-to-br from-orange-100 via-orange-50 to-amber-100",
+      icon: "bg-gradient-to-br from-orange-400 to-orange-600",
+      shadow: "shadow-orange-200/50",
+    },
+    {
+      border: "border-sky-300",
+      bg: "bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100",
+      icon: "bg-gradient-to-br from-sky-300 to-sky-500",
+      shadow: "shadow-sky-200/50",
+    },
+    {
+      border: "border-blue-500",
+      bg: "bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100",
+      icon: "bg-gradient-to-br from-blue-500 to-blue-700",
+      shadow: "shadow-blue-200/50",
+    },
+    {
+      border: "border-pink-500",
+      bg: "bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200",
+      icon: "bg-gradient-to-br from-pink-500 to-pink-600",
+      shadow: "shadow-pink-200/50",
+    },
+    {
+      border: "border-green-500",
+      bg: "bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100",
+      icon: "bg-gradient-to-br from-green-500 to-green-600",
+      shadow: "shadow-green-200/50",
+    },
+    {
+      border: "border-amber-500",
+      bg: "bg-gradient-to-br from-amber-100 via-yellow-50 to-orange-100",
+      icon: "bg-gradient-to-br from-amber-500 to-amber-600",
+      shadow: "shadow-amber-200/50",
+    },
+    {
+      border: "border-purple-500",
+      bg: "bg-gradient-to-br from-purple-100 via-violet-50 to-purple-200",
+      icon: "bg-gradient-to-br from-purple-500 to-purple-600",
+      shadow: "shadow-purple-200/50",
+    },
+    {
+      border: "border-red-500",
+      bg: "bg-gradient-to-br from-red-100 via-rose-50 to-pink-100",
+      icon: "bg-gradient-to-br from-red-500 to-red-600",
+      shadow: "shadow-red-200/50",
+    },
   ];
   return colors[index % colors.length];
 };
@@ -198,10 +238,17 @@ export default function StudentDashboard() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen relative bg-gray-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl">
-        <h1 className="text-3xl font-bold">My Dashboard</h1>
+      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <h1 className="text-3xl font-bold">My Dashboard</h1>
+        </div>
+
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-white/5 rounded-full"></div>
       </div>
 
       {/* Main Content */}
@@ -299,12 +346,12 @@ export default function StudentDashboard() {
                 return (
                   <Card
                     key={topic.id}
-                    className={`${colors.border} ${colors.bg} font-medium p-6 cursor-pointer hover:shadow-md transition-all duration-300 border shadow-lg min-h-[120px] `}
+                    className={`${colors.border} ${colors.bg} ${colors.shadow} font-medium p-6 cursor-pointer hover:shadow-xl hover:scale-105 transition-all duration-300 border shadow-lg min-h-[120px] backdrop-blur-sm`}
                     onClick={() => handleTopicClick(topic)}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`${colors.icon} text-white p-5 rounded-full`}
+                        className={`${colors.icon} text-white p-5 rounded-full shadow-lg`}
                       >
                         {icon}
                       </div>
@@ -327,7 +374,9 @@ export default function StudentDashboard() {
       </div>
 
       {/* Footer */}
-      <Footer />
+      <div className="absolute bottom-0 w-full">
+        <Footer />
+      </div>
 
       {/* Content Editing Modal */}
       <Dialog

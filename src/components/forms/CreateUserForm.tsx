@@ -320,7 +320,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
               !formData.first_name || !formData.password || !formData.role
             }
             loading={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Create User
           </Button>

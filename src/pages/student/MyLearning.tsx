@@ -383,7 +383,7 @@ export default function StudentContentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen  bg-gradient-to-r from-orange-500 to-pink-500">
       <div className="bg-green-500 text-white p-6 rounded-b-2xl">
         <h1 className="text-3xl font-bold">My Learning</h1>
         <p className="text-green-100 mt-2">Subject: {selectedSubject.name}</p>

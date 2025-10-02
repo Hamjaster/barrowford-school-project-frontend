@@ -87,7 +87,7 @@ const ForgotPasswordForm: React.FC = () => {
             onClick={handleSubmit}
             disabled={isOnCooldown}
             loading={isLoadingForgotPassword}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full bg-gradient-to-r from-orange-500 to-pink-500 hover:bg-blue-700 text-white disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isLoadingForgotPassword
               ? "Requesting..."

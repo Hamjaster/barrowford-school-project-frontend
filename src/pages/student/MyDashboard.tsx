@@ -200,7 +200,7 @@ export default function StudentDashboard() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-pink-500 text-white p-6 rounded-b-2xl">
+      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl">
         <h1 className="text-3xl font-bold">My Dashboard</h1>
       </div>
 

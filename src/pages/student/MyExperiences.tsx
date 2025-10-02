@@ -72,7 +72,7 @@ export default function MyExperiences() {
 
   return (
     <div className="">
-      <div className="bg-purple-500 text-white p-6 rounded-b-2xl">
+      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl">
         <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold">My Experiences</h1>
           <Button

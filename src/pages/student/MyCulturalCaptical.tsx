@@ -568,7 +568,7 @@ export default function CulturalCapitalPage() {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="w-full">
-                      <Label htmlFor="reflection-title">Title</Label>
+                      <Label htmlFor="reflection-title">Title *</Label>
 
                       {topics.length > 0 ? (
                         <Select
@@ -604,7 +604,7 @@ export default function CulturalCapitalPage() {
                     </div>
 
                     <div className="w-full">
-                      <Label htmlFor="reflection-week">Week</Label>
+                      <Label htmlFor="reflection-week">Week *</Label>
                       {previousWeeks &&
                       previousWeeks.previousWeeks.length > 0 ? (
                         <Select
@@ -640,7 +640,7 @@ export default function CulturalCapitalPage() {
 
                     <div>
                       <Label htmlFor="reflection-description">
-                        Description
+                        Description *
                       </Label>
                       <Textarea
                         id="reflection-description"

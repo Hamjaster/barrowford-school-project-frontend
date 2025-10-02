@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
-import { 
-  type CreateUserRequest, 
-  type ResetUserPasswordRequest, 
+import {
+  type CreateUserRequest,
+  type ResetUserPasswordRequest,
   type UserManagementState,
   type FetchUsersRequest,
   type FetchUsersResponse
@@ -37,7 +37,7 @@ export const createUser = createAsyncThunk(
       if (!token) {
         return rejectWithValue('No authentication token found');
       }
-
+      console.log("userData", userData)
       const response = await fetch(`${API_BASE_URL}/auth/create-user`, {
         method: 'POST',
         headers: getAuthHeaders(token),
@@ -48,7 +48,7 @@ export const createUser = createAsyncThunk(
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to create user');
       }
-      if(response.status === 429){
+      if (response.status === 429) {
         return rejectWithValue('Too many login attempts. Please try again later.');
       }
 
@@ -60,6 +60,7 @@ export const createUser = createAsyncThunk(
     }
   }
 );
+
 
 export const resetUserPassword = createAsyncThunk(
   'userManagement/resetPassword',
@@ -82,7 +83,7 @@ export const resetUserPassword = createAsyncThunk(
         const errorData = await response.json();
         return rejectWithValue(errorData.error || 'Failed to reset password');
       }
-      if(response.status === 429){
+      if (response.status === 429) {
         return rejectWithValue('Too many login attempts. Please try again later.');
       }
 
@@ -121,7 +122,7 @@ export const fetchUsers = createAsyncThunk(
         headers: getAuthHeaders(token),
       });
 
-      if(response.status === 429){
+      if (response.status === 429) {
         return rejectWithValue('Too many login attempts. Please try again later.');
       }
 
@@ -162,7 +163,7 @@ export const fetchParents = createAsyncThunk(
         headers: getAuthHeaders(token),
       });
 
-      if(response.status === 429){
+      if (response.status === 429) {
         return rejectWithValue('Too many login attempts. Please try again later.');
       }
 
@@ -171,7 +172,7 @@ export const fetchParents = createAsyncThunk(
         return rejectWithValue(errorData.error || 'Failed to fetch parents');
       }
 
-      
+
 
 
       const data: FetchUsersResponse = await response.json();

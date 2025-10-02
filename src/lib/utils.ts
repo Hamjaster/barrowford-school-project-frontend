@@ -229,7 +229,11 @@ export const debounce = <T extends (...args: any[]) => any>(
 
 // Tab utility
 export const getTabDisplayName = (tabKey: string): string => {
-  return TAB_DISPLAY_NAMES[tabKey] || capitalizeFirst(tabKey.replace('-', ' '))
+  return TAB_DISPLAY_NAMES[tabKey] || toTitleCase(tabKey.replace(/-/g, ' '))
+}
+
+const toTitleCase = (text: string): string => {
+  return text.replace(/\w\S*/g, (w) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase())
 }
 
 // Role utilities

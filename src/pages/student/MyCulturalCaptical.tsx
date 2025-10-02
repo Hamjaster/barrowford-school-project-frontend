@@ -23,6 +23,9 @@ import {
   Lightbulb,
   RotateCcw,
   Upload,
+  Video,
+  Trash2,
+  Eye,
   Clock,
   CheckCircle,
   XCircle,
@@ -50,6 +53,7 @@ import type { TableEntry } from "@/types";
 import { showToast } from "@/utils/showToast";
 import { validateFile, uploadFileToSupabase } from "@/utils/fileUpload";
 import supabase from "@/lib/supabse";
+import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialogProps";
 import AttachmentDisplay from "@/components/AttachmentDisplay";
 import { toast } from "sonner";
 
@@ -86,7 +90,8 @@ export default function CulturalCapitalPage() {
     files: [] as File[],
     selectedWeek: "",
   });
-
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedReflectionId, setSelectedReflectionId] = useState<string | null>(null);
   //dispatch
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -343,6 +348,7 @@ export default function CulturalCapitalPage() {
 
   const handleDeleteReflection = async (reflectionId: string) => {
     try {
+     
       setDeletingReflectionId(reflectionId);
       setSubmissionfetchreflectionsloading(true);
       const resultAction = await dispatch(
@@ -424,7 +430,7 @@ export default function CulturalCapitalPage() {
       header: "Actions",
       className: "text-left",
       render: (item: TableEntry) => (
-        <div className="flex gap-2">
+        <div className="flex gap-">
           <Button
             variant="ghost"
             size="sm"
@@ -434,8 +440,22 @@ export default function CulturalCapitalPage() {
               postingCommentLoading && selectedReflection?.id === item.id
             }
           >
-            View
+            <Eye className="w-4 h-4 text-black" />
+
           </Button>
+          {/* <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-600 hover:text-red-800"
+            onClick={() => {
+              setSelectedReflectionId(item.id);
+              setIsDeleteDialogOpen(true);
+            }}
+            disabled={submissionfetchreflectionsloading}
+            loading={deletingReflectionId === item.id}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button> */}
           {item.status === "approved" && (
             <Button
               variant="ghost"
@@ -702,7 +722,7 @@ export default function CulturalCapitalPage() {
                           submissionfetchreflectionsloading
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-pink-500 hover:bg-pink-600"
-                        }`}
+                          }`}
                       >
                         {submissionfetchreflectionsloading
                           ? "Adding..."
@@ -878,6 +898,22 @@ export default function CulturalCapitalPage() {
           <span>Developed by Nybble</span>
         </div>
       </div>
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSelectedReflectionId(null);
+        }}
+        onConfirm={async () => {
+          if (selectedReflectionId) {
+            await handleDeleteReflection(selectedReflectionId);
+          }
+          setIsDeleteDialogOpen(false);
+          setSelectedReflectionId(null);
+        }}
+        title="Delete Reflection"
+        description="Are you sure you want to delete this reflection? This action cannot be undone."
+      />
     </div>
   );
 }

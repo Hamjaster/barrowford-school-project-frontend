@@ -21,6 +21,7 @@ import {
   FileText,
   Image as ImageIcon,
   Download,
+  UserCircle,
   Filter,
   X,
 } from "lucide-react";
@@ -769,16 +770,19 @@ export default function ChildDetailsPage() {
         {/* Child Profile Header */}
         <div className="bg-white rounded-xl shadow-sm border p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            <Avatar className="w-24 h-24">
-              <AvatarImage
+            {/* <Avatar className="w-24 h-24"> */}
+              {/* <AvatarImage
                 src={DEFAULT_AVATAR_URL}
                 alt={`${child.first_name} ${child.last_name}`}
-              />
-              <AvatarFallback className="text-2xl">
+              /> */}
+              <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
+  <UserCircle className="w-12 h-12 " />
+</div>
+              {/* <AvatarFallback className="text-2xl">
                 {child.first_name[0]}
                 {child.last_name[0]}
-              </AvatarFallback>
-            </Avatar>
+              </AvatarFallback> */}
+            {/* </Avatar> */}
 
             <div className="flex-1 text-center md:text-left">
               <h1 className="text-3xl font-bold text-gray-800 mb-2">

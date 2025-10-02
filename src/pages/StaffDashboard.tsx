@@ -30,6 +30,7 @@ import ContentModeration from "@/components/ContentModeration";
 import { useSelector } from "react-redux";
 import type { RootState } from "../store";
 import PersonalSectionTopicsManagement from "@/components/PersonalSectionTopicsManagement";
+import TeacherProfile from "@/components/TeacherProfile";
 
 const StaffDashboard: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
@@ -83,9 +84,10 @@ const StaffDashboard: React.FC = () => {
     "students",
     "content-review",
     "reflection-topics",
-    "account-management",
+    "user-management",
     "create-user",
     "personal-section-topics",
+    "my-profile"
   ];
 
   const renderTabContent = () => {
@@ -94,7 +96,7 @@ const StaffDashboard: React.FC = () => {
         return <CreateUserForm allowedRoles={allowedCreatableRoles} />;
       case "personal-section-topics":
         return <PersonalSectionTopicsManagement />;
-      case "account-management":
+      case "user-management":
         return (
           <div className="space-y-6">
             <div className="bg-white rounded-lg border p-6">
@@ -119,6 +121,10 @@ const StaffDashboard: React.FC = () => {
         return <ContentModeration />;
       case "students":
         return <StudentManagement />;
+      case "my-profile":
+        return <div>
+          <TeacherProfile/>
+          </div>
       default:
         return <div>No tab selected</div>;
     }
@@ -136,7 +142,7 @@ const StaffDashboard: React.FC = () => {
                 Welcome, {user.first_name}!
               </h1>
               <p className="text-sm text-gray-600">
-                Staff Dashboard - Manage your students and curriculum
+                Staff Dashboard - Manage your students
               </p>
             </div>
           </div>

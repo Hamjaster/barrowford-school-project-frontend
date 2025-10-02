@@ -17,6 +17,7 @@ const initialState: UserManagementState = {
   createUserSuccess: false,
   successMessage: "",
   resetPasswordSuccess: false,
+  isStatusUpdateLoading : false
 };
 
 // Helper function to get auth headers
@@ -181,6 +182,40 @@ export const fetchParents = createAsyncThunk(
   }
 );
 
+export const toggleUserStatus = createAsyncThunk(
+  'userManagement/toggleUserStatus',
+  async ({ action, role, userId }: { action: 'activate' | 'deactivate'; role: string; userId: string }, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/user/status`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({ action, role, userId }),
+      });
+
+      if(response.status === 429){
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to toggle user status');
+      }
+
+      const data = await response.json();
+      return { userId, action, role, message: data.message };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
 const userManagementSlice = createSlice({
   name: 'userManagement',
   initialState,
@@ -275,6 +310,31 @@ const userManagementSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
         state.parents = [];
+      });
+
+    // Toggle User Status cases
+    builder
+      .addCase(toggleUserStatus.pending, (state) => {
+        state.isStatusUpdateLoading = true;
+        state.error = null;
+      })
+      .addCase(toggleUserStatus.fulfilled, (state, action) => {
+        state.isStatusUpdateLoading = false;
+        state.error = null;
+        // Update the user's status in the users array
+        // Check both user ID and role to ensure we update the correct user
+        const userIndex = state.users.findIndex(user => 
+          user.id === action.payload.userId && user.role === action.payload.role
+        );
+        console.log(userIndex, 'userIndex for user:', action.payload.userId, 'role:', action.payload.role);
+        if (userIndex !== -1) {
+          state.users[userIndex].status = action.payload.action === 'activate' ? 'active' : 'inactive';
+        }
+        state.successMessage = action.payload.message;
+      })
+      .addCase(toggleUserStatus.rejected, (state, action) => {
+        state.isStatusUpdateLoading = false;
+        state.error = action.payload as string;
       });
   },
 });

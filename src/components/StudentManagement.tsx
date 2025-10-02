@@ -544,7 +544,9 @@ export default function StudentManagement() {
                                                 >
                                                   <div className="flex justify-between items-start">
                                                     <span className="font-medium text-blue-800">
-                                                      {comment.user_role}
+                                                      {comment.user_name} (
+                                                      {comment.user_role.toLowerCase()}
+                                                      )
                                                     </span>
                                                     <span className="text-blue-600">
                                                       {new Date(

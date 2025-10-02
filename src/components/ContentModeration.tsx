@@ -19,13 +19,13 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import AttachmentDisplay from "./AttachmentDisplay";
 import {
   MessageSquare,
   ImageIcon,
   BookOpen,
   CheckCircle,
   XCircle,
-  Plus,
   Calendar,
   FileText,
 } from "lucide-react";
@@ -182,10 +182,12 @@ const ContentModeration: React.FC = () => {
             </Badge>
           </div>
           <div className="relative">
-            <img
-              src={imageUrl}
+            <AttachmentDisplay
+              url={imageUrl}
               alt={isOld ? "Previous submission" : "New submission"}
-              className={`max-w-full h-auto max-h-64 rounded-lg border-2 ${borderColor} object-contain`}
+              className={`max-w-full h-auto max-h-64 rounded-lg `}
+              maxHeight="max-h-64"
+              maxWidth="max-w-full"
             />
           </div>
         </div>
@@ -193,7 +195,7 @@ const ContentModeration: React.FC = () => {
     };
 
     // Helper function to render text content
-    const renderTextContent = (content: any, label: string, isOld = false) => {
+    const renderTextContent = (content: any, _label: string, isOld = false) => {
       const text = content?.content || content?.description || "";
       if (!text) return null;
 
@@ -461,7 +463,9 @@ const ContentModeration: React.FC = () => {
                           className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 font-medium transition-colors"
                         >
                           <CheckCircle className="h-4 w-4 mr-2" />
-                          Approve
+                          {approving[moderation.id]
+                            ? "Approving..."
+                            : "Approve"}
                         </Button>
                         <Button
                           size="sm"
@@ -474,7 +478,7 @@ const ContentModeration: React.FC = () => {
                           className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 font-medium transition-colors"
                         >
                           <XCircle className="h-4 w-4 mr-2" />
-                          Reject
+                          {rejecting[moderation.id] ? "Rejecting..." : "Reject"}
                         </Button>
                       </div>
                     </div>
@@ -608,7 +612,9 @@ const ContentModeration: React.FC = () => {
             >
               <span className="flex items-center gap-2">
                 <XCircle className="h-4 w-4" />
-                Reject Submission
+                {rejecting[selectedModeration?.id || 0]
+                  ? "Rejecting..."
+                  : "Reject Submission"}
               </span>
             </Button>
           </DialogFooter>

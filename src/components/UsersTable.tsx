@@ -9,6 +9,8 @@ import {
   ArrowDown,
   KeyRound,
   Loader2,
+  UserCheck,
+  UserX,
 } from "lucide-react";
 import {
   Table,
@@ -37,6 +39,7 @@ import type { RootState, AppDispatch } from "@/store";
 import {
   fetchUsers,
   resetUserPassword,
+  toggleUserStatus,
   clearError,
   clearSuccess,
 } from "@/store/slices/userManagementSlice";
@@ -48,8 +51,15 @@ type SortOrder = "asc" | "desc";
 
 const UsersTable: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
-  const { users, pagination, isLoading, error, resetPasswordSuccess } =
-    useSelector((state: RootState) => state.userManagement);
+  const {
+    users,
+    pagination,
+    isLoading,
+    error,
+    resetPasswordSuccess,
+    successMessage,
+    isStatusUpdateLoading,
+  } = useSelector((state: RootState) => state.userManagement);
   const { user: currentUser } = useSelector((state: RootState) => state.auth);
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -106,6 +116,14 @@ const UsersTable: React.FC = () => {
       dispatch(clearSuccess());
     }
   }, [resetPasswordSuccess, dispatch]);
+
+  // Handle toggle status success
+  useEffect(() => {
+    if (successMessage) {
+      toast.success(successMessage);
+      dispatch(clearSuccess());
+    }
+  }, [successMessage, dispatch]);
 
   // Handle errors
   useEffect(() => {
@@ -173,6 +191,14 @@ const UsersTable: React.FC = () => {
     setResetPasswordModal(true);
     setNewPassword("");
     setConfirmPassword("");
+  };
+
+  const handleToggleStatus = (user: User) => {
+    const action = user.status === "active" ? "deactivate" : "activate";
+    const role = user.role;
+    const userId = user.id;
+
+    dispatch(toggleUserStatus({ action, role, userId }));
   };
 
   const getSortIcon = (column: SortColumn) => {
@@ -319,20 +345,21 @@ const UsersTable: React.FC = () => {
                   Created {getSortIcon("created_at")}
                 </Button>
               </TableHead>
+              <TableHead>Status</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto mb-2" />
                   Loading users...
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8">
+                <TableCell colSpan={6} className="text-center py-8">
                   No users found
                 </TableCell>
               </TableRow>
@@ -359,16 +386,48 @@ const UsersTable: React.FC = () => {
                     </span>
                   </TableCell>
                   <TableCell>{formatDate(user.created_at || "")}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => openResetPasswordModal(user)}
-                      className="cursor-pointer ml-2"
+                  <TableCell>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                        user.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
                     >
-                      <KeyRound className="h-4 w-4 mr-1" />
-                      Reset Password
-                    </Button>
+                      {user.status === "active" ? "Active" : "Inactive"}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <div className="flex justify-end gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleToggleStatus(user)}
+                        className="cursor-pointer"
+                        loading={isStatusUpdateLoading}
+                      >
+                        {user.status === "active" ? (
+                          <>
+                            <UserX className="h-4 w-4 mr-1" />
+                            Deactivate
+                          </>
+                        ) : (
+                          <>
+                            <UserCheck className="h-4 w-4 mr-1" />
+                            Activate
+                          </>
+                        )}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => openResetPasswordModal(user)}
+                        className="cursor-pointer"
+                      >
+                        <KeyRound className="h-4 w-4 mr-1" />
+                        Reset Password
+                      </Button>
+                    </div>
                   </TableCell>
                 </TableRow>
               ))

@@ -161,6 +161,7 @@ export interface UserManagementState {
   createUserSuccess: boolean;
   resetPasswordSuccess: boolean;
   successMessage: string;
+  isStatusUpdateLoading : boolean
 }
 
 // Child-related Types
@@ -197,8 +198,8 @@ export interface PersonalSection {
   updated_at: string;
 }
 
-// Define state type
-export interface StudentState {
+// Define state type for personal sections
+export interface PersonalSectionState {
   topics: Topic[];
   loading: boolean;
   error: string | null;
@@ -222,6 +223,7 @@ export interface ReflectionState {
   postingCommentLoading : boolean;
   error: string | null;
   message: string | null;
+  previousWeeks: { currentWeek: string; previousWeeks: string[]; totalPreviousWeeks: number } | null;
 }
 
 
@@ -238,13 +240,13 @@ export interface RelectionRequest {
 }
 // Define the type for a reflection item
 export interface ReflectionItem {
-  id: string;
+  id: number;
   content: string;
   attachment_url?: string;
-  student_id: string;
+  student_id: number;
   created_at: string;
-  topic_id: string;
-  status: string;
+  topic_id: number;
+  status: 'pending' | 'approved' | 'rejected' | 'pending_deletion';
   week?: string;
   reflectiontopics: {
     title: string;
@@ -253,13 +255,13 @@ export interface ReflectionItem {
 }
 
 export interface TableEntry {
-  id: string;
+  id: number;
   date: string;
   topic: string;   // ✅ instead of title
   status: string;
   content: string;
   attachment_url: string;
-  topic_id: string;
+  topic_id: number;
   week?: string;   // optional if sometimes missing
 }
 
@@ -267,7 +269,7 @@ export type CulturalCapitalEntry = Required<TableEntry>;
 
 
 export interface UpdateReflectionPayload {
-  id: string;
+  id: number;
   content: string;
   status: string;
 }
@@ -287,6 +289,7 @@ export interface ReflectionComment {
   id: number;
   reflection_id: number;
   user_role: string;
+  user_name: string;
   comment: string;
   created_at: string;
 }
@@ -316,6 +319,7 @@ export interface YearGroupWithSubjects extends YearGroup {
 export interface YearDataState {
   yearGroups: YearGroup[];
   yearGroupsWithSubjects: YearGroupWithSubjects[];
+  subjects: Subject[];
   isLoading: boolean;
   isLoadingSubjects: boolean;
   error: string | null;
@@ -343,6 +347,7 @@ export interface StudentImage {
   id: string;
   image_url: string;
   created_at: string;
+  status: 'pending' | 'approved' | 'rejected' | 'pending_deletion';
 }
 
 // Student Impact and Experience Types

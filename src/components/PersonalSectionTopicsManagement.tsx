@@ -21,13 +21,22 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { Plus, Edit3, Trash2 } from "lucide-react";
+import {
+  Plus,
+  Edit3,
+  Trash2,
+  ToggleLeft,
+  ToggleRight,
+  CheckCircle,
+  XCircle,
+} from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import {
-  fetchTopics,
+  fetchAllTopics,
   createTopic,
   updateTopic,
   deleteTopic,
+  toggleTopicStatus,
 } from "@/store/slices/personalSectionSlice";
 import type { RootState, AppDispatch } from "@/store";
 import { toast } from "sonner";
@@ -42,6 +51,7 @@ export default function PersonalSectionTopicsManagement() {
     addTopicLoading,
     updateTopicLoading,
     deleteTopicLoading,
+    toggleStatusLoading,
   } = useSelector((state: RootState) => state.personalSection);
 
   const [newTopicDialog, setNewTopicDialog] = useState(false);
@@ -56,7 +66,7 @@ export default function PersonalSectionTopicsManagement() {
   const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   // Fetch topics on component mount
   useEffect(() => {
-    dispatch(fetchTopics());
+    dispatch(fetchAllTopics());
   }, [dispatch]);
 
   const handleCreateTopic = async () => {
@@ -125,6 +135,20 @@ export default function PersonalSectionTopicsManagement() {
   };
 
 
+  const handleToggleStatus = async (topicId: number, currentStatus: string) => {
+    try {
+      const newStatus = currentStatus === "active" ? "inactive" : "active";
+      await dispatch(
+        toggleTopicStatus({
+          id: topicId,
+          status: newStatus as "active" | "inactive",
+        })
+      ).unwrap();
+    } catch (error) {
+      console.error("Failed to toggle topic status:", error);
+    }
+  };
+
   const handleEditTopic = (topic: any) => {
     setEditingTopic(topic);
     setEditTopicTitle(topic.title);
@@ -161,7 +185,7 @@ export default function PersonalSectionTopicsManagement() {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <p className="text-red-600 mb-4">Error loading topics: {error}</p>
-          <Button onClick={() => dispatch(fetchTopics())}>Try Again</Button>
+          <Button onClick={() => dispatch(fetchAllTopics())}>Try Again</Button>
         </div>
       </div>
     );
@@ -298,8 +322,24 @@ export default function PersonalSectionTopicsManagement() {
                     key={topic.id}
                     className="flex items-center justify-between p-4 border rounded-lg"
                   >
-                    <div>
-                      <h3 className="font-semibold">{topic.title}</h3>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-semibold">{topic.title}</h3>
+                        <div
+                          className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                            topic.status === "active"
+                              ? "bg-green-100 text-green-800"
+                              : "bg-red-100 text-red-800"
+                          }`}
+                        >
+                          {topic.status === "active" ? (
+                            <CheckCircle className="h-3 w-3" />
+                          ) : (
+                            <XCircle className="h-3 w-3" />
+                          )}
+                          {topic.status === "active" ? "Active" : "Inactive"}
+                        </div>
+                      </div>
                       <p className="text-sm text-muted-foreground">
                         {topic.description || "No description provided"}
                       </p>
@@ -309,6 +349,31 @@ export default function PersonalSectionTopicsManagement() {
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() =>
+                          handleToggleStatus(topic.id, topic.status)
+                        }
+                        loading={toggleStatusLoading}
+                        className={
+                          topic.status === "active"
+                            ? "text-orange-600 hover:text-orange-700"
+                            : "text-green-600 hover:text-green-700"
+                        }
+                      >
+                        {topic.status === "active" ? (
+                          <>
+                            <ToggleLeft className="h-4 w-4 mr-2" />
+                            Deactivate
+                          </>
+                        ) : (
+                          <>
+                            <ToggleRight className="h-4 w-4 mr-2" />
+                            Activate
+                          </>
+                        )}
+                      </Button>
                       <Button
                         variant="outline"
                         size="sm"

@@ -10,6 +10,7 @@ import { API_BASE_URL } from '@/constants';
 const initialState: YearDataState = {
   yearGroups: [],
   yearGroupsWithSubjects: [],
+  subjects: [],
   isLoading: false,
   isLoadingSubjects: false,
   error: null,
@@ -58,6 +59,34 @@ export const fetchSubjectsByYearGroup = createAsyncThunk(
 
       const data = await response.json();
       return { yearGroupId, subjects: data.data }; // Return both yearGroupId and subjects
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+export const fetchAllSubjects = createAsyncThunk<
+  Subject[],
+  void,
+  { state: RootState; rejectValue: string }
+>(
+  'yearData/fetchAllSubjects',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/subject/`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch subjects');
+      }
+
+      const data = await response.json();
+      return data.data; // Assuming the API returns { success: true, data: [...] }
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');
     }
@@ -115,6 +144,7 @@ const yearDataSlice = createSlice({
     clearYearData: (state) => {
       state.yearGroups = [];
       state.yearGroupsWithSubjects = [];
+      state.subjects = [];
       state.error = null;
     },
   },
@@ -166,6 +196,22 @@ const yearDataSlice = createSlice({
         state.error = null;
       })
       .addCase(fetchSubjectsByYearGroup.rejected, (state, action) => {
+        state.isLoadingSubjects = false;
+        state.error = action.payload as string;
+      })
+
+    // Fetch all subjects cases
+    builder
+      .addCase(fetchAllSubjects.pending, (state) => {
+        state.isLoadingSubjects = true;
+        state.error = null;
+      })
+      .addCase(fetchAllSubjects.fulfilled, (state, action) => {
+        state.isLoadingSubjects = false;
+        state.subjects = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchAllSubjects.rejected, (state, action) => {
         state.isLoadingSubjects = false;
         state.error = action.payload as string;
       })

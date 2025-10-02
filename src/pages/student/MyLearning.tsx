@@ -196,11 +196,16 @@ export default function StudentContentPage() {
         title: writingTitle,
         content: writingContent,
       })
-    );
-
-    setWritingTitle("");
-    setWritingContent("");
-    setIsWritingModalOpen(false);
+    )
+      .unwrap()
+      .then(() => {
+        setWritingTitle("");
+        setWritingContent("");
+        setIsWritingModalOpen(false);
+      })
+      .catch((error) => {
+        toast.error(error.message);
+      });
   };
 
   const handleUploadSubmit = async () => {
@@ -265,11 +270,16 @@ export default function StudentContentPage() {
 
           attachment_url: fileUrls, // Store URLs in attachment_url field
         })
-      );
-
-      setUploadTitle("");
-      setUploadedFiles([]);
-      setIsUploadModalOpen(false);
+      )
+        .unwrap()
+        .then(() => {
+          setUploadTitle("");
+          setUploadedFiles([]);
+          setIsUploadModalOpen(false);
+        })
+        .catch((error) => {
+          toast.error(error.message);
+        });
     } catch (error) {
       console.error("Upload error:", error);
       toast.error("Failed to upload files");
@@ -373,7 +383,7 @@ export default function StudentContentPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-blue-50 to-purple-50">
+    <div className="min-h-screen  bg-gradient-to-r from-orange-500 to-pink-500">
       <div className="bg-green-500 text-white p-6 rounded-b-2xl">
         <h1 className="text-3xl font-bold">My Learning</h1>
         <p className="text-green-100 mt-2">Subject: {selectedSubject.name}</p>
@@ -452,7 +462,7 @@ export default function StudentContentPage() {
                             loading={isSubmitting}
                             className="bg-pink-500 hover:bg-pink-600"
                           >
-                            Add to Collection
+                            {isSubmitting ? "Adding..." : "Add to Collection"}
                           </Button>
                         </div>
                       </div>
@@ -613,7 +623,7 @@ export default function StudentContentPage() {
                             loading={isSubmitting}
                             className="bg-blue-500 hover:bg-blue-600"
                           >
-                            Add to Collection
+                            {isSubmitting ? "Adding..." : "Add to Collection"}
                           </Button>
                         </div>
                       </div>

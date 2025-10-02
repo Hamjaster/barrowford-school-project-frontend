@@ -26,14 +26,15 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
         />
         <button
           type="button"
-          className="absolute inset-y-0 right-0 pr-3 flex items-center hover:text-gray-600 focus:outline-none"
+          className="absolute inset-y-0 right-0 pr-3 flex items-center justify-center hover:text-gray-600 focus:outline-none focus:text-gray-600 z-10 w-8"
           onClick={togglePasswordVisibility}
-          tabIndex={-1}
+          tabIndex={0}
+          aria-label={showPassword ? "Hide password" : "Show password"}
         >
           {showPassword ? (
-            <EyeOff className="h-4 w-4 text-gray-400" />
+            <EyeOff className="h-4 w-4 text-gray-400 hover:text-gray-600" />
           ) : (
-            <Eye className="h-4 w-4 text-gray-400" />
+            <Eye className="h-4 w-4 text-gray-400 hover:text-gray-600" />
           )}
         </button>
       </div>
@@ -44,4 +45,3 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
 PasswordInput.displayName = "PasswordInput";
 
 export { PasswordInput };
-

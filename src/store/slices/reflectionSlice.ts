@@ -4,6 +4,14 @@ import { type RootState } from "..";
 import type  { ReflectionTopic, ReflectionState,ReflectionItem,
   UpdateReflectionPayload,AddCommentRequest,ReflectionComment } from '@/types'
 
+// Types for previous weeks API
+interface PreviousWeeksResponse {
+  currentWeek: string;
+  previousWeeks: string[];
+  totalPreviousWeeks: number;
+}
+
+
 // Helper function to get auth headers
 const getAuthHeaders = (token: string) => ({
   "Content-Type": "application/json",
@@ -20,6 +28,7 @@ const initialState: ReflectionState = {
   postingCommentLoading : false,
   error: null,
   message: null,
+  previousWeeks: null,
 };
 
 
@@ -214,12 +223,12 @@ export const fetchActiveTopics = createAsyncThunk<
 
 //createReflection thunk
 export const createReflection = createAsyncThunk<
-  { message: string; moderation_id: string; requires_moderation: boolean }, // Updated return type for moderation response
-  { topicID: string; content: string; attachmentUrl?: string },
+  { message: string; data: { reflection: ReflectionItem; moderation: any } }, // Updated return type for new system
+  { topicID: string; content: string; attachmentUrl?: string; selectedWeek?: string },
   { state: RootState; rejectValue: string }
 >(
   "reflection/createreflection",
-  async ({ topicID, content, attachmentUrl }, { rejectWithValue, getState }) => {
+  async ({ topicID, content, attachmentUrl, selectedWeek }, { rejectWithValue, getState }) => {
     try {
       const state = getState();
       const token = state.auth.token;
@@ -236,7 +245,8 @@ export const createReflection = createAsyncThunk<
       const payload = {
         topicID,
         content,
-        attachmentUrl: attachmentUrl || ""
+        attachmentUrl: attachmentUrl || "",
+        selectedWeek: selectedWeek || ""
       };
 
       console.log("payload in frontend", payload)
@@ -262,8 +272,7 @@ export const createReflection = createAsyncThunk<
       const result = await response.json();
       return {
         message: result.message,
-        moderation_id: result.moderation_id,
-        requires_moderation: result.requires_moderation
+        data: result.data
       };
     } catch (error: any) {
       return rejectWithValue(error.message || "Network error");
@@ -312,7 +321,7 @@ export const deleteReflection = createAsyncThunk<
 
 // Student request to delete reflection (creates moderation request)
 export const requestDeleteReflection = createAsyncThunk<
-  { message: string; moderation_id: string; requires_moderation: boolean },
+  { message: string; data: { updatedReflection: ReflectionItem; moderation: any } },
   string, // reflectionId to delete
   { state: RootState; rejectValue: string }
 >(
@@ -345,8 +354,7 @@ export const requestDeleteReflection = createAsyncThunk<
       const result = await response.json();
       return {
         message: result.message,
-        moderation_id: result.moderation_id,
-        requires_moderation: result.requires_moderation
+        data: result.data
       };
     } catch (error: any) {
       return rejectWithValue(error.message || "Network error");
@@ -356,7 +364,7 @@ export const requestDeleteReflection = createAsyncThunk<
 // Async thunk
 export const fetchReflectionsByStudentId = createAsyncThunk<
   ReflectionItem[], // return type
-  string,           // argument type (student_id)
+  number,           // argument type (student_id)
   { state: RootState; rejectValue: string }
 >(
   "reflections/fetchByStudentId",
@@ -458,6 +466,39 @@ export const fetchMyReflections = createAsyncThunk<
   }
 );
 
+// Refresh reflections after moderation changes
+export const refreshMyReflections = createAsyncThunk<
+  ReflectionItem[], // Return type
+  void, // No argument needed
+  { state: RootState, rejectValue: string }
+>(
+  "reflection/refreshMy",
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+
+      if (!token) {
+        return rejectWithValue("No authentication token found");
+      }
+
+      const response = await fetch(`${API_BASE_URL}/reflection/my`, {
+        method: "GET",
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to refresh reflections");
+      }
+
+      const result = await response.json();
+      return result.data as ReflectionItem[];
+    } catch (error: any) {
+      return rejectWithValue(error.message || "Network error");
+    }
+  }
+);
+
 export const updateReflection = createAsyncThunk<
   ReflectionItem,          // Return type
   UpdateReflectionPayload, // Arg type
@@ -499,7 +540,7 @@ export const updateReflection = createAsyncThunk<
 
 // Async thunk
 export const addComment = createAsyncThunk<
-  ReflectionComment,         // return type
+  {data: ReflectionComment, reflectionId: number},         // return type
   AddCommentRequest,          // payload type
   {state:RootState, rejectValue: string }     // error type
 >(
@@ -525,12 +566,13 @@ export const addComment = createAsyncThunk<
       }
 
        const result: {  data: ReflectionComment } = await response.json();
-      return result.data;
+      return {data : result.data, reflectionId};
     } catch (err: any) {
       return rejectWithValue(err.message || "Network error");
     }
   }
 );
+
 export const fetchComments = createAsyncThunk<
   ReflectionComment[], 
   number,         
@@ -558,6 +600,37 @@ export const fetchComments = createAsyncThunk<
       }
 
       const result: {  data: ReflectionComment[] } = await response.json();
+      return result.data;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
+// Fetch previous weeks for reflection creation
+export const fetchPreviousWeeks = createAsyncThunk<
+  PreviousWeeksResponse,
+  void,
+  { state: RootState; rejectValue: string }
+>(
+  "reflection/fetchPreviousWeeks",
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState();
+      const token = state.auth.token;
+      if (!token) return rejectWithValue("No authentication token found");
+
+      const response = await fetch(`${API_BASE_URL}/reflection/weeks/previous`, {
+        method: "GET",
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || "Failed to fetch previous weeks");
+      }
+
+      const result: { success: boolean; data: PreviousWeeksResponse } = await response.json();
       return result.data;
     } catch (err: any) {
       return rejectWithValue(err.message || "Network error");
@@ -682,16 +755,25 @@ const reflectionSlice = createSlice({
     })
     .addCase(addComment.fulfilled, (state, action) => {
 
-  const newComment = action.payload;
+  const newComment = action.payload.data;
 
   if (!newComment || !newComment.id) {
     console.error("Invalid comment returned");
     return;
   }
 
+  console.log(newComment, 'new comment uploaded to BE')
+  const reflectionId = action.payload.reflectionId;
   // Push the new comment into the global comments array
   state.comments.push(newComment);
   state.postingCommentLoading = false;
+
+  // add the newComment to reflectioncomments of that specific reflection
+  state.reflections = state.reflections.map((reflection) =>
+    reflection.id === reflectionId ? { ...reflection, reflectioncomments: [...reflection.reflectioncomments, newComment] } : reflection
+  );
+
+
 })
     .addCase(addComment.rejected, (state, action) => {
     
@@ -725,9 +807,10 @@ const reflectionSlice = createSlice({
       })
       .addCase(createReflection.fulfilled, (state, action) => {
          state.loading = false;
-        // No longer adding to reflections array since it's now moderated
-        // The reflection will appear after teacher approval
-        console.log("Reflection sent for moderation:", action.payload);
+        // Add the new reflection to the array with pending status
+        if (action.payload.data?.reflection) {
+          state.reflections.push(action.payload.data.reflection);
+        }
       })
       .addCase(createReflection.rejected, (state, action) => {
         state.loading = false;
@@ -765,6 +848,22 @@ const reflectionSlice = createSlice({
     state.fetchreflectionsloading = false;
     state.reflections = []
     state.error = action.payload || "Failed to fetch reflections";
+  });
+
+  // Refresh reflections cases
+  builder
+  .addCase(refreshMyReflections.pending, (state) => {
+    state.fetchreflectionsloading = true;
+    state.error = null;
+  })
+  .addCase(refreshMyReflections.fulfilled, (state, action) => {
+    state.fetchreflectionsloading = false;
+    state.reflections = action.payload;
+    state.error = null;
+  })
+  .addCase(refreshMyReflections.rejected, (state, action) => {
+    state.fetchreflectionsloading = false;
+    state.error = action.payload || "Failed to refresh reflections";
   });
   //for update
 builder
@@ -819,12 +918,32 @@ builder
       })
       .addCase(requestDeleteReflection.fulfilled, (state, action) => {
         state.loading = false;
-        // No immediate removal since it's sent for moderation
-        console.log("Delete request sent for moderation:", action.payload);
+        // Update the reflection status to pending_deletion in the array
+        if (action.payload.data?.updatedReflection) {
+          const reflectionIndex = state.reflections.findIndex(r => r.id === action.payload.data.updatedReflection.id);
+          if (reflectionIndex !== -1) {
+            state.reflections[reflectionIndex] = action.payload.data.updatedReflection;
+          }
+        }
       })
       .addCase(requestDeleteReflection.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload || "Failed to request reflection deletion";
+      });
+
+    // --- fetchPreviousWeeks handlers ---
+    builder
+      .addCase(fetchPreviousWeeks.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchPreviousWeeks.fulfilled, (state, action) => {
+        state.loading = false;
+        state.previousWeeks = action.payload;
+      })
+      .addCase(fetchPreviousWeeks.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload || "Failed to fetch previous weeks";
       });
   },
 });

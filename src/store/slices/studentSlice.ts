@@ -215,6 +215,43 @@ export const deleteStudentImage = createAsyncThunk(
   }
 );
 
+// Refresh images after moderation changes
+export const refreshStudentImages = createAsyncThunk(
+  'student/refreshStudentImages',
+  async (yearGroupId: number | undefined, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      // Build URL with year_group_id query parameter if provided
+      const url = new URL(`${API_BASE_URL}/student/images/me`);
+      if (yearGroupId) {
+        url.searchParams.append('year_group_id', yearGroupId.toString());
+      }
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to refresh images');
+      }
+
+      const data = await response.json();
+      return data.data; // Return the updated images array
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
 // Impact-related async thunks
 export const fetchStudentImpact = createAsyncThunk(
   'student/fetchStudentImpact',
@@ -479,7 +516,11 @@ const studentSlice = createSlice({
       .addCase(uploadStudentImage.fulfilled, (state, action) => {
         state.isSubmitting = false;
         state.message = action.payload.message;
-        // The new image is sent for moderation, so we don't need to add it to the array
+        // Add the new image to the array with pending status
+        console.log('adding image to array', action.payload.data.studentImage)
+        if (action.payload.data?.studentImage) {
+          state.images.push(action.payload.data.studentImage);
+        }
         state.error = null;
       })
       .addCase(uploadStudentImage.rejected, (state, action) => {
@@ -496,11 +537,33 @@ const studentSlice = createSlice({
       .addCase(deleteStudentImage.fulfilled, (state, action) => {
         state.isDeleting = false;
         state.message = action.payload.message;
-        // The deleted image is sent for moderation, so we don't need to remove it from the array
+        // Update the image status to pending_deletion in the array
+        if (action.payload.data?.updatedImage) {
+          const imageIndex = state.images.findIndex(img => img.id === action.payload.imageId);
+          if (imageIndex !== -1) {
+            state.images[imageIndex] = action.payload.data.updatedImage;
+          }
+        }
         state.error = null;
       })
       .addCase(deleteStudentImage.rejected, (state, action) => {
         state.isDeleting = false;
+        state.error = action.payload as string;
+      });
+
+    // Refresh images cases
+    builder
+      .addCase(refreshStudentImages.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(refreshStudentImages.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.images = action.payload;
+        state.error = null;
+      })
+      .addCase(refreshStudentImages.rejected, (state, action) => {
+        state.isLoading = false;
         state.error = action.payload as string;
       });
 

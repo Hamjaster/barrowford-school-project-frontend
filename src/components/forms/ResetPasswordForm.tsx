@@ -163,7 +163,7 @@ const ResetPasswordForm: React.FC = () => {
             loading={isLoading}
             className="w-full bg-orange-600 hover:bg-orange-700 text-white"
           >
-            Reset Password
+            {isLoading ? "Resetting..." : "Reset Password"}
           </Button>
         </div>
       </form>

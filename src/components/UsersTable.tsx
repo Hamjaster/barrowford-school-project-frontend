@@ -328,13 +328,7 @@ const UsersTable: React.FC = () => {
                 </Button>
               </TableHead>
               <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("role")}
-                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
-                >
-                  Role {getSortIcon("role")}
-                </Button>
+                Role
               </TableHead>
               <TableHead>
                 <Button

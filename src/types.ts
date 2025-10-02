@@ -129,6 +129,7 @@ export interface CreateUserFormData {
   parent_ids?: number[]; // Optional array of parent IDs for student role
   year_group_id?: number; // Optional year group ID for student role
   class_id?: number; // Optional class ID for student role
+  profile_image?: File | null;
 }
 
 export interface ResetPasswordFormData {

@@ -54,15 +54,15 @@ const StaffSidebar: React.FC = () => {
   };
 
   return (
-    <ShadcnSidebar className="border-r" collapsible="offcanvas">
+    <ShadcnSidebar className="border-r" collapsible="none">
       <SidebarHeader className="p-4 sm:p-6">
-          <div className="flex items-start gap-3">
-      <img 
-        src={barrowfordlogo} 
-        alt="Barrowford Logo"
-        className="h-12 sm:h-14 md:h-16 w-auto object-contain"
-      />
-    </div>
+        <div className="flex items-start gap-3">
+          <img
+            src={barrowfordlogo}
+            alt="Barrowford Logo"
+            className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+          />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
@@ -74,14 +74,16 @@ const StaffSidebar: React.FC = () => {
                   <SidebarMenuButton className="h-16" asChild size="lg">
                     <Link
                       to={item.to}
-                      className="flex py-5 items-center text-lg font-semibold"
+                      className="flex items-center gap-3 text-lg font-semibold w-full"
                     >
                       <div
                         className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}
                       >
                         {getIconComponent(item.iconName)}
                       </div>
-                      <span>{item.label}</span>
+                      <span className="flex-1 text-sm font-medium leading-none tracking-normal text-foreground">
+                        {item.label}
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -98,12 +100,14 @@ const StaffSidebar: React.FC = () => {
               <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className="flex cursor-pointer items-center gap-3 text-lg font-semibold w-full justify-start h-auto p-3"
+                className="flex items-center gap-3 text-lg font-semibold w-full justify-start p-0"
               >
-                <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white flex-shrink-0 ">
                   <LogOut size={20} />
                 </div>
-                <span>Logout</span>
+                <span className="flex-1 text-sm font-medium  tracking-normal text-foreground">
+                  Logout
+                </span>
               </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>

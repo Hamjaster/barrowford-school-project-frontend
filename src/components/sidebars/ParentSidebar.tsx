@@ -42,7 +42,7 @@ const ParentSidebar: React.FC = () => {
   };
 
   return (
-    <ShadcnSidebar className="border-r" collapsible="offcanvas">
+    <ShadcnSidebar className="border-r" collapsible="none">
       <SidebarHeader className="p-4 sm:p-6">
           <div className="flex items-start gap-3">
       <img 
@@ -62,7 +62,7 @@ const ParentSidebar: React.FC = () => {
                   <SidebarMenuButton className="h-16" asChild size="lg">
                     <Link
                       to={item.to}
-                      className="flex py-5 items-center text-lg font-semibold"
+                      className="flex py-5 items-center text-sm font-semibold"
                     >
                       <div
                         className={`w-12 h-12 ${item.bgColor} rounded-full flex items-center justify-center text-white flex-shrink-0`}
@@ -79,19 +79,19 @@ const ParentSidebar: React.FC = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-2 sm:p-4">
+      <SidebarFooter className="p-2 sm:p-2">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
               <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className="flex cursor-pointer items-center gap-3 text-lg font-semibold w-full justify-start h-auto p-3"
+                className="flex cursor-pointer items-center gap-2 text-lg font-semibold w-full justify-start h-auto"
               >
-                <div className="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white flex-shrink-0">
                   <LogOut size={20} />
                 </div>
-                <span>Logout</span>
+                <span className="text-sm">Logout</span>
               </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>

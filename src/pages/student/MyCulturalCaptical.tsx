@@ -290,7 +290,7 @@ export default function CulturalCapitalPage() {
   >(null);
   const handleDeleteReflection = async (reflectionId: string) => {
     try {
-      console.log(",,,,,,,,",reflectionId)
+     
       setDeletingReflectionId(reflectionId);
       setSubmissionfetchreflectionsloading(true);
       const resultAction = await dispatch(
@@ -380,7 +380,7 @@ export default function CulturalCapitalPage() {
             <Eye className="w-4 h-4 text-black" />
 
           </Button>
-          <Button
+          {/* <Button
             variant="ghost"
             size="sm"
             className="text-red-600 hover:text-red-800"
@@ -392,7 +392,7 @@ export default function CulturalCapitalPage() {
             loading={deletingReflectionId === item.id}
           >
             <Trash2 className="w-4 h-4" />
-          </Button>
+          </Button> */}
         </div>
       ),
     },

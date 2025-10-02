@@ -77,16 +77,16 @@ const StudentSidebar: React.FC = () => {
   ];
 
   return (
-    <ShadcnSidebar className="border-r" collapsible="offcanvas">
-     <SidebarHeader className="p-4 sm:p-6">
-    <div className="flex items-start gap-3">
-      <img 
-        src={barrowfordlogo} 
-        alt="Barrowford Logo"
-        className="h-12 sm:h-14 md:h-16 w-auto object-contain"
-      />
-    </div>
-  </SidebarHeader>
+    <ShadcnSidebar className="border-r" collapsible="none">
+      <SidebarHeader className="p-4 sm:p-6">
+        <div className="flex items-start gap-3">
+          <img
+            src={barrowfordlogo}
+            alt="Barrowford Logo"
+            className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+          />
+        </div>
+      </SidebarHeader>
 
 
       <SidebarContent>
@@ -123,19 +123,19 @@ const StudentSidebar: React.FC = () => {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="p-2 sm:p-4">
+      <SidebarFooter className="p-2 sm:p-0">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
               <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className="flex cursor-pointer items-center gap-3 text-lg font-semibold w-full justify-start h-auto p-3"
+                className="flex cursor-pointer items-center gap3 text-lg font-semibold w-full justify-start h-auto p-4"
               >
-                <div className="w-12 h-12 bg-pink-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                <div className="w-12  h-12 bg-pink-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
                   <LogOut size={20} />
                 </div>
-                <span>Logout</span>
+                <span className="text-sm">Logout</span>
               </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>

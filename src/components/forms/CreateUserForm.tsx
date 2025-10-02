@@ -11,6 +11,8 @@ import {
   clearSuccess,
   fetchParents,
 } from "@/store/slices/userManagementSlice";
+import { uploadFileToSupabase } from "@/utils/fileUpload";
+
 import type { RootState } from "@/store";
 import type { CreateUserFormData, UserRole } from "@/types";
 import {
@@ -20,6 +22,7 @@ import {
   validateUsername,
 } from "@/lib/utils";
 import { ROLEWISE_INFORMATION } from "@/constants";
+import { Image } from "lucide-react";
 
 interface CreateUserFormProps {
   allowedRoles: UserRole[];
@@ -40,7 +43,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     parent_ids: [],
     year_group_id: 1,
     class_id: 1,
+    profile_image: null,
   });
+
+
+
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -49,12 +56,10 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     setFormData((prev) => {
       const newFormData = { ...prev, [name]: value };
 
-      // Clear parent_ids if role is changed from student to something else
       if (name === "role" && value !== "student") {
         newFormData.parent_ids = [];
       }
 
-      // Clear username/email when switching roles
       if (name === "role") {
         if (value === "student") {
           newFormData.email = "";
@@ -74,15 +79,22 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     }));
   };
 
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setFormData((prev) => ({ ...prev, profile_image: file }));
+
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validate all fields
+    // ✅ Basic field validations
     const passwordValidation = validatePassword(formData.password);
     const firstNameValidation = validateName(formData.first_name, "First name");
     const lastNameValidation = validateName(formData.last_name, "Last name");
 
-    // Validate email or username based on role
     if (formData.role === "student") {
       const usernameValidation = validateUsername(formData.username || "");
       if (!usernameValidation.isValid) {
@@ -101,18 +113,16 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       toast.error(passwordValidation.error);
       return;
     }
-
     if (!firstNameValidation.isValid) {
       toast.error(firstNameValidation.error);
       return;
     }
-
     if (!lastNameValidation.isValid) {
       toast.error(lastNameValidation.error);
       return;
     }
 
-    // Validate parent selection for student role
+    // ✅ Student-specific checks
     if (
       formData.role === "student" &&
       (!formData.parent_ids || formData.parent_ids.length === 0)
@@ -121,15 +131,48 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       return;
     }
 
+    // 📤 Upload image to Cloudinary first (if student + image exists)
+    let imageUrl = "";
+    if (formData.role === "student" && formData.profile_image) {
+      toast.info("Uploading profile image...");
+
+      try {
+        const userId = formData.username || "unknown_user";
+        const uploadResult = await uploadFileToSupabase(
+          formData.profile_image,
+          "barrowford-school-uploads",
+          userId
+        );
+
+        if (uploadResult.success && uploadResult.url) {
+          imageUrl = uploadResult.url;
+          toast.success("Profile image uploaded!");
+        } else {
+          toast.error(uploadResult.error || "Image upload failed. Please try again.");
+          return;
+        }
+      } catch (err) {
+        toast.error("Image upload failed. Please try again.");
+        return;
+      }
+    }
+
+
+    // ✅ Prepare final payload
+    const payload = {
+      ...formData,
+      profile_photo: imageUrl || null,
+    };
+
     try {
-      const result = await dispatch(createUser(formData) as any);
+      const result = await dispatch(createUser(payload) as any);
       console.log(result, "result");
     } catch (err) {
-      // Error handling is done in the slice
+      // error handled in slice
     }
   };
 
-  // Fetch parents when component mounts
+  // 📦 Load parents when component mounts
   React.useEffect(() => {
     dispatch(fetchParents() as any);
   }, [dispatch]);
@@ -154,8 +197,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         parent_ids: [],
         year_group_id: 1,
         class_id: 1,
+        profile_image: null,
       });
+
       dispatch(clearSuccess());
+      return;
     }
   }, [createUserSuccess, dispatch, allowedRoles, successMessage]);
 
@@ -288,29 +334,70 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         </div>
 
         {formData.role === "student" && (
-          <div>
-            <label
-              htmlFor="parent_ids"
-              className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer"
-            >
-              Select Parents
-            </label>
-            <MultiSelect
-              options={parents.map((parent) => ({
-                value: Number(parent.id),
-                label: `${parent.first_name} ${parent.last_name} (${parent.email})`,
-              }))}
-              value={formData.parent_ids || []}
-              onChange={handleParentSelection}
-              placeholder="Select parents..."
-              className="w-full"
-            />
-            {parents.length === 0 && (
-              <p className="text-sm text-gray-500 mt-1">
-                No parents available. Please create a parent user first.
-              </p>
-            )}
-          </div>
+          <>
+            <div>
+              <label
+                htmlFor="parent_ids"
+                className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer"
+              >
+                Select Parents
+              </label>
+              <MultiSelect
+                options={parents.map((parent) => ({
+                  value: Number(parent.id),
+                  label: `${parent.first_name} ${parent.last_name} (${parent.email})`,
+                }))}
+                value={formData.parent_ids || []}
+                onChange={handleParentSelection}
+                placeholder="Select parents..."
+                className="w-full"
+              />
+              {parents.length === 0 && (
+                <p className="text-sm text-gray-500 mt-1">
+                  No parents available. Please create a parent user first.
+                </p>
+              )}
+            </div>
+            <div>
+              <label
+                htmlFor="profile_image"
+                className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer"
+              >
+                Upload Profile Image
+              </label>
+
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="profile_image"
+                  className="flex flex-col items-center justify-center w-full border-2 border-dashed border-gray-300 rounded-lg p-4 cursor-pointer hover:border-blue-500 transition text-center"
+                >
+                  <Image className="w-8 h-8 text-gray-400 mb-2" />
+
+                  {formData.profile_image ? (
+                    <span className="text-sm text-green-600 font-medium">
+                      📁 {formData.profile_image.name}
+                    </span>
+                  ) : (
+                    <span className="text-sm text-gray-600">
+                      Click to upload image
+                    </span>
+                  )}
+
+                  <input
+                    type="file"
+                    id="profile_image"
+                    name="profile_image"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+
+            </div>
+
+          </>
         )}
 
         <div className="pt-4">

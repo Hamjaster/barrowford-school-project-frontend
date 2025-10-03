@@ -23,7 +23,7 @@ import { Label } from "./ui/label";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
 import { Button } from "./ui/button";
-import { Edit3, Save, Loader2, MessageSquare, Send } from "lucide-react";
+import { Edit3, Save, Loader2, MessageSquare, Send, UserCircle } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import type { RootState, AppDispatch } from "@/store";
 import { API_BASE_URL } from "@/constants";
@@ -32,6 +32,8 @@ import {
   addComment,
 } from "@/store/slices/reflectionSlice";
 import type { ReflectionItem, ReflectionComment } from "@/types";
+import { uploadFileToSupabase } from "@/utils/fileUpload"; // your utils file
+import { toast } from "sonner";
 
 interface Student {
   id: number;
@@ -40,7 +42,9 @@ interface Student {
   email: string;
   year_group_id: number;
   class_id: number;
+  class_name: string;
   created_at: string;
+  profile_photo: string;
 }
 
 interface PersonalSection {
@@ -63,9 +67,8 @@ export default function StudentManagement() {
     ReflectionItem[]
   >([]);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"personal" | "reflections">(
-    "personal"
-  );
+  const [activeTab, setActiveTab] = useState<"personal" | "reflections" | "details">("personal");
+
   const [loading, setLoading] = useState(false);
   const [sectionsLoading, setSectionsLoading] = useState(false);
   const [reflectionsLoading, setReflectionsLoading] = useState(false);
@@ -101,8 +104,8 @@ export default function StudentManagement() {
       if (!response.ok) {
         throw new Error("Failed to fetch students");
       }
-
       const result = await response.json();
+      console.log("fetchedstudents...", result.data)
       setStudents(result.data);
     } catch (err: any) {
       setError(err.message || "Failed to fetch students");
@@ -193,14 +196,18 @@ export default function StudentManagement() {
 
   const handleOpenDialog = (student: Student) => {
     setSelectedStudent(student);
-    setActiveTab("personal");
+    setActiveTab("details");
     fetchPersonalSections(student.id);
   };
 
-  const handleTabChange = (tab: "personal" | "reflections") => {
+  const handleTabChange = (tab: "details" | "personal" | "reflections") => {
     setActiveTab(tab);
     if (tab === "reflections" && selectedStudent) {
       fetchStudentReflections(selectedStudent.id);
+    }
+    if (tab === "details" && selectedStudent) {
+      // e.g., fetch additional student profile info if needed
+      // fetchStudentDetails(selectedStudent.id);
     }
   };
 
@@ -266,12 +273,12 @@ export default function StudentManagement() {
         prev.map((reflection) =>
           reflection.id === reflectionId
             ? {
-                ...reflection,
-                reflectioncomments: [
-                  ...(reflection.reflectioncomments || []),
-                  newComment.data,
-                ],
-              }
+              ...reflection,
+              reflectioncomments: [
+                ...(reflection.reflectioncomments || []),
+                newComment.data,
+              ],
+            }
             : reflection
         )
       );
@@ -294,6 +301,58 @@ export default function StudentManagement() {
       [reflectionId]: content,
     }));
   };
+
+
+  const handleProfilePhotoUpload = async (studentId: number, file: File) => {
+    if (!token) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // ✅ 1. Upload file to Supabase directly
+      const uploadResult = await uploadFileToSupabase(
+        file,
+        "barrowford-school-uploads",
+        studentId.toString()
+      );
+
+      if (!uploadResult.success || !uploadResult.url) {
+        throw new Error(uploadResult.error || "Failed to upload file");
+      }
+
+      // ✅ 2. Send the URL to your backend to update student record
+      const response = await fetch(`${API_BASE_URL}/teacher/update-profile-photo`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          studentId,
+          profilePhotoUrl: uploadResult.url,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to update profile photo");
+      }
+
+      const result = await response.json();
+      console.log("Profile photo updated:", result);
+      toast.success("Profile photo updated successfully")
+      // ✅ 3. Refresh list or update local state
+      await fetchStudents();
+    } catch (err: any) {
+      console.error("Profile photo upload error:", err);
+      setError(err.message || "Failed to upload profile photo");
+
+    } finally {
+      setLoading(false);
+    }
+  };
+
+
 
   useEffect(() => {
     fetchStudents();
@@ -331,13 +390,19 @@ export default function StudentManagement() {
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-center gap-4">
-                  <Avatar>
-                    <AvatarImage src="/placeholder.svg" />
-                    <AvatarFallback>
-                      {student.first_name[0]}
-                      {student.last_name[0]}
-                    </AvatarFallback>
-                  </Avatar>
+
+                  {student.profile_photo ? (
+                    <img
+                      src={student.profile_photo}
+                      alt={`${student.first_name} ${student.last_name}`}
+                      className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
+                      <UserCircle className="w-12 h-12" />
+                    </div>
+                  )}
+
                   <div>
                     <h3 className="font-semibold">
                       {student.first_name} {student.last_name}
@@ -374,6 +439,13 @@ export default function StudentManagement() {
                       <div className="w-full">
                         <div className="flex border-b mb-4">
                           <Button
+                            variant={activeTab === "details" ? "default" : "ghost"} // 🆕
+                            onClick={() => handleTabChange("details")} // 🆕
+                            className="rounded-none border-b-2 border-transparent" // 🆕
+                          >
+                            Personal Details
+                          </Button>
+                          <Button
                             variant={
                               activeTab === "personal" ? "default" : "ghost"
                             }
@@ -391,7 +463,81 @@ export default function StudentManagement() {
                           >
                             Reflections
                           </Button>
+
                         </div>
+                        {activeTab === "details" && selectedStudent && (
+                          <div className="space-y-6 max-h-96 overflow-y-auto p-3 border rounded-lg">
+                            <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
+
+                            {/* Profile Photo Section */}
+                            <div className="flex flex-col items-center space-y-3">
+
+
+                              {/* Editable upload input */}
+                              <div className="flex flex-col items-center space-y-3">
+                                  {selectedStudent.profile_photo ? (
+                                      <img
+                                      src={student.profile_photo}
+                                      alt={`${student.first_name} ${student.last_name}`}
+                                      className="w-16 h-16 rounded-full object-cover border-2 border-black-100 group-hover:border-blue-300 transition-colors"
+                                    />
+                                  ) : (
+                                    <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
+                                      <UserCircle className="w-12 h-12" />
+                                    </div>
+                                  )}
+                                
+
+                                {/* Hidden file input */}
+                                <input
+                                  type="file"
+                                  id="profilePhotoInput"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={async (e) => {
+                                    const file = e.target.files?.[0];
+                                    if (file) {
+                                      await handleProfilePhotoUpload(selectedStudent.id, file);
+                                    }
+                                  }}
+                                />
+
+                                {/* Clickable text to trigger upload */}
+                                <button
+                                  type="button"
+                                  onClick={() => document.getElementById("profilePhotoInput")?.click()}
+                                  className="text-sm text-blue-600 cursor-pointer"
+                                >
+                                  Edit Profile Photo
+                                </button>
+                              </div>
+
+                            </div>
+
+                            {/* Non-editable fields */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-3">
+                              <div>
+                                <Label className="mb-2">First Name</Label>
+                                <Input value={selectedStudent.first_name} disabled />
+                              </div>
+                              <div>
+                                <Label className="mb-2">Last Name</Label>
+                                <Input value={selectedStudent.last_name} disabled />
+                              </div>
+                              <div>
+                                <Label className="mb-2">Email</Label>
+                                <Input value={selectedStudent.email} disabled />
+                              </div>
+
+                              <div>
+                                <Label className="mb-2">Class Name</Label>
+                                <Input value={selectedStudent.class_name} disabled />
+                              </div>
+
+                            </div>
+                          </div>
+                        )}
+
 
                         {activeTab === "personal" && (
                           <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -410,11 +556,10 @@ export default function StudentManagement() {
                                 {personalSections.map((section) => (
                                   <div
                                     key={section.id}
-                                    className={`p-4 border rounded-lg space-y-2 cursor-pointer transition-colors ${
-                                      selectedCard === section.id
-                                        ? "border-blue-300 bg-blue-50"
-                                        : "hover:border-gray-300"
-                                    }`}
+                                    className={`p-4 border rounded-lg space-y-2 cursor-pointer transition-colors ${selectedCard === section.id
+                                      ? "border-blue-300 bg-blue-50"
+                                      : "hover:border-gray-300"
+                                      }`}
                                     onClick={() => setSelectedCard(section.id)}
                                   >
                                     <Label htmlFor={`topic-${section.id}`}>
@@ -500,8 +645,8 @@ export default function StudentManagement() {
                                           reflection.status === "approved"
                                             ? "default"
                                             : reflection.status === "rejected"
-                                            ? "destructive"
-                                            : "secondary"
+                                              ? "destructive"
+                                              : "secondary"
                                         }
                                       >
                                         {reflection.status}
@@ -534,7 +679,7 @@ export default function StudentManagement() {
                                       {/* Display Comments */}
                                       {reflection.reflectioncomments &&
                                         reflection.reflectioncomments.length >
-                                          0 && (
+                                        0 && (
                                           <div className="space-y-2 mb-3">
                                             {reflection.reflectioncomments.map(
                                               (comment: ReflectionComment) => (
@@ -607,6 +752,7 @@ export default function StudentManagement() {
                             )}
                           </div>
                         )}
+
                       </div>
                     </DialogContent>
                   </Dialog>

@@ -487,13 +487,13 @@ export default function StudentContentPage() {
                         className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
                       >
                         <Upload className="h-5 w-5" />
-                        Upload Files
+                        Upload File
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
                         <DialogTitle className="text-2xl text-blue-700">
-                          Upload Your Files
+                          Upload Your File
                         </DialogTitle>
                         <DialogDescription>
                           Share one image, video, document, or any file you want

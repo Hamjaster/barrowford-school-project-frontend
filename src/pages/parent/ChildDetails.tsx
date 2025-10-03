@@ -609,7 +609,7 @@ export default function ChildDetailsPage() {
                                     handleAddComment(Number(reflection.id))
                                   }
                                   disabled={!newComments[reflection.id]?.trim()}
-                                  className="h-8"
+                                  className="h-8 bg-gradient-to-r from-gray-700 via-gray-800 to-black hover:from-gray-800 hover:via-gray-900 hover:to-gray-900 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                                   loading={
                                     addingCommentLoading &&
                                     addingCommentReflectionId === reflection.id

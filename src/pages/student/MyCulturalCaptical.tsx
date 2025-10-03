@@ -23,10 +23,12 @@ import {
   Lightbulb,
   RotateCcw,
   Upload,
+  Eye,
   Clock,
   CheckCircle,
   XCircle,
   AlertTriangle,
+  Trash2
 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { Separator } from "@/components/ui/separator";
@@ -50,11 +52,12 @@ import type { TableEntry } from "@/types";
 import { showToast } from "@/utils/showToast";
 import { validateFile, uploadFileToSupabase } from "@/utils/fileUpload";
 import supabase from "@/lib/supabse";
+import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialogProps";
 import AttachmentDisplay from "@/components/AttachmentDisplay";
 import { toast } from "sonner";
 
 interface CulturalCapitalEntry {
-  id: string;
+  id: number;
   date: string;
   topic: string;
   status: "pending" | "approved" | "rejected" | "pending_deletion";
@@ -86,7 +89,8 @@ export default function CulturalCapitalPage() {
     files: [] as File[],
     selectedWeek: "",
   });
-
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedReflectionId, setSelectedReflectionId] = useState<number | null>(null);
   //dispatch
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -118,7 +122,7 @@ export default function CulturalCapitalPage() {
         const assignedWeek = `Week ${weekNumber}`;
 
         return {
-          id: String(item.id),
+          id: Number(item.id),
           date: formatDate(item.created_at),
           topic: item.reflectiontopics?.title ?? "Unknown", // ✅ use topic instead of title
           status: item.status ?? "Pending",
@@ -338,15 +342,16 @@ export default function CulturalCapitalPage() {
     }
   };
   const [deletingReflectionId, setDeletingReflectionId] = useState<
-    string | null
+    number | null
   >(null);
 
-  const handleDeleteReflection = async (reflectionId: string) => {
+  const handleDeleteReflection = async (reflectionId: number) => {
     try {
+     
       setDeletingReflectionId(reflectionId);
       setSubmissionfetchreflectionsloading(true);
       const resultAction = await dispatch(
-        requestDeleteReflection(reflectionId)
+        requestDeleteReflection(String(reflectionId))
       );
 
       // unwrap will throw if rejected
@@ -424,7 +429,7 @@ export default function CulturalCapitalPage() {
       header: "Actions",
       className: "text-left",
       render: (item: TableEntry) => (
-        <div className="flex gap-2">
+        <div className="flex gap-">
           <Button
             variant="ghost"
             size="sm"
@@ -434,8 +439,22 @@ export default function CulturalCapitalPage() {
               postingCommentLoading && selectedReflection?.id === item.id
             }
           >
-            View
+            <Eye className="w-4 h-4 text-black" />
+
           </Button>
+          {/* <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-600 hover:text-red-800"
+            onClick={() => {
+              setSelectedReflectionId(item.id);
+              setIsDeleteDialogOpen(true);
+            }}
+            disabled={submissionfetchreflectionsloading}
+            loading={deletingReflectionId === item.id}
+          >
+            <Trash2 className="w-4 h-4" />
+          </Button> */}
           {item.status === "approved" && (
             <Button
               variant="ghost"
@@ -445,9 +464,11 @@ export default function CulturalCapitalPage() {
               disabled={submissionfetchreflectionsloading}
               loading={deletingReflectionId === item.id}
             >
-              {deletingReflectionId === item.id ? "Deleting..." : "Delete"}
+              <Trash2 className="w-4 h-4"/>
+              
             </Button>
           )}
+          
         </div>
       ),
     },
@@ -555,7 +576,7 @@ export default function CulturalCapitalPage() {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="w-full">
-                      <Label htmlFor="reflection-title">Title</Label>
+                      <Label htmlFor="reflection-title">Title *</Label>
 
                       {topics.length > 0 ? (
                         <Select
@@ -591,7 +612,7 @@ export default function CulturalCapitalPage() {
                     </div>
 
                     <div className="w-full">
-                      <Label htmlFor="reflection-week">Week</Label>
+                      <Label htmlFor="reflection-week">Week *</Label>
                       {previousWeeks &&
                       previousWeeks.previousWeeks.length > 0 ? (
                         <Select
@@ -627,7 +648,7 @@ export default function CulturalCapitalPage() {
 
                     <div>
                       <Label htmlFor="reflection-description">
-                        Description
+                        Description *
                       </Label>
                       <Textarea
                         id="reflection-description"
@@ -709,7 +730,7 @@ export default function CulturalCapitalPage() {
                           submissionfetchreflectionsloading
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-pink-500 hover:bg-pink-600"
-                        }`}
+                          }`}
                       >
                         {submissionfetchreflectionsloading
                           ? "Adding..."
@@ -885,6 +906,22 @@ export default function CulturalCapitalPage() {
           <span>Developed by Nybble</span>
         </div>
       </div>
+      <DeleteConfirmationDialog
+        isOpen={isDeleteDialogOpen}
+        onClose={() => {
+          setIsDeleteDialogOpen(false);
+          setSelectedReflectionId(null);
+        }}
+        onConfirm={async () => {
+          if (selectedReflectionId) {
+            await handleDeleteReflection(selectedReflectionId);
+          }
+          setIsDeleteDialogOpen(false);
+          setSelectedReflectionId(null);
+        }}
+        title="Delete Reflection"
+        description="Are you sure you want to delete this reflection? This action cannot be undone."
+      />
     </div>
   );
 }

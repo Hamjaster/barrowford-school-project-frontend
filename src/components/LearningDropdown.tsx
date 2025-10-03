@@ -55,7 +55,7 @@ const LearningDropdown: React.FC<LearningDropdownProps> = ({ className }) => {
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <div className="cursor-pointer h-16 p-2 w-full flex items-center justify-start text-md font-semibold bg-transparent hover:bg-accent/50 rounded-md transition-colors">
-            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mr-3">
+            <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mr-2">
               {isLoading ? (
                 <Loader2 size={20} className="animate-spin" />
               ) : (

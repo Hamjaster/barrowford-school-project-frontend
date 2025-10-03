@@ -608,6 +608,7 @@ const ContentModeration: React.FC = () => {
               variant="destructive"
               onClick={handleReject}
               loading={rejecting[selectedModeration?.id || 0]}
+              disabled={rejectionReason === ""}
               className="bg-red-600 hover:bg-red-700"
             >
               <span className="flex items-center gap-2">

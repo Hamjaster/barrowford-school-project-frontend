@@ -35,6 +35,7 @@ import {
 } from "@/utils/fileUpload";
 import type { StudentImage } from "@/types";
 import supabase from "@/lib/supabse";
+import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialogProps";
 
 // Convert StudentImage to ImageItem for display
 interface ImageItem {
@@ -67,7 +68,8 @@ export default function MyImages() {
   const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [imageToDelete, setImageToDelete] = useState<ImageItem | null>(null);
   // Convert student images to display format
   const images = studentImages.map(convertToImageItem);
 
@@ -168,12 +170,23 @@ export default function MyImages() {
     }
   };
 
-  const handleDelete = (imageId: string) => {
-    const data = dispatch(deleteStudentImage(imageId));
-    // wait for the delete function, then set the selected image to null
-    data.then(() => {
+  const handleDeleteClick = (image: ImageItem) => {
+    setImageToDelete(image);
+    setDeleteDialogOpen(true);
+  };
+  const confirmDeleteImage = async () => {
+    if (!imageToDelete) return;
+    try {
+      await dispatch(deleteStudentImage(imageToDelete.id)).unwrap();
+      toast.success("Image deleted successfully!");
       setSelectedImage(null);
-    });
+    } catch (error) {
+      toast.error("Failed to delete image");
+      console.error("Delete error:", error);
+    } finally {
+      setImageToDelete(null);
+      setDeleteDialogOpen(false);
+    }
   };
 
   const openUploadModal = () => {
@@ -406,7 +419,7 @@ export default function MyImages() {
           open={!!selectedImage}
           onOpenChange={() => setSelectedImage(null)}
         >
-          <DialogContent className="max-w-5xl max-h-[90vh] p-0">
+          <DialogContent className="overflow-hidden max-w-5xl max-h-[90vh] p-0">
             <div className="relative">
               <img
                 src={selectedImage.url}
@@ -456,19 +469,16 @@ export default function MyImages() {
                       <Download className="w-4 h-4 mr-1" />
                       Download
                     </Button>
-                    {selectedImage.status === "approved" && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(selectedImage.id)}
-                        loading={isDeleting}
-                        disabled={isDeleting}
-                        className="text-red-500 flex justify-center items-center hover:text-red-700 border-red-200 hover:border-red-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                        {isDeleting ? "Deleting..." : "Delete"}
-                      </Button>
-                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleDeleteClick(selectedImage)}
+                      loading={isDeleting}
+                      className="text-red-500 flex justify-center items-center hover:text-red-700 border-red-200 hover:border-red-300"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                      Delete
+                    </Button>
                   </div>
                 </div>
               </div>
@@ -476,6 +486,17 @@ export default function MyImages() {
           </DialogContent>
         </Dialog>
       )}
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDeleteImage}
+        title="Delete Image"
+        description={
+          imageToDelete
+            ? `Are you sure you want to delete "${imageToDelete.title}"? This action cannot be undone.`
+            : "Are you sure you want to delete this image?"
+        }
+      />
     </div>
   );
 }

@@ -328,13 +328,7 @@ const UsersTable: React.FC = () => {
                 </Button>
               </TableHead>
               <TableHead>
-                <Button
-                  variant="ghost"
-                  onClick={() => handleSort("role")}
-                  className="cursor-pointer h-auto p-0 font-medium hover:bg-transparent"
-                >
-                  Role {getSortIcon("role")}
-                </Button>
+                Role
               </TableHead>
               <TableHead>
                 <Button
@@ -438,8 +432,9 @@ const UsersTable: React.FC = () => {
 
       {/* Pagination */}
       {pagination && pagination.totalUsers > 0 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-gray-500">
+        <div className="flex items-center justify-between ">
+          <div className="text-sm text-gray-500 ">
+            
             Showing {(pagination.currentPage - 1) * pagination.usersPerPage + 1}{" "}
             to{" "}
             {Math.min(
@@ -447,6 +442,7 @@ const UsersTable: React.FC = () => {
               pagination.totalUsers
             )}{" "}
             of {pagination.totalUsers} users
+            
           </div>
           <div className="flex items-center space-x-2">
             <Button

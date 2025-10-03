@@ -54,7 +54,7 @@ const AdminSidebar: React.FC = () => {
   };
 
   return (
-    <ShadcnSidebar className="border-r" collapsible="offcanvas">
+    <ShadcnSidebar className="border-r" collapsible="none">
       <SidebarHeader className="p-4 sm:p-6">
          <div className="flex items-start gap-3">
       <img 
@@ -81,7 +81,9 @@ const AdminSidebar: React.FC = () => {
                       >
                         {getIconComponent(item.iconName)}
                       </div>
-                      <span>{item.label}</span>
+                      <span className="flex-1 text-sm font-medium leading-none tracking-normal text-foreground">
+                        {item.label}
+                      </span>
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -95,15 +97,17 @@ const AdminSidebar: React.FC = () => {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
-              <Button
+            <Button
                 variant="ghost"
                 onClick={handleLogout}
-                className="flex cursor-pointer items-center gap-3 text-lg font-semibold w-full justify-start h-auto p-3"
+                className="flex items-center gap-2 text-lg font-semibold w-full justify-start p-0"
               >
-                <div className="w-12 h-12 bg-red-600 rounded-full flex items-center justify-center text-white flex-shrink-0">
+                <div className="w-12 h-12 bg-red-500 rounded-full flex items-center justify-center text-white flex-shrink-0 ">
                   <LogOut size={20} />
                 </div>
-                <span>Logout</span>
+                <span className="flex-1 text-sm font-medium  tracking-normal text-foreground">
+                  Logout
+                </span>
               </Button>
             </SidebarMenuButton>
           </SidebarMenuItem>

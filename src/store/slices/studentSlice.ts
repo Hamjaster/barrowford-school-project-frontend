@@ -376,6 +376,38 @@ export const updateStudentExperience = createAsyncThunk(
   }
 );
 
+// 📤 Upload student profile image to Cloudinary
+export const uploadStudentProfileImage = createAsyncThunk(
+  'userManagement/uploadStudentProfileImage',
+  async (file: File, { rejectWithValue }) => {
+    try {
+      const data = new FormData();
+      data.append("file", file);
+      data.append("upload_preset", "your_unsigned_preset"); // 🔁 replace this
+      data.append("cloud_name", "YOUR_CLOUD_NAME"); // 🔁 replace this too
+
+      const res = await fetch(
+        `https://api.cloudinary.com/v1_1/YOUR_CLOUD_NAME/image/upload`,
+        {
+          method: "POST",
+          body: data,
+        }
+      );
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        return rejectWithValue(errorData.error?.message || "Image upload failed");
+      }
+
+      const result = await res.json();
+      return result.secure_url as string;
+    } catch (err: any) {
+      return rejectWithValue(err.message || "Network error");
+    }
+  }
+);
+
+
 const studentSlice = createSlice({
   name: 'student',
   initialState,

@@ -39,6 +39,8 @@ import {
   toggleTopicStatus,
 } from "@/store/slices/personalSectionSlice";
 import type { RootState, AppDispatch } from "@/store";
+import { toast } from "sonner";
+import DeleteConfirmationDialog from "./ui/DeleteConfirmationDialogProps";
 
 export default function PersonalSectionTopicsManagement() {
   const dispatch = useDispatch<AppDispatch>();
@@ -60,59 +62,78 @@ export default function PersonalSectionTopicsManagement() {
   const [newTopicDescription, setNewTopicDescription] = useState("");
   const [editTopicTitle, setEditTopicTitle] = useState("");
   const [editTopicDescription, setEditTopicDescription] = useState("");
-
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [topicToDelete, setTopicToDelete] = useState<number | null>(null);
   // Fetch topics on component mount
   useEffect(() => {
     dispatch(fetchAllTopics());
   }, [dispatch]);
 
   const handleCreateTopic = async () => {
+
     if (newTopicTitle.trim()) {
       try {
         await dispatch(
           createTopic({
             title: newTopicTitle.trim(),
+            description: newTopicDescription.trim() || undefined,
           })
         ).unwrap();
+        toast.success("Topic created successfully!");
         setNewTopicTitle("");
         setNewTopicDescription("");
         setNewTopicDialog(false);
       } catch (error) {
         console.error("Failed to create topic:", error);
+        toast.error("Failed to create topic")
       }
     }
   };
 
   const handleUpdateTopic = async () => {
     if (editingTopic && editTopicTitle.trim()) {
+      console.log("desc", editTopicDescription)
       try {
         await dispatch(
           updateTopic({
             id: editingTopic.id,
             title: editTopicTitle.trim(),
+            description: editTopicDescription.trim() || undefined,
           })
         ).unwrap();
+        toast.success("Topic Updated Successfully")
         setEditTopicDialog(false);
         setEditingTopic(null);
         setEditTopicTitle("");
         setEditTopicDescription("");
       } catch (error) {
         console.error("Failed to update topic:", error);
+        toast.error("Failed to update topic")
       }
+    }
+  };
+  const handleDeleteClick = (topicId: number) => {
+    setTopicToDelete(topicId);
+    setDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteTopic = async () => {
+    if (!topicToDelete) return;
+
+    try {
+      setDeletingTopicId(topicToDelete);
+      await dispatch(deleteTopic({ id: topicToDelete })).unwrap();
+      toast.success("Topic deleted successfully!");
+    } catch (error) {
+      console.error("Failed to delete topic:", error);
+      toast.error("Failed to delete topic");
+    } finally {
+      setDeletingTopicId(null);
+      setTopicToDelete(null);
+      setDeleteDialogOpen(false);
     }
   };
 
-  const handleDeleteTopic = async (topicId: number) => {
-    if (window.confirm("Are you sure you want to delete this topic?")) {
-      try {
-        setDeletingTopicId(topicId);
-        await dispatch(deleteTopic({ id: topicId })).unwrap();
-      } catch (error) {
-        setDeletingTopicId(null);
-        console.error("Failed to delete topic:", error);
-      }
-    }
-  };
 
   const handleToggleStatus = async (topicId: number, currentStatus: string) => {
     try {
@@ -364,10 +385,7 @@ export default function PersonalSectionTopicsManagement() {
                       <Button
                         variant="outline"
                         size="sm"
-                        loading={
-                          deleteTopicLoading && deletingTopicId == topic.id
-                        }
-                        onClick={() => handleDeleteTopic(topic.id)}
+                        onClick={() => handleDeleteClick(topic.id)}
                       >
                         <Trash2 className="h-4 w-4 mr-2" />
                         Delete
@@ -380,6 +398,14 @@ export default function PersonalSectionTopicsManagement() {
           </CardContent>
         </Card>
       </div>
+      <DeleteConfirmationDialog
+        isOpen={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        onConfirm={confirmDeleteTopic}
+        title="Delete Topic"
+        description="Are you sure you want to delete this topic? This action cannot be undone."
+      />
     </div>
+
   );
 }

@@ -36,21 +36,12 @@ export const uploadFileToSupabase = async (
     // Create the full path
     const filePath =  `${userId}/${fileName}`;
 
-    // Upload file with progress tracking
+    // Upload file
     const { data, error } = await supabase.storage
       .from(bucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false,
-        onUploadProgress: (progress) => {
-          if (onProgress) {
-            onProgress({
-              loaded: progress.loaded,
-              total: progress.total,
-              percentage: Math.round((progress.loaded / progress.total) * 100)
-            });
-          }
-        }
+        upsert: false
       });
 
     if (error) {

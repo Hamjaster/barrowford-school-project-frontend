@@ -28,7 +28,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { Separator } from "@/components/ui/separator";
@@ -46,6 +46,7 @@ import {
   fetchAllTopics,
   fetchPreviousWeeks,
   clearError,
+  deleteReflection,
 } from "@/store/slices/reflectionSlice";
 import type { RootState, AppDispatch } from "@/store";
 import type { TableEntry } from "@/types";
@@ -90,7 +91,9 @@ export default function CulturalCapitalPage() {
     selectedWeek: "",
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedReflectionId, setSelectedReflectionId] = useState<number | null>(null);
+  const [selectedReflectionId, setSelectedReflectionId] = useState<
+    number | null
+  >(null);
   //dispatch
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -347,21 +350,19 @@ export default function CulturalCapitalPage() {
 
   const handleDeleteReflection = async (reflectionId: number) => {
     try {
-     
       setDeletingReflectionId(reflectionId);
       setSubmissionfetchreflectionsloading(true);
-      const resultAction = await dispatch(
-        requestDeleteReflection(String(reflectionId))
-      );
-
-      // unwrap will throw if rejected
-      const result = unwrapResult(resultAction);
-
-      // Show moderation message
-      showToast(result.message, true);
+      await dispatch(requestDeleteReflection(String(reflectionId)))
+        .unwrap()
+        .then((res) => {
+          showToast(res.message, true);
+        })
+        .catch((err) => {
+          showToast("Failed to request reflection deletion", false);
+          console.error("Error while requesting reflection deletion:", err);
+        });
     } catch (err) {
-      showToast("Failed to request reflection deletion", false);
-      console.error("Error while requesting reflection deletion:", err);
+      console.error("Error while deleting reflection:", err);
     } finally {
       setSubmissionfetchreflectionsloading(false);
       setDeletingReflectionId(null);
@@ -440,22 +441,23 @@ export default function CulturalCapitalPage() {
             }
           >
             <Eye className="w-4 h-4 text-black" />
-
           </Button>
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="text-red-600 hover:text-red-800"
-            onClick={() => {
-              setSelectedReflectionId(item.id);
-              setIsDeleteDialogOpen(true);
-            }}
-            disabled={submissionfetchreflectionsloading}
-            loading={deletingReflectionId === item.id}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button> */}
           {item.status === "approved" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:text-red-800"
+              onClick={() => {
+                setSelectedReflectionId(item.id);
+                setIsDeleteDialogOpen(true);
+              }}
+              disabled={submissionfetchreflectionsloading}
+              loading={deletingReflectionId === item.id}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+          {/* {item.status === "approved" && (
             <Button
               variant="ghost"
               size="sm"
@@ -467,8 +469,7 @@ export default function CulturalCapitalPage() {
               <Trash2 className="w-4 h-4"/>
               
             </Button>
-          )}
-          
+          )} */}
         </div>
       ),
     },
@@ -730,7 +731,7 @@ export default function CulturalCapitalPage() {
                           submissionfetchreflectionsloading
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-pink-500 hover:bg-pink-600"
-                          }`}
+                        }`}
                       >
                         {submissionfetchreflectionsloading
                           ? "Adding..."

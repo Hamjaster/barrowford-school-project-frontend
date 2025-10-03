@@ -385,16 +385,20 @@ export default function StudentContentPage() {
 
   return (
     <div className="min-h-screen ">
-      <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-b-2xl relative overflow-hidden">
+      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl relative overflow-hidden">
         <div className="relative z-10">
-          <h1 className="text-3xl font-bold">My Learning</h1>
-          <p className="text-green-100 mt-2">Subject: {selectedSubject.name}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">My Learning</h1>
+              <p className="text-orange-100 mt-1">
+                Subject: {selectedSubject.name}
+              </p>
+            </div>
+          </div>
         </div>
-
         {/* Decorative elements */}
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
         <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
-        <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-white/5 rounded-full"></div>
       </div>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">

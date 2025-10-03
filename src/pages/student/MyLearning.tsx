@@ -135,40 +135,42 @@ export default function StudentContentPage() {
   };
 
   const handleFiles = (files: File[]) => {
-    files.forEach((file) => {
-      // Validate file
-      const validation = validateFile(file, 10); // 10MB max size
-      if (!validation.isValid) {
-        toast.error(validation.error || "Invalid file");
-        return;
-      }
+    // Only take the first file if multiple are selected
+    const file = files[0];
 
-      const newFile: UploadedFile = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        isUploading: false,
-        uploadProgress: 0,
+    // Validate file
+    const validation = validateFile(file, 10); // 10MB max size
+    if (!validation.isValid) {
+      toast.error(validation.error || "Invalid file");
+      return;
+    }
+
+    const newFile: UploadedFile = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      isUploading: false,
+      uploadProgress: 0,
+    };
+
+    // Generate preview for images
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedFiles((prev) =>
+          prev.map((f) =>
+            f.id === newFile.id
+              ? { ...f, preview: e.target?.result as string }
+              : f
+          )
+        );
       };
+      reader.readAsDataURL(file);
+    }
 
-      // Generate preview for images
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setUploadedFiles((prev) =>
-            prev.map((f) =>
-              f.id === newFile.id
-                ? { ...f, preview: e.target?.result as string }
-                : f
-            )
-          );
-        };
-        reader.readAsDataURL(file);
-      }
-
-      setUploadedFiles((prev) => [...prev, newFile]);
-    });
+    // Replace any existing file with the new one (only one file allowed)
+    setUploadedFiles([newFile]);
   };
 
   const removeFile = (id: string) => {
@@ -224,7 +226,7 @@ export default function StudentContentPage() {
       const files = Array.from(fileInput?.files || []);
 
       if (files.length === 0) {
-        toast.error("No files selected");
+        toast.error("No file selected");
         return;
       }
       const userData = await supabase.auth.getUser();
@@ -255,20 +257,19 @@ export default function StudentContentPage() {
       const failedUploads = uploadResults.filter((result) => !result.success);
 
       if (failedUploads.length > 0) {
-        toast.error(`${failedUploads.length} file(s) failed to upload`);
-
+        toast.error("File failed to upload");
         return;
       }
 
-      // Create learning with uploaded file URLs
-      const fileUrls = successfulUploads.map((result) => result.url).join(", ");
+      // Create learning with uploaded file URL
+      const fileUrl = successfulUploads[0].url;
 
       dispatch(
         createStudentLearning({
           subject_id: selectedSubject.id,
           title: uploadTitle,
 
-          attachment_url: fileUrls, // Store URLs in attachment_url field
+          attachment_url: fileUrl, // Store URL in attachment_url field
         })
       )
         .unwrap()
@@ -495,7 +496,7 @@ export default function StudentContentPage() {
                           Upload Your Files
                         </DialogTitle>
                         <DialogDescription>
-                          Share images, videos, documents, or any files you want
+                          Share one image, video, document, or any file you want
                           to keep
                         </DialogDescription>
                       </DialogHeader>
@@ -528,14 +529,13 @@ export default function StudentContentPage() {
                         >
                           <Upload className="h-8 w-8 text-blue-500 mx-auto mb-2" />
                           <p className="font-medium text-gray-700 mb-1">
-                            Drop files here or click to browse
+                            Drop a file here or click to browse
                           </p>
                           <p className="text-sm text-gray-500">
-                            Any file type supported
+                            One file only - any file type supported
                           </p>
                           <Input
                             type="file"
-                            multiple
                             onChange={handleFileInput}
                             className="hidden"
                             id="modal-file-upload"
@@ -547,7 +547,7 @@ export default function StudentContentPage() {
                             className="cursor-pointer mt-2 border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
                             onClick={triggerFileInput}
                           >
-                            Choose Files
+                            Choose File
                           </Button>
                         </div>
 
@@ -717,22 +717,17 @@ export default function StudentContentPage() {
                         {learning.attachment_url && (
                           <div className="mt-2 p-2 bg-white/60 rounded-lg border border-white/40">
                             <p className="text-xs font-medium text-gray-700 mb-1">
-                              📎 Attachments:
+                              📎 Attachment:
                             </p>
                             <div className="space-y-1">
-                              {learning.attachment_url
-                                .split(",")
-                                .map((url, index) => (
-                                  <a
-                                    key={index}
-                                    href={url.trim()}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-blue-600 hover:text-blue-800 underline block truncate"
-                                  >
-                                    {url.trim().split("/").pop()}
-                                  </a>
-                                ))}
+                              <a
+                                href={learning.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 underline block truncate"
+                              >
+                                {learning.attachment_url.split("/").pop()}
+                              </a>
                             </div>
                           </div>
                         )}

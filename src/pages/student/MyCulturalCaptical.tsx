@@ -23,13 +23,12 @@ import {
   Lightbulb,
   RotateCcw,
   Upload,
-  Video,
-  Trash2,
   Eye,
   Clock,
   CheckCircle,
   XCircle,
   AlertTriangle,
+  Trash2
 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { Separator } from "@/components/ui/separator";
@@ -58,7 +57,7 @@ import AttachmentDisplay from "@/components/AttachmentDisplay";
 import { toast } from "sonner";
 
 interface CulturalCapitalEntry {
-  id: string;
+  id: number;
   date: string;
   topic: string;
   status: "pending" | "approved" | "rejected" | "pending_deletion";
@@ -91,7 +90,7 @@ export default function CulturalCapitalPage() {
     selectedWeek: "",
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedReflectionId, setSelectedReflectionId] = useState<string | null>(null);
+  const [selectedReflectionId, setSelectedReflectionId] = useState<number | null>(null);
   //dispatch
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -123,7 +122,7 @@ export default function CulturalCapitalPage() {
         const assignedWeek = `Week ${weekNumber}`;
 
         return {
-          id: String(item.id),
+          id: Number(item.id),
           date: formatDate(item.created_at),
           topic: item.reflectiontopics?.title ?? "Unknown", // ✅ use topic instead of title
           status: item.status ?? "Pending",
@@ -343,16 +342,16 @@ export default function CulturalCapitalPage() {
     }
   };
   const [deletingReflectionId, setDeletingReflectionId] = useState<
-    string | null
+    number | null
   >(null);
 
-  const handleDeleteReflection = async (reflectionId: string) => {
+  const handleDeleteReflection = async (reflectionId: number) => {
     try {
      
       setDeletingReflectionId(reflectionId);
       setSubmissionfetchreflectionsloading(true);
       const resultAction = await dispatch(
-        requestDeleteReflection(reflectionId)
+        requestDeleteReflection(String(reflectionId))
       );
 
       // unwrap will throw if rejected
@@ -465,9 +464,11 @@ export default function CulturalCapitalPage() {
               disabled={submissionfetchreflectionsloading}
               loading={deletingReflectionId === item.id}
             >
-              {deletingReflectionId === item.id ? "Deleting..." : "Delete"}
+              <Trash2 className="w-4 h-4"/>
+              
             </Button>
           )}
+          
         </div>
       ),
     },

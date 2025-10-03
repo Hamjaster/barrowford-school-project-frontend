@@ -6,10 +6,13 @@ import {
   type YearDataState 
 } from '@/types';
 import { API_BASE_URL } from '@/constants';
+import type { RootState } from '@/store';
 
 const initialState: YearDataState = {
   yearGroups: [],
   yearGroupsWithSubjects: [],
+  eligibleYearGroups: [],
+  eligibleYearGroupsWithSubjects: [],
   subjects: [],
   isLoading: false,
   isLoadingSubjects: false,
@@ -93,6 +96,42 @@ export const fetchAllSubjects = createAsyncThunk<
   }
 );
 
+// Helper function to get auth headers
+const getAuthHeaders = (token: string) => ({
+  'Content-Type': 'application/json',
+  'Authorization': `Bearer ${token}`,
+});
+
+export const fetchEligibleYearGroupsForStudent = createAsyncThunk(
+  'yearData/fetchEligibleYearGroupsForStudent',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/subject/eligible-year-groups`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch eligible year groups');
+      }
+
+      const data = await response.json();
+      return data.data; // Return the eligible year groups with subjects array
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+
 export const fetchAllYearGroupsWithSubjects = createAsyncThunk(
   'yearData/fetchAllYearGroupsWithSubjects',
   async (_, { dispatch, rejectWithValue }) => {
@@ -144,6 +183,8 @@ const yearDataSlice = createSlice({
     clearYearData: (state) => {
       state.yearGroups = [];
       state.yearGroupsWithSubjects = [];
+      state.eligibleYearGroups = [];
+      state.eligibleYearGroupsWithSubjects = [];
       state.subjects = [];
       state.error = null;
     },
@@ -233,7 +274,25 @@ const yearDataSlice = createSlice({
         state.isLoading = false;
         state.isLoadingSubjects = false;
         state.error = action.payload as string;
-      });
+      })
+
+    // Fetch eligible year groups for student cases
+    builder
+      .addCase(fetchEligibleYearGroupsForStudent.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchEligibleYearGroupsForStudent.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.eligibleYearGroupsWithSubjects = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchEligibleYearGroupsForStudent.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+
+  
   },
 });
 

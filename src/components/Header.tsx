@@ -46,54 +46,42 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-orange-500 to-pink-500 flex items-center justify-between gap-4 px-4 sm:px-6 lg:px-8 py-5 bg-white shadow-sm">
-      <div className="flex items-center gap-4">
-        <SidebarTrigger className="lg:hidden" />
-        <h1
-          onClick={() => navigate("/")}
-          className="text-2xl hover:underline cursor-pointer sm:text-3xl font-bold text-white"
-        >
-          Dashboard
-        </h1>
-      </div>
-
-      <div className="flex items-center gap-4">
-        {/* User Info */}
-        <div className="flex items-center gap-3">
-          <Avatar className="h-8 w-8">
-            <AvatarFallback className="bg-indigo-100 text-indigo-800">
-              {getUserInitials()}
-            </AvatarFallback>
-          </Avatar>
-
-          <div className="hidden sm:block text-right">
-            <p className="text-sm font-medium text-gray-900">
-              {getUserDisplayName()}
-            </p>
-            {/* <div className="flex items-center gap-2">
-              <span
-                className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor()}`}
-              >
-                {user?.role?.replace("_", " ") || "User"}
-              </span>
-              {user?.role === "student" && user?.username && (
-                <span className="text-xs text-gray-500">@{user.username}</span>
-              )}
-            </div> */}
-          </div>
+    <header className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 relative overflow-hidden">
+      <div className="relative z-10 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <SidebarTrigger className="lg:hidden text-white" />
+          <h1
+            onClick={() => navigate("/")}
+            className="text-2xl hover:underline cursor-pointer sm:text-3xl font-bold text-white"
+          >
+            Dashboard
+          </h1>
         </div>
 
-        {/* Logout Button */}
-        {/* <Button
-          variant="outline"
-          size="sm"
-          onClick={handleLogout}
-          className="flex items-center gap-2"
-        >
-          <LogOut className="h-4 w-4" />
-          <span className="hidden sm:inline">Logout</span>
-        </Button> */}
+        <div className="flex items-center gap-4">
+          {/* User Info */}
+          <div className="flex items-center gap-3">
+            <Avatar className="h-8 w-8">
+              <AvatarFallback className="bg-white/20 text-white border border-white/30">
+                {getUserInitials()}
+              </AvatarFallback>
+            </Avatar>
+
+            <div className="hidden sm:block text-right">
+              <p className="text-sm font-medium text-white">
+                {getUserDisplayName()}
+              </p>
+              <p className="text-xs text-orange-100">
+                {user?.role?.replace("_", " ") || "User"}
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
+
+      {/* Decorative elements */}
+      <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+      <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
     </header>
   );
 };

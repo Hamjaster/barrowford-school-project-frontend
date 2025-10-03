@@ -21,6 +21,7 @@ import {
   Edit3,
   Save,
   Loader2,
+  UserCircle,
 } from "lucide-react";
 import Footer from "@/components/footer";
 //import for personal section
@@ -36,6 +37,10 @@ import type { Topic, PersonalSection } from "@/types";
 import supabase from "@/lib/supabse";
 import { toast } from "sonner";
 import { clearError, clearMessage } from "@/store/slices/personalSectionSlice";
+import { fetchStudentDetails } from '@/store/slices/studentSlice';
+
+
+
 
 // Icon mapping for different topics
 const getTopicIcon = (title: string) => {
@@ -120,7 +125,9 @@ export default function StudentDashboard() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [existingPersonalSection, setExistingPersonalSection] =
     useState<PersonalSection | null>(null);
-
+    const { studentDetails, isLoading, error: studentError } = useSelector(
+      (state: RootState) => state.student
+    );
   const dispatch = useDispatch<AppDispatch>();
 
   // Grab state from Redux
@@ -151,6 +158,9 @@ export default function StudentDashboard() {
     }
   }, [error, message, dispatch]);
 
+  useEffect(() => {
+    dispatch(fetchStudentDetails());
+  }, [dispatch]);
   // Handle topic selection
   const handleTopicClick = async (topic: Topic) => {
     setSelectedTopic(topic);
@@ -228,7 +238,7 @@ export default function StudentDashboard() {
     setIsEditing(false);
     setEditingContent(existingPersonalSection?.content || "");
   };
-
+console.log("studentdetails111111111111",studentDetails)
   useEffect(() => {
     async function getUser() {
       const { data } = await supabase.auth.getUser();
@@ -236,7 +246,9 @@ export default function StudentDashboard() {
     }
     getUser();
   }, []);
-
+  if (studentError) {
+    return <p className="text-red-500">{studentError}</p>;
+  }
   return (
     <div className="min-h-screen relative bg-gray-100">
       {/* Header */}
@@ -257,51 +269,54 @@ export default function StudentDashboard() {
         <div className="bg-white rounded-2xl p-6 shadow-sm">
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="flex-shrink-0">
-              <Avatar className="w-40 h-40">
-                <AvatarImage
-                  src="/student-photo.png"
-                  alt="Jacob Smith"
-                  className="object-cover"
-                />
-                <AvatarFallback className="text-2xl font-bold bg-pink-100 text-pink-600">
-                  JS
-                </AvatarFallback>
-              </Avatar>
+            {studentDetails.profile_photo ? (
+                    <img
+                      src={studentDetails.profile_photo}
+                      alt="Picture Not Found"
+                      className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
+                    />
+                  ) : (
+                    <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
+                      <UserCircle className="w-12 h-12" />
+                    </div>
+                  )}
             </div>
             <div className="flex-1">
               <h2 className="text-5xl font-bold text-gray-800 mb-4">
-                Jacob Smith is a Meliorist
+                {studentDetails.name} is a Meliorist
               </h2>
             </div>
             <div className="bg-gray-50 rounded-xl p-4 min-w-[280px]">
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Name:</span>
-                  <span className="font-medium">Jacob Smith</span>
+                  <span className="font-medium">{studentDetails.name}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Age:</span>
-                  <span className="font-medium">8 Years Old</span>
+                  {studentDetails?.age || "Not Specified"}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Year:</span>
-                  <span className="font-medium">3</span>
+                  <span className="font-medium">{studentDetails.year}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Class:</span>
-                  <span className="font-medium">3WH</span>
+                  <span className="font-medium">
+  {studentDetails?.class || "Not Specified"}
+</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Hair Color:</span>
-                  <span className="font-medium">Brown</span>
+                  {studentDetails?.haircolor || "Not Specified"}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Eye Color:</span>
-                  <span className="font-medium">Brown</span>
+                  {studentDetails?.eyecolor || "Not Specified"}
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Height:</span>
-                  <span className="font-medium">3ft 4in</span>
+                  {studentDetails?.height || "Not Specified"}
                 </div>
               </div>
             </div>

@@ -383,4 +383,5 @@ export interface StudentState {
   isDeleting: boolean;
   error: string | null;
   message: string | null;
+  studentDetails: any | null;
 }

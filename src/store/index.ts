@@ -18,6 +18,7 @@ export const store = configureStore({
     personalSection: personalSectionReducer,
     parent: parentReducer,
     moderation: moderationReducer,
+    
   },
 });
 

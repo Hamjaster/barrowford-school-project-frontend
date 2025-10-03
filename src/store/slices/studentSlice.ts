@@ -18,7 +18,8 @@ const initialState: StudentState = {
   isSubmitting: false,
   isDeleting : false,
   error: null,
-  message : null
+  message : null,
+  studentDetails: null,
 };
 
 // Async Thunks
@@ -407,6 +408,37 @@ export const uploadStudentProfileImage = createAsyncThunk(
   }
 );
 
+// 📚 Fetch full student details
+export const fetchStudentDetails = createAsyncThunk(
+  'student/fetchStudentDetails',
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/student/details/me`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+     
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch student details');
+      }
+
+      const data = await response.json();
+      console.log("✅ Parsed data:", data);
+      return data.data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
 
 const studentSlice = createSlice({
   name: 'student',
@@ -453,6 +485,20 @@ const studentSlice = createSlice({
       })
       .addCase(fetchStudentLearnings.rejected, (state, action) => {
         state.isLoading = false;
+        state.error = action.payload as string;
+      })
+      .addCase(fetchStudentDetails.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentDetails.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.studentDetails = action.payload; // ✅ Save to state
+        state.error = null;
+      })
+      .addCase(fetchStudentDetails.rejected, (state, action) => {
+        state.isLoading = false;
+        state.studentDetails = null;
         state.error = action.payload as string;
       })
 

@@ -25,8 +25,8 @@ import {
   PenTool,
   Calendar,
   BookOpen,
-  Loader2,
 } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchStudentLearnings,
@@ -292,6 +292,49 @@ export default function StudentContentPage() {
     dispatch(deleteStudentLearning(id));
   };
 
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs"
+          >
+            ⏳ Pending Review
+          </Badge>
+        );
+      case "approved":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-green-100 text-green-700 border-green-200 text-xs"
+          >
+            ✅ Approved
+          </Badge>
+        );
+      case "pending_deletion":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-red-100 text-red-700 border-red-200 text-xs"
+          >
+            🗑️ Pending Deletion
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-gray-100 text-gray-700 border-gray-200 text-xs"
+          >
+            ❌ Rejected
+          </Badge>
+        );
+      default:
+        return null;
+    }
+  };
+
   const getCardColors = (index: number) => {
     const colorSchemes = [
       {
@@ -339,7 +382,7 @@ export default function StudentContentPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <Spinner size="lg" className="mb-4" />
           <p className="text-gray-600">Loading your learnings...</p>
         </div>
       </div>
@@ -671,7 +714,13 @@ export default function StudentContentPage() {
                 return (
                   <Card
                     key={learning.id}
-                    className={`relative ${colors.bg} ${colors.border} border-2 hover:shadow-lg transition-all duration-200 hover:-translate-y-1`}
+                    className={`relative ${colors.bg} ${
+                      colors.border
+                    } border-2 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 ${
+                      learning.status === "rejected" ? "opacity-60" : ""
+                    } ${
+                      learning.status === "pending_deletion" ? "opacity-75" : ""
+                    }`}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
@@ -687,13 +736,16 @@ export default function StudentContentPage() {
                             >
                               {learning.title}
                             </CardTitle>
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
                               <Badge
                                 variant="secondary"
-                                className="bg-pink-100 text-pink-700 border-pink-200 text-xs font-medium"
+                                className="bg-pink-100 text-pink-700 border-pink-200 text-xs font-medium flex-shrink-0"
                               >
                                 ✍️ Learning
                               </Badge>
+                              <div className="flex-shrink-0">
+                                {getStatusBadge(learning.status)}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -701,13 +753,18 @@ export default function StudentContentPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeContentItem(learning.id)}
-                          disabled={isSubmitting}
-                          loading={
-                            isDeleting && itemBeingDeleted === learning.id
+                          disabled={
+                            isSubmitting ||
+                            learning.status === "pending_deletion" ||
+                            learning.status === "rejected"
                           }
-                          className="h-7 w-7 p-0 hover:bg-red-100 text-red-400 hover:text-red-600 flex-shrink-0"
+                          className="  h-7 w-7 p-0 hover:bg-red-100 text-red-400 hover:text-red-600 flex-shrink-0 disabled:opacity-50"
                         >
-                          <X className="h-3 w-3" />
+                          {isDeleting && itemBeingDeleted === learning.id ? (
+                            <Spinner size="sm" />
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
                         </Button>
                       </div>
                     </CardHeader>

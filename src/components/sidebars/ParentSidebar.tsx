@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/slices/authSlice";
 import { ROLEWISE_INFORMATION } from "@/constants";
 import { Button } from "@/components/ui/button";
-import barrowfordlogo from '@/assets/barrowforrdlogo.png'
+import barrowfordlogo from "@/assets/barrowforrdlogo.png";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -30,7 +30,7 @@ const ParentSidebar: React.FC = () => {
   };
 
   const parentInfo = ROLEWISE_INFORMATION.parent;
-  const navItems = parentInfo.navItems;
+  const navItems = parentInfo.navItems || [];
 
   const getIconComponent = (iconName: string) => {
     const iconMap = {
@@ -44,20 +44,20 @@ const ParentSidebar: React.FC = () => {
   return (
     <ShadcnSidebar className="border-r" collapsible="none">
       <SidebarHeader className="p-4 sm:p-6">
-          <div className="flex items-start gap-3">
-      <img 
-        src={barrowfordlogo} 
-        alt="Barrowford Logo"
-        className="h-12 sm:h-14 md:h-16 w-auto object-contain"
-      />
-    </div>
+        <div className="flex items-start gap-3">
+          <img
+            src={barrowfordlogo}
+            alt="Barrowford Logo"
+            className="h-12 sm:h-14 md:h-16 w-auto object-contain"
+          />
+        </div>
       </SidebarHeader>
 
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {navItems?.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton className="h-16" asChild size="lg">
                     <Link

@@ -15,7 +15,7 @@ import { useNavigate } from "react-router-dom";
 import { logout } from "@/store/slices/authSlice";
 import { ROLEWISE_INFORMATION } from "@/constants";
 import { Button } from "@/components/ui/button";
-import barrowfordlogo from '@/assets/barrowforrdlogo.png'
+import barrowfordlogo from "@/assets/barrowforrdlogo.png";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -39,7 +39,7 @@ const StaffSidebar: React.FC = () => {
   };
 
   const staffInfo = ROLEWISE_INFORMATION.staff;
-  const navItems = staffInfo.navItems;
+  const navItems = staffInfo.navItems || [];
 
   const getIconComponent = (iconName: string) => {
     const iconMap = {
@@ -69,7 +69,7 @@ const StaffSidebar: React.FC = () => {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navItems.map((item) => (
+              {navItems?.map((item) => (
                 <SidebarMenuItem key={item.label}>
                   <SidebarMenuButton className="h-16" asChild size="lg">
                     <Link

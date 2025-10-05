@@ -198,6 +198,7 @@ export interface PersonalSection {
   topic_id: number;
   student_id: string;
   content: string;
+  status: 'pending' | 'approved' | 'pending_updation' | 'rejected';
   created_at: string;
   updated_at: string;
 }
@@ -338,7 +339,9 @@ export interface StudentLearning {
   title: string;
   description: string;
   attachment_url?: string;
+  status: 'pending' | 'approved' | 'pending_deletion' | 'rejected';
   created_at: string;
+  updated_at?: string;
 }
 
 export interface CreateLearningRequest {

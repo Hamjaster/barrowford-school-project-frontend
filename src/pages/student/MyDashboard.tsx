@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Dialog,
   DialogContent,
@@ -26,7 +25,7 @@ import {
 import Footer from "@/components/footer";
 //import for personal section
 import { useDispatch, useSelector } from "react-redux";
-import personalSectionSlice, {
+import {
   fetchTopics,
   getPersonalSectionByTopic,
   createPersonalSection,
@@ -37,10 +36,8 @@ import type { Topic, PersonalSection } from "@/types";
 import supabase from "@/lib/supabse";
 import { toast } from "sonner";
 import { clearError, clearMessage } from "@/store/slices/personalSectionSlice";
-import { fetchStudentDetails } from '@/store/slices/studentSlice';
-
-
-
+import { fetchStudentDetails } from "@/store/slices/studentSlice";
+import { Badge } from "@/components/ui/badge";
 
 // Icon mapping for different topics
 const getTopicIcon = (title: string) => {
@@ -119,21 +116,64 @@ const getTopicColors = (index: number) => {
   return colors[index % colors.length];
 };
 
+// Status badge component
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "pending":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs"
+        >
+          ⏳ Pending Review
+        </Badge>
+      );
+    case "approved":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-green-100 text-green-700 border-green-200 text-xs"
+        >
+          ✅ Approved
+        </Badge>
+      );
+    case "pending_updation":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-blue-100 text-blue-700 border-blue-200 text-xs"
+        >
+          🔄 Pending Update
+        </Badge>
+      );
+    case "rejected":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-red-100 text-red-700 border-red-200 text-xs"
+        >
+          ❌ Rejected
+        </Badge>
+      );
+    default:
+      return null;
+  }
+};
+
 export default function StudentDashboard() {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null);
   const [editingContent, setEditingContent] = useState<string>("");
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [existingPersonalSection, setExistingPersonalSection] =
     useState<PersonalSection | null>(null);
-    const { studentDetails, isLoading, error: studentError } = useSelector(
-      (state: RootState) => state.student
-    );
+  const { studentDetails, error: studentError } = useSelector(
+    (state: RootState) => state.student
+  );
   const dispatch = useDispatch<AppDispatch>();
 
   // Grab state from Redux
   const {
     topics,
-    personalSections,
     loading,
     personalSectionLoading,
     personalSectionSubmitting,
@@ -161,6 +201,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     dispatch(fetchStudentDetails());
   }, [dispatch]);
+
   // Handle topic selection
   const handleTopicClick = async (topic: Topic) => {
     setSelectedTopic(topic);
@@ -193,7 +234,7 @@ export default function StudentDashboard() {
     try {
       if (existingPersonalSection) {
         // Update existing personal section
-        const result = await dispatch(
+        await dispatch(
           updatePersonalSection({
             id: existingPersonalSection.id,
             content: editingContent,
@@ -230,6 +271,10 @@ export default function StudentDashboard() {
 
   // Handle edit mode
   const handleEdit = () => {
+    // Don't allow editing if there's a pending update
+    if (existingPersonalSection?.status === "pending_updation") {
+      return;
+    }
     setIsEditing(true);
   };
 
@@ -238,7 +283,7 @@ export default function StudentDashboard() {
     setIsEditing(false);
     setEditingContent(existingPersonalSection?.content || "");
   };
-console.log("studentdetails111111111111",studentDetails)
+  console.log("studentdetails111111111111", studentDetails);
   useEffect(() => {
     async function getUser() {
       const { data } = await supabase.auth.getUser();
@@ -268,62 +313,64 @@ console.log("studentdetails111111111111",studentDetails)
       {/* Main Content */}
       <div className="p-6 space-y-6">
         {/* Profile Section */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="flex-shrink-0">
-            {studentDetails.profile_photo ? (
-                    <img
-                      src={studentDetails.profile_photo}
-                      alt="Picture Not Found"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
-                      <UserCircle className="w-12 h-12" />
-                    </div>
-                  )}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-5xl font-bold text-gray-800 mb-4">
-                {studentDetails.name} is a Meliorist
-              </h2>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-4 min-w-[280px]">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Name:</span>
-                  <span className="font-medium">{studentDetails.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Age:</span>
-                  {studentDetails?.age || "Not Specified"}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Year:</span>
-                  <span className="font-medium">{studentDetails.year}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Class:</span>
-                  <span className="font-medium">
-  {studentDetails?.class || "Not Specified"}
-</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Hair Color:</span>
-                  {studentDetails?.haircolor || "Not Specified"}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Eye Color:</span>
-                  {studentDetails?.eyecolor || "Not Specified"}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Height:</span>
-                  {studentDetails?.height || "Not Specified"}
+        {studentDetails && (
+          <div className="bg-white rounded-2xl p-6 shadow-sm">
+            <div className="flex flex-col md:flex-row items-center gap-6">
+              <div className="flex-shrink-0">
+                {studentDetails.profile_photo ? (
+                  <img
+                    src={studentDetails.profile_photo}
+                    alt="Picture Not Found"
+                    className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
+                  />
+                ) : (
+                  <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
+                    <UserCircle className="w-12 h-12" />
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <h2 className="text-5xl font-bold text-gray-800 mb-4">
+                  {studentDetails.name} is a Meliorist
+                </h2>
+              </div>
+              <div className="bg-gray-50 rounded-xl p-4 min-w-[280px]">
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Name:</span>
+                    <span className="font-medium">{studentDetails.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Age:</span>
+                    {studentDetails?.age || "Not Specified"}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Year:</span>
+                    <span className="font-medium">{studentDetails.year}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Class:</span>
+                    <span className="font-medium">
+                      {studentDetails?.class || "Not Specified"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Hair Color:</span>
+                    {studentDetails?.haircolor || "Not Specified"}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Eye Color:</span>
+                    {studentDetails?.eyecolor || "Not Specified"}
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Height:</span>
+                    {studentDetails?.height || "Not Specified"}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Loading State */}
         {loading ? (
@@ -356,9 +403,6 @@ console.log("studentdetails111111111111",studentDetails)
               .map((topic, index) => {
                 const colors = getTopicColors(index);
                 const icon = getTopicIcon(topic.title);
-                const hasContent = personalSections.some(
-                  (ps) => ps.topic_id === topic.id
-                );
 
                 return (
                   <Card
@@ -460,7 +504,17 @@ console.log("studentdetails111111111111",studentDetails)
             ) : (
               <div className="space-y-4">
                 {existingPersonalSection ? (
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div
+                    className={`p-4 rounded-lg ${
+                      existingPersonalSection.status === "pending_updation"
+                        ? "bg-blue-50 border border-blue-200"
+                        : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      {getStatusBadge(existingPersonalSection.status)}
+                    </div>
+
                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                       {existingPersonalSection.content}
                     </p>
@@ -472,9 +526,23 @@ console.log("studentdetails111111111111",studentDetails)
                   </div>
                 )}
                 <div className="flex justify-end">
-                  <Button onClick={handleEdit}>
+                  <Button
+                    onClick={handleEdit}
+                    disabled={
+                      existingPersonalSection?.status === "pending_updation"
+                    }
+                    className={
+                      existingPersonalSection?.status === "pending_updation"
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }
+                  >
                     <Edit3 className="w-4 h-4 mr-2" />
-                    {existingPersonalSection ? "Edit" : "Write"}
+                    {existingPersonalSection?.status === "pending_updation"
+                      ? "Update Pending"
+                      : existingPersonalSection
+                      ? "Edit"
+                      : "Write"}
                   </Button>
                 </div>
               </div>

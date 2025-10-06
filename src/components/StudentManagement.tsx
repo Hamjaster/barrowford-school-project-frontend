@@ -1,5 +1,3 @@
-"use client";
-
 import { API_BASE_URL } from "@/constants";
 import type { AppDispatch, RootState } from "@/store";
 import {
@@ -7,7 +5,7 @@ import {
   fetchReflectionsByStudentId,
 } from "@/store/slices/reflectionSlice";
 import type { ReflectionComment, ReflectionItem } from "@/types";
-import { uploadFileToSupabase } from "@/utils/fileUpload"; // your utils file
+import { uploadFileToSupabase } from "@/utils/fileUpload";
 import {
   Edit3,
   Loader2,
@@ -40,25 +38,6 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { Button } from "./ui/button";
-import {
-  Edit3,
-  Save,
-  Loader2,
-  MessageSquare,
-  Send,
-  UserCircle,
-} from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "@/store";
-import { API_BASE_URL } from "@/constants";
-import {
-  fetchReflectionsByStudentId,
-  addComment,
-} from "@/store/slices/reflectionSlice";
-import type { ReflectionItem, ReflectionComment } from "@/types";
-import { uploadFileToSupabase } from "@/utils/fileUpload"; // your utils file
-import { toast } from "sonner";
 
 interface Student {
   id: number;

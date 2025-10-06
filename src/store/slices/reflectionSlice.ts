@@ -770,7 +770,7 @@ const reflectionSlice = createSlice({
 
   // add the newComment to reflectioncomments of that specific reflection
   state.reflections = state.reflections.map((reflection) =>
-    reflection.id === reflectionId ? { ...reflection, reflectioncomments: [...reflection.reflectioncomments, newComment] } : reflection
+      reflection.id === reflectionId ? { ...reflection, reflection_comments: [...reflection.reflection_comments, newComment] } : reflection
   );
 
 

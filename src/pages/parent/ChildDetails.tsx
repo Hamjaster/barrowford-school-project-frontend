@@ -528,14 +528,14 @@ export default function ChildDetailsPage() {
                           </p>
                         </div>
 
-                        {reflection.reflectioncomments.length > 0 && (
+                        {reflection.reflection_comments.length > 0 && (
                           <div className="mt-4 space-y-3">
                             <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
                               <MessageSquare className="w-4 h-4" />
-                              Comments ({reflection.reflectioncomments.length})
+                              Comments ({reflection.reflection_comments.length})
                             </div>
 
-                            {reflection.reflectioncomments.map(
+                            {reflection.reflection_comments.map(
                               (comment: any) => (
                                 <div
                                   key={comment.id}
@@ -631,7 +631,6 @@ export default function ChildDetailsPage() {
                             <MessageSquare className="w-3 h-3" />
                             <span>Student Reflection</span>
                           </div>
-                         
                         </div>
                       </CardContent>
                     </Card>
@@ -766,14 +765,14 @@ export default function ChildDetailsPage() {
         <div className="bg-white rounded-xl shadow-sm border p-8 mb-8">
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
             {/* <Avatar className="w-24 h-24"> */}
-              {/* <AvatarImage
+            {/* <AvatarImage
                 src={DEFAULT_AVATAR_URL}
                 alt={`${child.first_name} ${child.last_name}`}
               /> */}
-              <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
-  <UserCircle className="w-12 h-12 " />
-</div>
-              {/* <AvatarFallback className="text-2xl">
+            <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
+              <UserCircle className="w-12 h-12 " />
+            </div>
+            {/* <AvatarFallback className="text-2xl">
                 {child.first_name[0]}
                 {child.last_name[0]}
               </AvatarFallback> */}

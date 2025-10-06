@@ -7,7 +7,7 @@ export interface ModerationItem {
   student_id: number;
   year_group_id: number;
   class_id: number;
-  entity_type: 'reflection' | 'studentimages' | 'studentlearningentities';
+  entity_type: 'reflections' | 'student_images' | 'student_learning_entities';
   entity_title: string;
   action_type: 'create' | 'update' | 'delete';
   entity_id?: number;

@@ -8,7 +8,14 @@ import {
 } from "@/store/slices/reflectionSlice";
 import type { ReflectionComment, ReflectionItem } from "@/types";
 import { uploadFileToSupabase } from "@/utils/fileUpload"; // your utils file
-import { Edit3, Loader2, MessageSquare, Save, Send, UserCircle } from "lucide-react";
+import {
+  Edit3,
+  Loader2,
+  MessageSquare,
+  Save,
+  Send,
+  UserCircle,
+} from "lucide-react";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "sonner";
@@ -33,6 +40,26 @@ import {
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
+import { Button } from "./ui/button";
+import {
+  Edit3,
+  Save,
+  Loader2,
+  MessageSquare,
+  Send,
+  UserCircle,
+} from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import type { RootState, AppDispatch } from "@/store";
+import { API_BASE_URL } from "@/constants";
+import {
+  fetchReflectionsByStudentId,
+  addComment,
+} from "@/store/slices/reflectionSlice";
+import type { ReflectionItem, ReflectionComment } from "@/types";
+import { uploadFileToSupabase } from "@/utils/fileUpload"; // your utils file
+import { toast } from "sonner";
+
 interface Student {
   id: number;
   first_name: string;
@@ -69,7 +96,9 @@ export default function StudentManagement() {
     ReflectionItem[]
   >([]);
   const [selectedCard, setSelectedCard] = useState<number | null>(null);
-  const [activeTab, setActiveTab] = useState<"personal" | "reflections" | "details">("personal");
+  const [activeTab, setActiveTab] = useState<
+    "personal" | "reflections" | "details"
+  >("personal");
 
   const [loading, setLoading] = useState(false);
   const [sectionsLoading, setSectionsLoading] = useState(false);
@@ -107,7 +136,7 @@ export default function StudentManagement() {
         throw new Error("Failed to fetch students");
       }
       const result = await response.json();
-      console.log("fetchedstudents...", result.data)
+      console.log("fetchedstudents...", result.data);
       setStudents(result.data);
     } catch (err: any) {
       setError(err.message || "Failed to fetch students");
@@ -242,7 +271,7 @@ export default function StudentManagement() {
         const reflectionsWithComments = resultAction.payload.map(
           (reflection) => ({
             ...reflection,
-            reflectioncomments: reflection.reflectioncomments || [],
+            reflection_comments: reflection.reflection_comments || [],
           })
         );
         setStudentReflections(reflectionsWithComments);
@@ -275,12 +304,12 @@ export default function StudentManagement() {
         prev.map((reflection) =>
           reflection.id === reflectionId
             ? {
-              ...reflection,
-              reflectioncomments: [
-                ...(reflection.reflectioncomments || []),
-                newComment.data,
-              ],
-            }
+                ...reflection,
+                reflection_comments: [
+                  ...(reflection.reflection_comments || []),
+                  newComment.data,
+                ],
+              }
             : reflection
         )
       );
@@ -357,7 +386,7 @@ export default function StudentManagement() {
         hair_color: editStudent.hair_color,
         ...(profilePhotoUrl && { profile_photo: profilePhotoUrl }),
       };
-      console.log("payload", payload)
+      console.log("payload", payload);
       const response = await fetch(
         `${API_BASE_URL}/teacher/update-student-profile`,
         {
@@ -377,7 +406,9 @@ export default function StudentManagement() {
       setNewProfileFile(null);
       // ✅ Update local state without refetching all students
       setStudents((prev) =>
-        prev.map((s) => (s.id === editStudent.id ? { ...s, ...result.data } : s))
+        prev.map((s) =>
+          s.id === editStudent.id ? { ...s, ...result.data } : s
+        )
       );
       setSelectedStudent((prev) =>
         prev && prev.id === editStudent.id ? { ...prev, ...result.data } : prev
@@ -385,7 +416,6 @@ export default function StudentManagement() {
       setEditStudent((prev) =>
         prev && prev.id === editStudent.id ? { ...prev, ...result.data } : prev
       );
-
     } catch (err: any) {
       setError(err.message || "Failed to update student details");
     } finally {
@@ -393,13 +423,11 @@ export default function StudentManagement() {
     }
   };
 
-
   useEffect(() => {
     if (selectedStudent) {
       setEditStudent(selectedStudent);
     }
   }, [selectedStudent]);
-
 
   useEffect(() => {
     fetchStudents();
@@ -437,7 +465,6 @@ export default function StudentManagement() {
                 className="flex items-center justify-between p-4 border rounded-lg"
               >
                 <div className="flex items-center gap-4">
-
                   {student.profile_photo ? (
                     <img
                       src={student.profile_photo}
@@ -486,7 +513,9 @@ export default function StudentManagement() {
                       <div className="w-full">
                         <div className="flex border-b mb-4">
                           <Button
-                            variant={activeTab === "details" ? "default" : "ghost"} // 🆕
+                            variant={
+                              activeTab === "details" ? "default" : "ghost"
+                            } // 🆕
                             onClick={() => handleTabChange("details")} // 🆕
                             className="rounded-none border-b-2 border-transparent" // 🆕
                           >
@@ -510,16 +539,15 @@ export default function StudentManagement() {
                           >
                             Reflections
                           </Button>
-
                         </div>
                         {activeTab === "details" && selectedStudent && (
                           <div className="space-y-4 max-h-96 overflow-y-auto p-3 border rounded-lg py-8">
-                            <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
+                            <h3 className="text-lg font-semibold mb-2">
+                              Personal Information
+                            </h3>
 
                             {/* Profile Photo Section */}
                             <div className="flex flex-col items-center space-y-3">
-
-
                               {/* Editable upload input */}
                               <div className="flex flex-col items-center space-y-3">
                                 {selectedStudent.profile_photo ? (
@@ -534,14 +562,17 @@ export default function StudentManagement() {
                                   </div>
                                 )}
 
-
                                 {/* Hidden file input */}
                                 <input
                                   type="file"
-                                  id="profilePhotoInput"  // ✅ MATCHES the button now
+                                  id="profilePhotoInput" // ✅ MATCHES the button now
                                   accept="image/*"
                                   className="hidden"
-                                  onChange={(e) => setNewProfileFile(e.target.files?.[0] || null)}
+                                  onChange={(e) =>
+                                    setNewProfileFile(
+                                      e.target.files?.[0] || null
+                                    )
+                                  }
                                 />
 
                                 {/* Clickable text to trigger upload */}
@@ -551,23 +582,31 @@ export default function StudentManagement() {
                                   id="profilePhotoInput"
                                   accept="image/*"
                                   className="hidden"
-                                  onChange={(e) => setNewProfileFile(e.target.files?.[0] || null)}
+                                  onChange={(e) =>
+                                    setNewProfileFile(
+                                      e.target.files?.[0] || null
+                                    )
+                                  }
                                 />
 
                                 {/* Clickable text to trigger upload */}
                                 <button
                                   type="button"
-                                  onClick={() => document.getElementById("profilePhotoInput")?.click()}
+                                  onClick={() =>
+                                    document
+                                      .getElementById("profilePhotoInput")
+                                      ?.click()
+                                  }
                                   className="text-sm text-blue-600 cursor-pointer truncate max-w-[200px]"
-                                  title={newProfileFile?.name || "Edit Profile Photo"} // shows full name on hover
+                                  title={
+                                    newProfileFile?.name || "Edit Profile Photo"
+                                  } // shows full name on hover
                                 >
                                   {newProfileFile
                                     ? `📁 ${newProfileFile.name}`
                                     : "Edit Profile Photo"}
                                 </button>
-
                               </div>
-
                             </div>
 
                             {/* Non-editable fields */}
@@ -577,60 +616,81 @@ export default function StudentManagement() {
                                 <Input
                                   value={editStudent?.first_name || ""}
                                   onChange={(e) =>
-                                    handleEditChange("first_name", e.target.value)
+                                    handleEditChange(
+                                      "first_name",
+                                      e.target.value
+                                    )
                                   }
-                                />                              </div>
+                                />{" "}
+                              </div>
                               <div>
                                 <Label className="mb-2">Last Name</Label>
                                 <Input
                                   value={editStudent?.last_name || ""}
                                   onChange={(e) =>
-                                    handleEditChange("last_name", e.target.value)
+                                    handleEditChange(
+                                      "last_name",
+                                      e.target.value
+                                    )
                                   }
-                                />                              </div>
-
+                                />{" "}
+                              </div>
 
                               <div>
                                 <Label className="mb-2">Class Name</Label>
                                 <Input
                                   value={editStudent?.class_name || ""}
                                   onChange={(e) =>
-                                    handleEditChange("class_name", e.target.value)
+                                    handleEditChange(
+                                      "class_name",
+                                      e.target.value
+                                    )
                                   }
-                                />                              </div>
+                                />{" "}
+                              </div>
                               <div>
                                 <Label className="mb-2">Year Group</Label>
                                 <Input
                                   value={editStudent?.year || ""}
                                   onChange={(e) =>
-                                    handleEditChange("year", Number(e.target.value))
+                                    handleEditChange(
+                                      "year",
+                                      Number(e.target.value)
+                                    )
                                   }
-                                />                              </div>
+                                />{" "}
+                              </div>
                               <div>
                                 <Label className="mb-2">Height</Label>
                                 <Input
                                   value={editStudent?.height || ""}
                                   onChange={(e) =>
-                                    handleEditChange("height", Number(e.target.value))
+                                    handleEditChange(
+                                      "height",
+                                      Number(e.target.value)
+                                    )
                                   }
-                                />                              </div>
+                                />{" "}
+                              </div>
                               <div>
                                 <Label className="mb-2">Hair Color</Label>
                                 <Input
                                   value={editStudent?.hair_color || ""}
                                   onChange={(e) =>
-                                    handleEditChange("hair_color", e.target.value)
+                                    handleEditChange(
+                                      "hair_color",
+                                      e.target.value
+                                    )
                                   }
                                 />
                               </div>
-
                             </div>
                             <div className="flex justify-end mb-3">
-                              <Button 
-                              onClick={handleStudentUpdateDetails}
-                               disabled={updateLoading}
-                               className="w-40 justify-center"
-                               >
+                              <Button
+                                onClick={handleStudentUpdateDetails}
+                                disabled={updateLoading}
+                                className="w-40 justify-center"
+                              >
                                 {updateLoading ? (
                                   <Loader2 className="h-4 w-4 animate-spin" />
                                 ) : (
@@ -643,7 +703,6 @@ export default function StudentManagement() {
                             </div>
                           </div>
                         )}
-
 
                         {activeTab === "personal" && (
                           <div className="space-y-4 max-h-96 overflow-y-auto">
@@ -662,10 +721,11 @@ export default function StudentManagement() {
                                 {personalSections.map((section) => (
                                   <div
                                     key={section.id}
-                                    className={`p-4 border rounded-lg space-y-2 cursor-pointer transition-colors ${selectedCard === section.id
-                                      ? "border-blue-300 bg-blue-50"
-                                      : "hover:border-gray-300"
-                                      }`}
+                                    className={`p-4 border rounded-lg space-y-2 cursor-pointer transition-colors ${
+                                      selectedCard === section.id
+                                        ? "border-blue-300 bg-blue-50"
+                                        : "hover:border-gray-300"
+                                    }`}
                                     onClick={() => setSelectedCard(section.id)}
                                   >
                                     <Label htmlFor={`topic-${section.id}`}>
@@ -738,7 +798,7 @@ export default function StudentManagement() {
                                     <div className="flex items-start justify-between">
                                       <div>
                                         <h4 className="font-semibold text-sm">
-                                          {reflection.reflectiontopics.title}
+                                          {reflection.reflection_topics.title}
                                         </h4>
                                         <p className="text-xs text-muted-foreground">
                                           {new Date(
@@ -751,8 +811,8 @@ export default function StudentManagement() {
                                           reflection.status === "approved"
                                             ? "default"
                                             : reflection.status === "rejected"
-                                              ? "destructive"
-                                              : "secondary"
+                                            ? "destructive"
+                                            : "secondary"
                                         }
                                       >
                                         {reflection.status}
@@ -779,15 +839,15 @@ export default function StudentManagement() {
                                       <div className="flex items-center gap-2 mb-2">
                                         <MessageSquare className="h-3 w-3 mr-1" />
                                         Comments (
-                                        {reflection.reflectioncomments.length})
+                                        {reflection.reflection_comments.length})
                                       </div>
 
                                       {/* Display Comments */}
-                                      {reflection.reflectioncomments &&
-                                        reflection.reflectioncomments.length >
-                                        0 && (
+                                      {reflection.reflection_comments &&
+                                        reflection.reflection_comments.length >
+                                          0 && (
                                           <div className="space-y-2 mb-3">
-                                            {reflection.reflectioncomments.map(
+                                            {reflection.reflection_comments.map(
                                               (comment: ReflectionComment) => (
                                                 <div
                                                   key={comment.id}
@@ -858,7 +918,6 @@ export default function StudentManagement() {
                             )}
                           </div>
                         )}
-
                       </div>
                     </DialogContent>
                   </Dialog>

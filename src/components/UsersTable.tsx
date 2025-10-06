@@ -198,7 +198,13 @@ const UsersTable: React.FC = () => {
     const role = user.role;
     const userId = user.id;
 
-    dispatch(toggleUserStatus({ action, role, userId }));
+    dispatch(toggleUserStatus({ action, role, userId }))
+      .unwrap()
+      .then(() => {
+        if (role === "parent") {
+          dispatch(fetchUsers({}));
+        }
+      });
   };
 
   const getSortIcon = (column: SortColumn) => {
@@ -326,9 +332,7 @@ const UsersTable: React.FC = () => {
                   Email {getSortIcon("email")}
                 </Button>
               </TableHead>
-              <TableHead>
-                Role
-              </TableHead>
+              <TableHead>Role</TableHead>
               <TableHead>
                 <Button
                   variant="ghost"
@@ -433,7 +437,6 @@ const UsersTable: React.FC = () => {
       {pagination && pagination.totalUsers > 0 && (
         <div className="flex items-center justify-between ">
           <div className="text-sm text-gray-500 ">
-            
             Showing {(pagination.currentPage - 1) * pagination.usersPerPage + 1}{" "}
             to{" "}
             {Math.min(
@@ -441,7 +444,6 @@ const UsersTable: React.FC = () => {
               pagination.totalUsers
             )}{" "}
             of {pagination.totalUsers} users
-            
           </div>
           <div className="flex items-center space-x-2">
             <Button

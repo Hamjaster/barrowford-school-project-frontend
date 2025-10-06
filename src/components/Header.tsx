@@ -46,7 +46,7 @@ const Header: React.FC = () => {
   };
 
   return (
-    <header className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 relative overflow-hidden">
+    <header className="bg-gradient-to-r min-h-20 from-orange-500 to-pink-500 text-white p-6 relative overflow-hidden">
       <div className="relative z-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <SidebarTrigger className="lg:hidden text-white" />

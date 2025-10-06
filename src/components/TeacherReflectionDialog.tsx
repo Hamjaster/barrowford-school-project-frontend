@@ -71,7 +71,7 @@ export default function TeacherReflectionDialog({
       <DialogContent className="w-[95vw] max-w-2xl max-h-[90vh] overflow-y-auto m-0">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
-            {reflection.reflectiontopics?.title ?? "Untitled Reflection"}
+            {reflection.reflection_topics?.title ?? "Untitled Reflection"}
           </DialogTitle>
           <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
             <Badge variant="secondary">{reflection.week ?? "Week 1"}</Badge>

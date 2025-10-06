@@ -1,6 +1,20 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { API_BASE_URL } from "@/constants";
+import type { AppDispatch, RootState } from "@/store";
+import {
+  addComment,
+  fetchReflectionsByStudentId,
+} from "@/store/slices/reflectionSlice";
+import type { ReflectionComment, ReflectionItem } from "@/types";
+import { uploadFileToSupabase } from "@/utils/fileUpload"; // your utils file
+import { Edit3, Loader2, MessageSquare, Save, Send, UserCircle } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import AttachmentDisplay from "./AttachmentDisplay";
+import { Badge } from "./ui/badge";
+import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
@@ -16,35 +30,21 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog";
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { Badge } from "./ui/badge";
-import AttachmentDisplay from "./AttachmentDisplay";
-import { Label } from "./ui/label";
 import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { Button } from "./ui/button";
-import { Edit3, Save, Loader2, MessageSquare, Send, UserCircle } from "lucide-react";
-import { useDispatch, useSelector } from "react-redux";
-import type { RootState, AppDispatch } from "@/store";
-import { API_BASE_URL } from "@/constants";
-import {
-  fetchReflectionsByStudentId,
-  addComment,
-} from "@/store/slices/reflectionSlice";
-import type { ReflectionItem, ReflectionComment } from "@/types";
-import { uploadFileToSupabase } from "@/utils/fileUpload"; // your utils file
-import { toast } from "sonner";
-
 interface Student {
   id: number;
   first_name: string;
   last_name: string;
   email: string;
-  year_group_id: number;
+  year: number;
   class_id: number;
   class_name: string;
   created_at: string;
   profile_photo: string;
+  height: number;
+  hair_color: string;
 }
 
 interface PersonalSection {
@@ -60,6 +60,8 @@ interface PersonalSection {
 export default function StudentManagement() {
   const [students, setStudents] = useState<Student[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  const [editStudent, setEditStudent] = useState(selectedStudent);
+  const [newProfileFile, setNewProfileFile] = useState<File | null>(null);
   const [personalSections, setPersonalSections] = useState<PersonalSection[]>(
     []
   );
@@ -205,10 +207,10 @@ export default function StudentManagement() {
     if (tab === "reflections" && selectedStudent) {
       fetchStudentReflections(selectedStudent.id);
     }
-    if (tab === "details" && selectedStudent) {
-      // e.g., fetch additional student profile info if needed
-      // fetchStudentDetails(selectedStudent.id);
-    }
+    // if (tab === "details" && selectedStudent) {
+    //   // e.g., fetch additional student profile info if needed
+    //   // fetchStudentDetails(selectedStudent.id);
+    // }
   };
 
   const handleSaveSection = (sectionId: number) => {
@@ -302,15 +304,15 @@ export default function StudentManagement() {
     }));
   };
 
-
-  const handleProfilePhotoUpload = async (studentId: number, file: File) => {
-    if (!token) return;
-
-    setLoading(true);
-    setError(null);
-
+  const handleEditChange = (field: keyof Student, value: any) => {
+    if (!editStudent) return;
+    setEditStudent({ ...editStudent, [field]: value });
+  };
+  const uploadStudentProfilePhoto = async (
+    file: File,
+    studentId: string | number
+  ): Promise<string | null> => {
     try {
-      // ✅ 1. Upload file to Supabase directly
       const uploadResult = await uploadFileToSupabase(
         file,
         "barrowford-school-uploads",
@@ -318,40 +320,85 @@ export default function StudentManagement() {
       );
 
       if (!uploadResult.success || !uploadResult.url) {
-        throw new Error(uploadResult.error || "Failed to upload file");
+        throw new Error(uploadResult.error || "Photo upload failed");
       }
 
-      // ✅ 2. Send the URL to your backend to update student record
-      const response = await fetch(`${API_BASE_URL}/teacher/update-profile-photo`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          studentId,
-          profilePhotoUrl: uploadResult.url,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to update profile photo");
-      }
-
-      const result = await response.json();
-      console.log("Profile photo updated:", result);
-      toast.success("Profile photo updated successfully")
-      // ✅ 3. Refresh list or update local state
-      await fetchStudents();
-    } catch (err: any) {
-      console.error("Profile photo upload error:", err);
-      setError(err.message || "Failed to upload profile photo");
-
-    } finally {
-      setLoading(false);
+      return uploadResult.url;
+    } catch (error) {
+      console.error("❌ Profile photo upload failed:", error);
+      throw error;
     }
   };
 
+  const handleStudentUpdateDetails = async () => {
+    if (!token || !editStudent) return;
+    setUpdateLoading(true);
+    try {
+      let profilePhotoUrl: string | undefined = undefined;
+
+      if (newProfileFile) {
+        const uploadResult = await uploadFileToSupabase(
+          newProfileFile,
+          "barrowford-school-uploads",
+          editStudent.id.toString()
+        );
+        if (!uploadResult.success || !uploadResult.url)
+          throw new Error(uploadResult.error || "Photo upload failed");
+        profilePhotoUrl = uploadResult.url;
+      }
+
+      const payload: Record<string, any> = {
+        studentId: editStudent.id,
+        first_name: editStudent.first_name,
+        last_name: editStudent.last_name,
+        class_name: editStudent.class_name,
+        year_group_id: editStudent.year,
+        height: editStudent.height,
+        hair_color: editStudent.hair_color,
+        ...(profilePhotoUrl && { profile_photo: profilePhotoUrl }),
+      };
+      console.log("payload", payload)
+      const response = await fetch(
+        `${API_BASE_URL}/teacher/update-student-profile`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) throw new Error("Failed to update student");
+
+      const result = await response.json();
+      toast.success("Student details updated successfully");
+      setNewProfileFile(null);
+      // ✅ Update local state without refetching all students
+      setStudents((prev) =>
+        prev.map((s) => (s.id === editStudent.id ? { ...s, ...result.data } : s))
+      );
+      setSelectedStudent((prev) =>
+        prev && prev.id === editStudent.id ? { ...prev, ...result.data } : prev
+      );
+      setEditStudent((prev) =>
+        prev && prev.id === editStudent.id ? { ...prev, ...result.data } : prev
+      );
+
+    } catch (err: any) {
+      setError(err.message || "Failed to update student details");
+    } finally {
+      setUpdateLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    if (selectedStudent) {
+      setEditStudent(selectedStudent);
+    }
+  }, [selectedStudent]);
 
 
   useEffect(() => {
@@ -466,7 +513,7 @@ export default function StudentManagement() {
 
                         </div>
                         {activeTab === "details" && selectedStudent && (
-                          <div className="space-y-6 max-h-96 overflow-y-auto p-3 border rounded-lg">
+                          <div className="space-y-4 max-h-96 overflow-y-auto p-3 border rounded-lg py-8">
                             <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
 
                             {/* Profile Photo Section */}
@@ -475,41 +522,50 @@ export default function StudentManagement() {
 
                               {/* Editable upload input */}
                               <div className="flex flex-col items-center space-y-3">
-                                  {selectedStudent.profile_photo ? (
-                                      <img
-                                      src={student.profile_photo}
-                                      alt={`${student.first_name} ${student.last_name}`}
-                                      className="w-16 h-16 rounded-full object-cover border-2 border-black-100 group-hover:border-blue-300 transition-colors"
-                                    />
-                                  ) : (
-                                    <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
-                                      <UserCircle className="w-12 h-12" />
-                                    </div>
-                                  )}
-                                
+                                {selectedStudent.profile_photo ? (
+                                  <img
+                                    src={student.profile_photo}
+                                    alt={`${student.first_name} ${student.last_name}`}
+                                    className="w-16 h-16 rounded-full object-cover border-2 border-black-100 group-hover:border-blue-300 transition-colors"
+                                  />
+                                ) : (
+                                  <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
+                                    <UserCircle className="w-12 h-12" />
+                                  </div>
+                                )}
 
+
+                                {/* Hidden file input */}
+                                <input
+                                  type="file"
+                                  id="profilePhotoInput"  // ✅ MATCHES the button now
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => setNewProfileFile(e.target.files?.[0] || null)}
+                                />
+
+                                {/* Clickable text to trigger upload */}
                                 {/* Hidden file input */}
                                 <input
                                   type="file"
                                   id="profilePhotoInput"
                                   accept="image/*"
                                   className="hidden"
-                                  onChange={async (e) => {
-                                    const file = e.target.files?.[0];
-                                    if (file) {
-                                      await handleProfilePhotoUpload(selectedStudent.id, file);
-                                    }
-                                  }}
+                                  onChange={(e) => setNewProfileFile(e.target.files?.[0] || null)}
                                 />
 
                                 {/* Clickable text to trigger upload */}
                                 <button
                                   type="button"
                                   onClick={() => document.getElementById("profilePhotoInput")?.click()}
-                                  className="text-sm text-blue-600 cursor-pointer"
+                                  className="text-sm text-blue-600 cursor-pointer truncate max-w-[200px]"
+                                  title={newProfileFile?.name || "Edit Profile Photo"} // shows full name on hover
                                 >
-                                  Edit Profile Photo
+                                  {newProfileFile
+                                    ? `📁 ${newProfileFile.name}`
+                                    : "Edit Profile Photo"}
                                 </button>
+
                               </div>
 
                             </div>
@@ -518,22 +574,72 @@ export default function StudentManagement() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 mb-3">
                               <div>
                                 <Label className="mb-2">First Name</Label>
-                                <Input value={selectedStudent.first_name} disabled />
-                              </div>
+                                <Input
+                                  value={editStudent?.first_name || ""}
+                                  onChange={(e) =>
+                                    handleEditChange("first_name", e.target.value)
+                                  }
+                                />                              </div>
                               <div>
                                 <Label className="mb-2">Last Name</Label>
-                                <Input value={selectedStudent.last_name} disabled />
-                              </div>
-                              <div>
-                                <Label className="mb-2">Email</Label>
-                                <Input value={selectedStudent.email} disabled />
-                              </div>
+                                <Input
+                                  value={editStudent?.last_name || ""}
+                                  onChange={(e) =>
+                                    handleEditChange("last_name", e.target.value)
+                                  }
+                                />                              </div>
+
 
                               <div>
                                 <Label className="mb-2">Class Name</Label>
-                                <Input value={selectedStudent.class_name} disabled />
+                                <Input
+                                  value={editStudent?.class_name || ""}
+                                  onChange={(e) =>
+                                    handleEditChange("class_name", e.target.value)
+                                  }
+                                />                              </div>
+                              <div>
+                                <Label className="mb-2">Year Group</Label>
+                                <Input
+                                  value={editStudent?.year || ""}
+                                  onChange={(e) =>
+                                    handleEditChange("year", Number(e.target.value))
+                                  }
+                                />                              </div>
+                              <div>
+                                <Label className="mb-2">Height</Label>
+                                <Input
+                                  value={editStudent?.height || ""}
+                                  onChange={(e) =>
+                                    handleEditChange("height", Number(e.target.value))
+                                  }
+                                />                              </div>
+                              <div>
+                                <Label className="mb-2">Hair Color</Label>
+                                <Input
+                                  value={editStudent?.hair_color || ""}
+                                  onChange={(e) =>
+                                    handleEditChange("hair_color", e.target.value)
+                                  }
+                                />
                               </div>
 
+                            </div>
+                            <div className="flex justify-end mb-3">
+                              <Button 
+                              onClick={handleStudentUpdateDetails}
+                               disabled={updateLoading}
+                               className="w-40 justify-center"
+                               >
+                                {updateLoading ? (
+                                  <Loader2 className="h-4 w-4 animate-spin" />
+                                ) : (
+                                  <>
+                                    <Save className="h-4 w-4 mr-2" />
+                                    Save Changes
+                                  </>
+                                )}
+                              </Button>
                             </div>
                           </div>
                         )}

@@ -238,6 +238,7 @@ const toTitleCase = (text: string): string => {
 export const getRoleDisplayName = (role: UserRole): string => {
   const roleMap: Record<UserRole, string> = {
     admin: 'Admin',
+    staff_admin: 'Staff Admin',
     staff: 'Staff/Teacher',
     parent: 'Parent',
     student: 'Student',

@@ -97,7 +97,7 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
     ],
     availableTabs: ['overview', 'create-user', 'personal-section-topics'],
   },
-  parent: {
+  Parent: {
     displayName: 'Parent',
     dashboardTitle: 'Parent Dashboard',
     dashboardSubtitle: 'Your Child\'s Journey',

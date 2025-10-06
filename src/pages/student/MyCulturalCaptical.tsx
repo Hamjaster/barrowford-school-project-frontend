@@ -28,7 +28,7 @@ import {
   CheckCircle,
   XCircle,
   AlertTriangle,
-  Trash2
+  Trash2,
 } from "lucide-react";
 import { DataTable } from "@/components/ui/data-table";
 import { Separator } from "@/components/ui/separator";
@@ -46,6 +46,8 @@ import {
   fetchAllTopics,
   fetchPreviousWeeks,
   clearError,
+  deleteReflection,
+  fetchActiveTopics,
 } from "@/store/slices/reflectionSlice";
 import type { RootState, AppDispatch } from "@/store";
 import type { TableEntry } from "@/types";
@@ -90,7 +92,9 @@ export default function CulturalCapitalPage() {
     selectedWeek: "",
   });
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedReflectionId, setSelectedReflectionId] = useState<number | null>(null);
+  const [selectedReflectionId, setSelectedReflectionId] = useState<
+    number | null
+  >(null);
   //dispatch
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -101,6 +105,7 @@ export default function CulturalCapitalPage() {
     postingCommentLoading,
     error,
     previousWeeks,
+    activeTitles,
   } = useSelector((state: RootState) => state.reflection);
 
   //useEffect of feching projects
@@ -108,6 +113,7 @@ export default function CulturalCapitalPage() {
     const fetchData = async () => {
       await dispatch(fetchMyReflections());
       await dispatch(fetchAllTopics());
+      await dispatch(fetchActiveTopics());
       await dispatch(fetchPreviousWeeks());
     };
 
@@ -347,21 +353,19 @@ export default function CulturalCapitalPage() {
 
   const handleDeleteReflection = async (reflectionId: number) => {
     try {
-     
       setDeletingReflectionId(reflectionId);
       setSubmissionfetchreflectionsloading(true);
-      const resultAction = await dispatch(
-        requestDeleteReflection(String(reflectionId))
-      );
-
-      // unwrap will throw if rejected
-      const result = unwrapResult(resultAction);
-
-      // Show moderation message
-      showToast(result.message, true);
+      await dispatch(requestDeleteReflection(String(reflectionId)))
+        .unwrap()
+        .then((res) => {
+          showToast(res.message, true);
+        })
+        .catch((err) => {
+          showToast("Failed to request reflection deletion", false);
+          console.error("Error while requesting reflection deletion:", err);
+        });
     } catch (err) {
-      showToast("Failed to request reflection deletion", false);
-      console.error("Error while requesting reflection deletion:", err);
+      console.error("Error while deleting reflection:", err);
     } finally {
       setSubmissionfetchreflectionsloading(false);
       setDeletingReflectionId(null);
@@ -384,10 +388,11 @@ export default function CulturalCapitalPage() {
   }, [filteredData, data]);
 
   useEffect(() => {
+    console.log(activeTitles, "ACTIVE TITLES");
     console.log(uniqueTopics, "UNIQUE TOPICS");
     console.log(uniqueWeeks, "UNIQUE WEEKS");
     console.log(uniqueStatuses, "UNIQUE STATUSES");
-  }, [uniqueTopics, uniqueWeeks, uniqueStatuses]);
+  }, [activeTitles, uniqueTopics, uniqueWeeks, uniqueStatuses]);
 
   const columns = [
     {
@@ -440,9 +445,23 @@ export default function CulturalCapitalPage() {
             }
           >
             <Eye className="w-4 h-4 text-black" />
-
           </Button>
           {item.status === "approved" && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-red-600 hover:text-red-800"
+              onClick={() => {
+                setSelectedReflectionId(item.id);
+                setIsDeleteDialogOpen(true);
+              }}
+              disabled={submissionfetchreflectionsloading}
+              loading={deletingReflectionId === item.id}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          )}
+          {/* {item.status === "approved" && (
             <Button
               variant="ghost"
               size="sm"
@@ -454,8 +473,7 @@ export default function CulturalCapitalPage() {
               <Trash2 className="w-4 h-4"/>
               
             </Button>
-          )}
-          
+          )} */}
         </div>
       ),
     },
@@ -464,8 +482,17 @@ export default function CulturalCapitalPage() {
   return (
     <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl">
-        <h1 className="text-3xl font-bold">My Cultural Capital</h1>
+      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">My Cultural Capital</h1>
+            </div>
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
 
       {/* Main Content */}
@@ -534,7 +561,7 @@ export default function CulturalCapitalPage() {
                   setTopicFilter("all");
                   setFilteredData(data);
                 }}
-                className="bg-red-500 hover:bg-red-600 text-white px-6 cursor-pointer"
+                className="bg-gradient-to-r from-red-400 via-red-500 to-red-600 hover:from-red-500 hover:via-red-600 hover:to-red-700 text-white px-6 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
               >
                 <RotateCcw className="w-4 h-4" />
                 Clear Filters
@@ -545,7 +572,7 @@ export default function CulturalCapitalPage() {
                 onOpenChange={setIsNewReflectionOpen}
               >
                 <DialogTrigger asChild>
-                  <Button className="bg-pink-500 hover:bg-pink-600 text-white px-6 cursor-pointer">
+                  <Button className="bg-gradient-to-r from-pink-400 via-pink-500 to-pink-600 hover:from-pink-500 hover:via-pink-600 hover:to-pink-700 text-white px-6 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300">
                     <Lightbulb className="w-4 h-4 mr-2" />
                     New Reflection
                   </Button>
@@ -556,9 +583,9 @@ export default function CulturalCapitalPage() {
                   </DialogHeader>
                   <div className="space-y-4">
                     <div className="w-full">
-                      <Label htmlFor="reflection-title">Title</Label>
+                      <Label htmlFor="reflection-title">Title *</Label>
 
-                      {topics.length > 0 ? (
+                      {activeTitles.length > 0 ? (
                         <Select
                           onValueChange={(value) =>
                             setNewReflection((prev) => ({
@@ -574,7 +601,7 @@ export default function CulturalCapitalPage() {
                             <SelectValue placeholder="Choose a reflection title..." />
                           </SelectTrigger>
                           <SelectContent className="w-full">
-                            {topics.map((topic, index) => (
+                            {activeTitles.map((topic, index) => (
                               <SelectItem
                                 key={index}
                                 value={topic.id.toString()}
@@ -592,7 +619,7 @@ export default function CulturalCapitalPage() {
                     </div>
 
                     <div className="w-full">
-                      <Label htmlFor="reflection-week">Week</Label>
+                      <Label htmlFor="reflection-week">Week *</Label>
                       {previousWeeks &&
                       previousWeeks.previousWeeks.length > 0 ? (
                         <Select
@@ -628,7 +655,7 @@ export default function CulturalCapitalPage() {
 
                     <div>
                       <Label htmlFor="reflection-description">
-                        Description
+                        Description *
                       </Label>
                       <Textarea
                         id="reflection-description"
@@ -710,7 +737,7 @@ export default function CulturalCapitalPage() {
                           submissionfetchreflectionsloading
                             ? "bg-gray-400 cursor-not-allowed"
                             : "bg-pink-500 hover:bg-pink-600"
-                          }`}
+                        }`}
                       >
                         {submissionfetchreflectionsloading
                           ? "Adding..."

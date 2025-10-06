@@ -34,9 +34,9 @@ const DashboardLayout: React.FC = () => {
 
   return (
     <SidebarProvider open={sidebarOpen} onOpenChange={setSidebarOpen}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex max-h-screen w-full">
         {renderSidebar()}
-        <SidebarInset className="flex bg-[#eaf7fd] flex-col flex-1 w-full min-w-0">
+        <SidebarInset className="flex overflow-y-scroll bg-[#eaf7fd] flex-col flex-1 w-full min-w-0">
           {user?.role !== "student" && <Header />}
           <div className="w-full">
             <Outlet />

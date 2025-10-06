@@ -82,13 +82,20 @@ const StaffAdminDashboard: React.FC = () => {
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="w-full mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900">
-            {staffAdminInfo.dashboardTitle}
-          </h1>
-          <p className="text-gray-600 mt-2">
-            {staffAdminInfo.dashboardSubtitle}
-          </p>
+        <div className="bg-gradient-to-r from-purple-500 to-indigo-600 text-white p-6 rounded-b-2xl relative overflow-hidden mb-8">
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold">
+              {staffAdminInfo.dashboardTitle}
+            </h1>
+            <p className="text-purple-100 mt-2">
+              {staffAdminInfo.dashboardSubtitle}
+            </p>
+          </div>
+
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-white/5 rounded-full"></div>
         </div>
 
         {/* Tab Navigation */}

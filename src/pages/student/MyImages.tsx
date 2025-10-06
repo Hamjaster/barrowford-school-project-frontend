@@ -419,7 +419,7 @@ export default function MyImages() {
           open={!!selectedImage}
           onOpenChange={() => setSelectedImage(null)}
         >
-          <DialogContent className="max-w-5xl max-h-[90vh] p-0">
+          <DialogContent className="overflow-hidden max-w-5xl max-h-[90vh] p-0">
             <div className="relative">
               <img
                 src={selectedImage.url}

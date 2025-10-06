@@ -25,8 +25,8 @@ import {
   PenTool,
   Calendar,
   BookOpen,
-  Loader2,
 } from "lucide-react";
+import { Spinner } from "@/components/ui/Spinner";
 import { useDispatch, useSelector } from "react-redux";
 import {
   fetchStudentLearnings,
@@ -135,40 +135,42 @@ export default function StudentContentPage() {
   };
 
   const handleFiles = (files: File[]) => {
-    files.forEach((file) => {
-      // Validate file
-      const validation = validateFile(file, 10); // 10MB max size
-      if (!validation.isValid) {
-        toast.error(validation.error || "Invalid file");
-        return;
-      }
+    // Only take the first file if multiple are selected
+    const file = files[0];
 
-      const newFile: UploadedFile = {
-        id: Math.random().toString(36).substr(2, 9),
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        isUploading: false,
-        uploadProgress: 0,
+    // Validate file
+    const validation = validateFile(file, 10); // 10MB max size
+    if (!validation.isValid) {
+      toast.error(validation.error || "Invalid file");
+      return;
+    }
+
+    const newFile: UploadedFile = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      isUploading: false,
+      uploadProgress: 0,
+    };
+
+    // Generate preview for images
+    if (file.type.startsWith("image/")) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setUploadedFiles((prev) =>
+          prev.map((f) =>
+            f.id === newFile.id
+              ? { ...f, preview: e.target?.result as string }
+              : f
+          )
+        );
       };
+      reader.readAsDataURL(file);
+    }
 
-      // Generate preview for images
-      if (file.type.startsWith("image/")) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          setUploadedFiles((prev) =>
-            prev.map((f) =>
-              f.id === newFile.id
-                ? { ...f, preview: e.target?.result as string }
-                : f
-            )
-          );
-        };
-        reader.readAsDataURL(file);
-      }
-
-      setUploadedFiles((prev) => [...prev, newFile]);
-    });
+    // Replace any existing file with the new one (only one file allowed)
+    setUploadedFiles([newFile]);
   };
 
   const removeFile = (id: string) => {
@@ -224,7 +226,7 @@ export default function StudentContentPage() {
       const files = Array.from(fileInput?.files || []);
 
       if (files.length === 0) {
-        toast.error("No files selected");
+        toast.error("No file selected");
         return;
       }
       const userData = await supabase.auth.getUser();
@@ -255,20 +257,19 @@ export default function StudentContentPage() {
       const failedUploads = uploadResults.filter((result) => !result.success);
 
       if (failedUploads.length > 0) {
-        toast.error(`${failedUploads.length} file(s) failed to upload`);
-
+        toast.error("File failed to upload");
         return;
       }
 
-      // Create learning with uploaded file URLs
-      const fileUrls = successfulUploads.map((result) => result.url).join(", ");
+      // Create learning with uploaded file URL
+      const fileUrl = successfulUploads[0].url;
 
       dispatch(
         createStudentLearning({
           subject_id: selectedSubject.id,
           title: uploadTitle,
 
-          attachment_url: fileUrls, // Store URLs in attachment_url field
+          attachment_url: fileUrl, // Store URL in attachment_url field
         })
       )
         .unwrap()
@@ -289,6 +290,49 @@ export default function StudentContentPage() {
   const removeContentItem = (id: number) => {
     setItemBeingDeleted(id);
     dispatch(deleteStudentLearning(id));
+  };
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "pending":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs"
+          >
+            ⏳ Pending Review
+          </Badge>
+        );
+      case "approved":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-green-100 text-green-700 border-green-200 text-xs"
+          >
+            ✅ Approved
+          </Badge>
+        );
+      case "pending_deletion":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-red-100 text-red-700 border-red-200 text-xs"
+          >
+            🗑️ Pending Deletion
+          </Badge>
+        );
+      case "rejected":
+        return (
+          <Badge
+            variant="secondary"
+            className="bg-gray-100 text-gray-700 border-gray-200 text-xs"
+          >
+            ❌ Rejected
+          </Badge>
+        );
+      default:
+        return null;
+    }
   };
 
   const getCardColors = (index: number) => {
@@ -338,7 +382,7 @@ export default function StudentContentPage() {
     return (
       <div className="min-h-screen bg-gradient-to-br from-pink-50 via-blue-50 to-purple-50 flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <Spinner size="lg" className="mb-4" />
           <p className="text-gray-600">Loading your learnings...</p>
         </div>
       </div>
@@ -383,10 +427,21 @@ export default function StudentContentPage() {
   }
 
   return (
-    <div className="min-h-screen  bg-gradient-to-r from-orange-500 to-pink-500">
-      <div className="bg-green-500 text-white p-6 rounded-b-2xl">
-        <h1 className="text-3xl font-bold">My Learning</h1>
-        <p className="text-green-100 mt-2">Subject: {selectedSubject.name}</p>
+    <div className="min-h-screen ">
+      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">My Learning</h1>
+              <p className="text-orange-100 mt-1">
+                Subject: {selectedSubject.name}
+              </p>
+            </div>
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
       <div className="container mx-auto px-4 py-8 max-w-7xl">
         <div className="mb-8">
@@ -479,16 +534,16 @@ export default function StudentContentPage() {
                         className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white border-0 shadow-lg hover:shadow-xl transition-all"
                       >
                         <Upload className="h-5 w-5" />
-                        Upload Files
+                        Upload File
                       </Button>
                     </DialogTrigger>
                     <DialogContent className="max-w-2xl">
                       <DialogHeader>
                         <DialogTitle className="text-2xl text-blue-700">
-                          Upload Your Files
+                          Upload Your File
                         </DialogTitle>
                         <DialogDescription>
-                          Share images, videos, documents, or any files you want
+                          Share one image, video, document, or any file you want
                           to keep
                         </DialogDescription>
                       </DialogHeader>
@@ -521,14 +576,13 @@ export default function StudentContentPage() {
                         >
                           <Upload className="h-8 w-8 text-blue-500 mx-auto mb-2" />
                           <p className="font-medium text-gray-700 mb-1">
-                            Drop files here or click to browse
+                            Drop a file here or click to browse
                           </p>
                           <p className="text-sm text-gray-500">
-                            Any file type supported
+                            One file only - any file type supported
                           </p>
                           <Input
                             type="file"
-                            multiple
                             onChange={handleFileInput}
                             className="hidden"
                             id="modal-file-upload"
@@ -540,7 +594,7 @@ export default function StudentContentPage() {
                             className="cursor-pointer mt-2 border-blue-300 text-blue-600 hover:bg-blue-50 bg-transparent"
                             onClick={triggerFileInput}
                           >
-                            Choose Files
+                            Choose File
                           </Button>
                         </div>
 
@@ -660,7 +714,13 @@ export default function StudentContentPage() {
                 return (
                   <Card
                     key={learning.id}
-                    className={`relative ${colors.bg} ${colors.border} border-2 hover:shadow-lg transition-all duration-200 hover:-translate-y-1`}
+                    className={`relative ${colors.bg} ${
+                      colors.border
+                    } border-2 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 ${
+                      learning.status === "rejected" ? "opacity-60" : ""
+                    } ${
+                      learning.status === "pending_deletion" ? "opacity-75" : ""
+                    }`}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
@@ -676,13 +736,16 @@ export default function StudentContentPage() {
                             >
                               {learning.title}
                             </CardTitle>
-                            <div className="flex items-center gap-2 mt-2">
+                            <div className="flex items-center gap-2 mt-2 flex-wrap">
                               <Badge
                                 variant="secondary"
-                                className="bg-pink-100 text-pink-700 border-pink-200 text-xs font-medium"
+                                className="bg-pink-100 text-pink-700 border-pink-200 text-xs font-medium flex-shrink-0"
                               >
                                 ✍️ Learning
                               </Badge>
+                              <div className="flex-shrink-0">
+                                {getStatusBadge(learning.status)}
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -690,13 +753,18 @@ export default function StudentContentPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => removeContentItem(learning.id)}
-                          disabled={isSubmitting}
-                          loading={
-                            isDeleting && itemBeingDeleted === learning.id
+                          disabled={
+                            isSubmitting ||
+                            learning.status === "pending_deletion" ||
+                            learning.status === "rejected"
                           }
-                          className="h-7 w-7 p-0 hover:bg-red-100 text-red-400 hover:text-red-600 flex-shrink-0"
+                          className="  h-7 w-7 p-0 hover:bg-red-100 text-red-400 hover:text-red-600 flex-shrink-0 disabled:opacity-50"
                         >
-                          <X className="h-3 w-3" />
+                          {isDeleting && itemBeingDeleted === learning.id ? (
+                            <Spinner size="sm" />
+                          ) : (
+                            <X className="h-3 w-3" />
+                          )}
                         </Button>
                       </div>
                     </CardHeader>
@@ -710,22 +778,17 @@ export default function StudentContentPage() {
                         {learning.attachment_url && (
                           <div className="mt-2 p-2 bg-white/60 rounded-lg border border-white/40">
                             <p className="text-xs font-medium text-gray-700 mb-1">
-                              📎 Attachments:
+                              📎 Attachment:
                             </p>
                             <div className="space-y-1">
-                              {learning.attachment_url
-                                .split(",")
-                                .map((url, index) => (
-                                  <a
-                                    key={index}
-                                    href={url.trim()}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="text-xs text-blue-600 hover:text-blue-800 underline block truncate"
-                                  >
-                                    {url.trim().split("/").pop()}
-                                  </a>
-                                ))}
+                              <a
+                                href={learning.attachment_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-blue-600 hover:text-blue-800 underline block truncate"
+                              >
+                                {learning.attachment_url.split("/").pop()}
+                              </a>
                             </div>
                           </div>
                         )}

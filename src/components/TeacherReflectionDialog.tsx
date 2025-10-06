@@ -7,13 +7,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
-import {
-  File,
-  FileText,
-  ImageIcon,
-  Music,
-  Video,
-} from "lucide-react";
+import { File, FileText, ImageIcon, Music, Video } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -38,37 +32,36 @@ export default function TeacherReflectionDialog({
   onAddComment: (reflectionId: number, comment: string) => void;
 }) {
   const [newComment, setNewComment] = useState("");
-    const getAttachmentIcon = (type: string) => {
-      switch (type) {
-        case "image":
-          return <ImageIcon className="w-4 h-4" />;
-        case "video":
-          return <Video className="w-4 h-4" />;
-        case "audio":
-          return <Music className="w-4 h-4" />;
-        case "document":
-          return <FileText className="w-4 h-4" />;
-        default:
-          return <File className="w-4 h-4" />;
-      }
-    };
-   const  parseAttachmentUrl =( url: string)=> {
-  // Extract raw file name
-  const parts = url.split("/");
-  const rawFileName = parts[parts.length - 1];
+  const getAttachmentIcon = (type: string) => {
+    switch (type) {
+      case "image":
+        return <ImageIcon className="w-4 h-4" />;
+      case "video":
+        return <Video className="w-4 h-4" />;
+      case "audio":
+        return <Music className="w-4 h-4" />;
+      case "document":
+        return <FileText className="w-4 h-4" />;
+      default:
+        return <File className="w-4 h-4" />;
+    }
+  };
+  const parseAttachmentUrl = (url: string) => {
+    // Extract raw file name
+    const parts = url.split("/");
+    const rawFileName = parts[parts.length - 1];
 
-  // Decode URI (%20 -> space, %27 -> ')
-  let cleanedName = decodeURIComponent(rawFileName);
+    // Decode URI (%20 -> space, %27 -> ')
+    let cleanedName = decodeURIComponent(rawFileName);
 
-  // Remove Cloudinary’s random suffix (e.g. --aaee before .pdf)
-  cleanedName = cleanedName.replace(/--[a-z0-9]+(?=\.)/, "");
+    // Remove Cloudinary’s random suffix (e.g. --aaee before .pdf)
+    cleanedName = cleanedName.replace(/--[a-z0-9]+(?=\.)/, "");
 
-  // Get extension
-  const extension = cleanedName.split(".").pop() || "file";
+    // Get extension
+    const extension = cleanedName.split(".").pop() || "file";
 
-  return { cleanedName, extension };
-}
-
+    return { cleanedName, extension };
+  };
 
   // If no reflection is selected, render nothing
   if (!reflection) return null;
@@ -101,39 +94,44 @@ export default function TeacherReflectionDialog({
               </p>
             </CardContent>
           </Card>
-         {/* Attachments Section */}
-{reflection.attachment_url && reflection.attachment_url.length > 0 && (
-  <Card className="m-0">
-    <CardHeader>
-      <CardTitle className="text-lg text-cyan-600">Attachments</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <a
-          href={reflection.attachment_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="p-2 flex items-center gap-3 border rounded-lg hover:bg-gray-50 transition-colors"
-        >
-        {(() => {
-          const { cleanedName, extension } = parseAttachmentUrl(reflection.attachment_url);
+          {/* Attachments Section */}
+          {reflection.attachment_url &&
+            reflection.attachment_url.length > 0 && (
+              <Card className="m-0">
+                <CardHeader>
+                  <CardTitle className="text-lg text-cyan-600">
+                    Attachments
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <a
+                      href={reflection.attachment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="p-2 flex items-center gap-3 border rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      {(() => {
+                        const { cleanedName, extension } = parseAttachmentUrl(
+                          reflection.attachment_url
+                        );
 
-          return (
-            <>
-              {getAttachmentIcon(extension)}
-              <div className="flex-1">
-                <p className="p-2 font-medium text-sm truncate">{cleanedName}</p>
-              </div>
-            </>
-          );
-        })()}
-
-        </a>
-      </div>
-    </CardContent>
-  </Card>
-)}
-
+                        return (
+                          <>
+                            {getAttachmentIcon(extension)}
+                            <div className="flex-1">
+                              <p className="p-2 font-medium text-sm truncate">
+                                {cleanedName}
+                              </p>
+                            </div>
+                          </>
+                        );
+                      })()}
+                    </a>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
 
           {/* Comments Section */}
           {comments.length > 0 && (
@@ -204,6 +202,7 @@ export default function TeacherReflectionDialog({
                       setNewComment("");
                     }}
                     disabled={!newComment.trim()}
+                    className="bg-gradient-to-r from-gray-700 via-gray-800 to-black hover:from-gray-800 hover:via-gray-900 hover:to-gray-900 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                   >
                     <Send className="w-3 h-3 mr-1" />
                     Post Comment

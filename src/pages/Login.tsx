@@ -152,7 +152,10 @@ const Login: React.FC = () => {
                 <div className="border rounded p-2 w-[300px]">
                   <p className="font-semibold text-blue-600">Teacher</p>
                   <p>
-                    Email: <span className="font-mono">teacher@test.com</span>
+                    Email:{" "}
+                    <span className="font-mono">
+                      demouserdontchange@teacher.com
+                    </span>
                   </p>
                   <p>
                     Password: <span className="font-mono">test1234</span>
@@ -161,7 +164,10 @@ const Login: React.FC = () => {
                 <div className="border rounded p-2 w-[300px]">
                   <p className="font-semibold text-blue-600">Parent</p>
                   <p>
-                    Email: <span className="font-mono">parent@test.com</span>
+                    Email:{" "}
+                    <span className="font-mono">
+                      demouserdontchange@parent.com
+                    </span>
                   </p>
                   <p>
                     Password: <span className="font-mono">test1234</span>
@@ -171,7 +177,10 @@ const Login: React.FC = () => {
                 <div className="border rounded p-2 col-span-2 ">
                   <p className="font-semibold text-blue-600">Student</p>
                   <p>
-                    Username: <span className="font-mono">student.test</span>
+                    Username:{" "}
+                    <span className="font-mono">
+                      demouserdontchange.student
+                    </span>
                   </p>
                   <p>
                     Password: <span className="font-mono">test1234</span>
@@ -284,7 +293,7 @@ const Login: React.FC = () => {
             <Button
               type="submit"
               loading={isLoading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 cursor-pointer"
+              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-500 via-purple-600 to-indigo-700 hover:from-indigo-600 hover:via-purple-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
             >
               {isLoading ? "Signing in..." : "Sign in"}
             </Button>

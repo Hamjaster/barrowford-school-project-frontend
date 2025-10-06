@@ -26,12 +26,12 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
   dashboardTitle: string;
   dashboardSubtitle: string;
   dashboardDescription: string;
-  sidebarTitle: string;
-  sidebarSubtitle: string;
-  sidebarDescription: string;
-  allowedRoles: UserRole[];
-  navItems: NavItem[];
-  availableTabs: string[];
+  sidebarTitle?: string;
+  sidebarSubtitle?: string;
+  sidebarDescription?: string;
+  allowedRoles?: UserRole[];
+  navItems?: NavItem[];
+  availableTabs?: string[];
 }> = {
   admin: {
     displayName: 'Admin',
@@ -135,6 +135,7 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
     dashboardTitle: 'Student Dashboard',
     dashboardSubtitle: 'Your Learning Journey',
     dashboardDescription: 'Explore, learn, and grow every day',
+
   },
 } as const;
 

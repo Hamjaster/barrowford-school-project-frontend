@@ -512,7 +512,10 @@ const studentSlice = createSlice({
         state.isSubmitting = false;
         console.log(action.payload.message, 'Message !')
         state.message = action.payload.message;
-        // The new learning is sent for moderation, so we don't need to add it to the array
+        // Add the new learning to the beginning of the array with pending status
+        if (action.payload.data) {
+          state.learnings.unshift(action.payload.data);
+        }
         state.error = null;
       })
       .addCase(createStudentLearning.rejected, (state, action) => {
@@ -529,7 +532,13 @@ const studentSlice = createSlice({
       .addCase(deleteStudentLearning.fulfilled, (state, action) => {
         state.isDeleting = false;
         state.message = action.payload.message;
-        // The deleted learning is sent for moderation, so we don't need to remove it from the array
+        // Update the learning status to pending_deletion in the array
+        if (action.payload.data) {
+          const learningIndex = state.learnings.findIndex(learning => learning.id === action.payload.data.id);
+          if (learningIndex !== -1) {
+            state.learnings[learningIndex] = action.payload.data;
+          }
+        }
         state.error = null;
       })
       .addCase(deleteStudentLearning.rejected, (state, action) => {

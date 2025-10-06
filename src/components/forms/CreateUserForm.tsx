@@ -6,10 +6,18 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import MultiSelect from "@/components/ui/multi-select";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   createUser,
   clearError,
   clearSuccess,
   fetchParents,
+  fetchYearGroups,
 } from "@/store/slices/userManagementSlice";
 import { uploadFileToSupabase } from "@/utils/fileUpload";
 
@@ -30,8 +38,14 @@ interface CreateUserFormProps {
 
 const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
   const dispatch = useDispatch();
-  const { isLoading, error, createUserSuccess, successMessage, parents } =
-    useSelector((state: RootState) => state.userManagement);
+  const {
+    isLoading,
+    error,
+    createUserSuccess,
+    successMessage,
+    parents,
+    yearGroups,
+  } = useSelector((state: RootState) => state.userManagement);
 
   const [formData, setFormData] = useState<CreateUserFormData>({
     email: "",
@@ -43,11 +57,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     parent_ids: [],
     year_group_id: 1,
     class_id: 1,
+    current_year_group_id: undefined,
     profile_image: null,
   });
-
-
-
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -79,11 +91,17 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     }));
   };
 
+  const handleYearGroupSelection = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      current_year_group_id: Number(value),
+    }));
+  };
+
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setFormData((prev) => ({ ...prev, profile_image: file }));
-
     }
   };
 
@@ -131,6 +149,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       return;
     }
 
+    if (formData.role === "student" && !formData.current_year_group_id) {
+      toast.error("Please select an enrollment year for the student");
+      return;
+    }
+
     // 📤 Upload image to Cloudinary first (if student + image exists)
     let imageUrl = "";
     if (formData.role === "student" && formData.profile_image) {
@@ -148,7 +171,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           imageUrl = uploadResult.url;
           toast.success("Profile image uploaded!");
         } else {
-          toast.error(uploadResult.error || "Image upload failed. Please try again.");
+          toast.error(
+            uploadResult.error || "Image upload failed. Please try again."
+          );
           return;
         }
       } catch (err) {
@@ -156,7 +181,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         return;
       }
     }
-
 
     // ✅ Prepare final payload
     const payload = {
@@ -172,9 +196,10 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     }
   };
 
-  // 📦 Load parents when component mounts
+  // 📦 Load parents and year groups when component mounts
   React.useEffect(() => {
     dispatch(fetchParents() as any);
+    dispatch(fetchYearGroups() as any);
   }, [dispatch]);
 
   React.useEffect(() => {
@@ -197,6 +222,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         parent_ids: [],
         year_group_id: 1,
         class_id: 1,
+        current_year_group_id: undefined,
         profile_image: null,
       });
 
@@ -360,6 +386,37 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
             </div>
             <div>
               <label
+                htmlFor="current_year_group_id"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Enrollment Year
+              </label>
+              <Select
+                value={formData.current_year_group_id?.toString() || ""}
+                onValueChange={handleYearGroupSelection}
+                required
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select enrollment year..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearGroups &&
+                    yearGroups.map((yearGroup) => (
+                      <SelectItem
+                        key={yearGroup.id}
+                        value={yearGroup.id.toString()}
+                      >
+                        {yearGroup.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-gray-500 mt-1">
+                Select the year group the student is enrolling in
+              </p>
+            </div>
+            <div>
+              <label
                 htmlFor="profile_image"
                 className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer"
               >
@@ -393,10 +450,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
                   />
                 </label>
               </div>
-
-
             </div>
-
           </>
         )}
 
@@ -404,10 +458,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           <Button
             type="submit"
             disabled={
-              !formData.first_name || !formData.password || !formData.role
+              !formData.first_name ||
+              !formData.password ||
+              !formData.role ||
+              (formData.role === "student" && !formData.current_year_group_id)
             }
             loading={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+            className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Create User
           </Button>

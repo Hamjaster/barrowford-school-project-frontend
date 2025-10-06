@@ -541,7 +541,7 @@ const personalSectionSlice = createSlice({
       .addCase(createPersonalSection.fulfilled, (state, action: PayloadAction<PersonalSection>) => {
         state.personalSectionSubmitting = false;
         state.personalSections.push(action.payload);
-        state.message = "Personal section created successfully";
+        state.message = "Personal section created and submitted for moderation";
       })
       .addCase(createPersonalSection.rejected, (state, action) => {
         state.personalSectionSubmitting = false;
@@ -560,9 +560,9 @@ const personalSectionSlice = createSlice({
         if (index !== -1) {
           state.personalSections[index] = action.payload;
         } else {
-          state.message = "Personal section updated successfully";
           state.personalSections.push(action.payload);
         }
+        state.message = "Personal section update submitted for moderation";
       })
       .addCase(updatePersonalSection.rejected, (state, action) => {
         state.personalSectionSubmitting = false;

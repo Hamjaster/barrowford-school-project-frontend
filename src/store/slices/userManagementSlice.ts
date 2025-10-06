@@ -11,6 +11,7 @@ import { API_BASE_URL } from '@/constants';
 const initialState: UserManagementState = {
   users: [],
   parents: [],
+  yearGroups: [],
   pagination: null,
   isLoading: false,
   error: null,
@@ -183,6 +184,36 @@ export const fetchParents = createAsyncThunk(
   }
 );
 
+export const fetchYearGroups = createAsyncThunk(
+  'userManagement/fetchYearGroups',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/subject/year-groups`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch year groups');
+      }
+
+      const data = await response.json();
+      return data.data; // Return the year groups array
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+
 export const toggleUserStatus = createAsyncThunk(
   'userManagement/toggleUserStatus',
   async ({ action, role, userId }: { action: 'activate' | 'deactivate'; role: string; userId: string }, { rejectWithValue, getState }) => {
@@ -231,6 +262,7 @@ const userManagementSlice = createSlice({
     resetState: (state) => {
       state.users = [];
       state.parents = [];
+      state.yearGroups = [];
       state.pagination = null;
       state.error = null;
       state.createUserSuccess = false;
@@ -310,6 +342,23 @@ const userManagementSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
         state.parents = [];
+      });
+
+    // Fetch Year Groups cases
+    builder
+      .addCase(fetchYearGroups.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchYearGroups.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.yearGroups = action.payload;
+      })
+      .addCase(fetchYearGroups.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.yearGroups = [];
       });
 
     // Toggle User Status cases

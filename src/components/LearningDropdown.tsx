@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchAllYearGroupsWithSubjects } from "@/store/slices/yearDataSlice";
+import { fetchEligibleYearGroupsForStudent } from "@/store/slices/yearDataSlice";
 import { setSelectedSubject } from "@/store/slices/studentSlice";
 import type { RootState, AppDispatch } from "@/store";
 
@@ -25,17 +25,17 @@ interface LearningDropdownProps {
 
 const LearningDropdown: React.FC<LearningDropdownProps> = ({ className }) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { yearGroupsWithSubjects, isLoading, error } = useSelector(
+  const { eligibleYearGroupsWithSubjects, isLoading, error } = useSelector(
     (state: RootState) => state.yearData
   );
 
   useEffect(() => {
-    // Fetch year groups and subjects when component mounts
-    if (yearGroupsWithSubjects.length === 0 && !isLoading && !error) {
-      console.log("Fetching year groups and subjects !!");
-      dispatch(fetchAllYearGroupsWithSubjects());
+    // Fetch eligible year groups and subjects when component mounts
+    if (eligibleYearGroupsWithSubjects.length === 0 && !isLoading && !error) {
+      console.log("Fetching eligible year groups and subjects !!");
+      dispatch(fetchEligibleYearGroupsForStudent());
     }
-  }, [dispatch, yearGroupsWithSubjects.length, isLoading, error]);
+  }, [dispatch, eligibleYearGroupsWithSubjects.length, isLoading, error]);
 
   if (error) {
     return (
@@ -73,14 +73,14 @@ const LearningDropdown: React.FC<LearningDropdownProps> = ({ className }) => {
               <Loader2 className="h-6 w-6 animate-spin" />
               <span className="ml-2">Loading year groups...</span>
             </div>
-          ) : yearGroupsWithSubjects.length === 0 ? (
+          ) : eligibleYearGroupsWithSubjects.length === 0 ? (
             <div className="flex items-center justify-center p-4">
               <span className="text-muted-foreground">
                 No year groups available
               </span>
             </div>
           ) : (
-            yearGroupsWithSubjects.map((yearGroup: any) => (
+            eligibleYearGroupsWithSubjects.map((yearGroup: any) => (
               <DropdownMenuSub key={yearGroup.id}>
                 <DropdownMenuSubTrigger className="flex items-center gap-3 p-3">
                   <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xs font-bold">

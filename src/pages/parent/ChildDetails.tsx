@@ -609,7 +609,7 @@ export default function ChildDetailsPage() {
                                     handleAddComment(Number(reflection.id))
                                   }
                                   disabled={!newComments[reflection.id]?.trim()}
-                                  className="h-8"
+                                  className="h-8 bg-gradient-to-r from-gray-700 via-gray-800 to-black hover:from-gray-800 hover:via-gray-900 hover:to-gray-900 text-white shadow-lg hover:shadow-xl transition-all duration-300"
                                   loading={
                                     addingCommentLoading &&
                                     addingCommentReflectionId === reflection.id
@@ -631,12 +631,7 @@ export default function ChildDetailsPage() {
                             <MessageSquare className="w-3 h-3" />
                             <span>Student Reflection</span>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="flex items-center gap-1 text-xs text-gray-400">
-                              <Heart className="w-3 h-3" />
-                              <span>Shared with love</span>
-                            </div>
-                          </div>
+                         
                         </div>
                       </CardContent>
                     </Card>

@@ -1,6 +1,7 @@
 import Footer from "@/components/footer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,8 @@ import supabase from "@/lib/supabse";
 import {
   clearError, clearMessage,
   createPersonalSection,
+import { useDispatch, useSelector } from "react-redux";
+import {
   fetchTopics,
   getPersonalSectionByTopic,
   updatePersonalSection,
@@ -39,7 +42,13 @@ import { toast } from "sonner";
 import type { AppDispatch, RootState } from "../../store";
 
 
-
+import type { RootState, AppDispatch } from "../../store";
+import type { Topic, PersonalSection } from "@/types";
+import supabase from "@/lib/supabse";
+import { toast } from "sonner";
+import { clearError, clearMessage } from "@/store/slices/personalSectionSlice";
+import { fetchStudentDetails } from "@/store/slices/studentSlice";
+import { Badge } from "@/components/ui/badge";
 
 // Icon mapping for different topics
 const getTopicIcon = (title: string) => {
@@ -63,19 +72,103 @@ const getTopicIcon = (title: string) => {
   return <Heart className="w-6 h-6" />; // Default icon
 };
 
-// Color mapping for different topics
+// Color mapping for different topics with gradients
 const getTopicColors = (index: number) => {
   const colors = [
-    { border: "border-orange-400", bg: "bg-orange-100", icon: "bg-orange-400" },
-    { border: "border-sky-300", bg: "bg-sky-100", icon: "bg-sky-300" },
-    { border: "border-blue-500", bg: "bg-blue-100", icon: "bg-blue-500" },
-    { border: "border-pink-500", bg: "bg-pink-100", icon: "bg-pink-500" },
-    { border: "border-green-500", bg: "bg-green-100", icon: "bg-green-500" },
-    { border: "border-amber-500", bg: "bg-amber-100", icon: "bg-amber-500" },
-    { border: "border-purple-500", bg: "bg-purple-100", icon: "bg-purple-500" },
-    { border: "border-red-500", bg: "bg-red-100", icon: "bg-red-500" },
+    {
+      border: "border-orange-400",
+      bg: "bg-gradient-to-br from-orange-100 via-orange-50 to-amber-100",
+      icon: "bg-gradient-to-br from-orange-400 to-orange-600",
+      shadow: "shadow-orange-200/50",
+    },
+    {
+      border: "border-sky-300",
+      bg: "bg-gradient-to-br from-sky-100 via-blue-50 to-cyan-100",
+      icon: "bg-gradient-to-br from-sky-300 to-sky-500",
+      shadow: "shadow-sky-200/50",
+    },
+    {
+      border: "border-blue-500",
+      bg: "bg-gradient-to-br from-blue-100 via-indigo-50 to-purple-100",
+      icon: "bg-gradient-to-br from-blue-500 to-blue-700",
+      shadow: "shadow-blue-200/50",
+    },
+    {
+      border: "border-pink-500",
+      bg: "bg-gradient-to-br from-pink-100 via-rose-50 to-pink-200",
+      icon: "bg-gradient-to-br from-pink-500 to-pink-600",
+      shadow: "shadow-pink-200/50",
+    },
+    {
+      border: "border-green-500",
+      bg: "bg-gradient-to-br from-green-100 via-emerald-50 to-teal-100",
+      icon: "bg-gradient-to-br from-green-500 to-green-600",
+      shadow: "shadow-green-200/50",
+    },
+    {
+      border: "border-amber-500",
+      bg: "bg-gradient-to-br from-amber-100 via-yellow-50 to-orange-100",
+      icon: "bg-gradient-to-br from-amber-500 to-amber-600",
+      shadow: "shadow-amber-200/50",
+    },
+    {
+      border: "border-purple-500",
+      bg: "bg-gradient-to-br from-purple-100 via-violet-50 to-purple-200",
+      icon: "bg-gradient-to-br from-purple-500 to-purple-600",
+      shadow: "shadow-purple-200/50",
+    },
+    {
+      border: "border-red-500",
+      bg: "bg-gradient-to-br from-red-100 via-rose-50 to-pink-100",
+      icon: "bg-gradient-to-br from-red-500 to-red-600",
+      shadow: "shadow-red-200/50",
+    },
   ];
   return colors[index % colors.length];
+};
+
+// Status badge component
+const getStatusBadge = (status: string) => {
+  switch (status) {
+    case "pending":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-yellow-100 text-yellow-700 border-yellow-200 text-xs"
+        >
+          ⏳ Pending Review
+        </Badge>
+      );
+    case "approved":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-green-100 text-green-700 border-green-200 text-xs"
+        >
+          ✅ Approved
+        </Badge>
+      );
+    case "pending_updation":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-blue-100 text-blue-700 border-blue-200 text-xs"
+        >
+          🔄 Pending Update
+        </Badge>
+      );
+    case "rejected":
+      return (
+        <Badge
+          variant="secondary"
+          className="bg-red-100 text-red-700 border-red-200 text-xs"
+        >
+          ❌ Rejected
+        </Badge>
+      );
+    default:
+      return null;
+  }
 };
 
 export default function StudentDashboard() {
@@ -85,6 +178,7 @@ export default function StudentDashboard() {
   const [existingPersonalSection, setExistingPersonalSection] =
     useState<PersonalSection | null>(null);
   const { studentDetails, isLoading, error: studentError } = useSelector(
+  const { studentDetails, error: studentError } = useSelector(
     (state: RootState) => state.student
   );
   const dispatch = useDispatch<AppDispatch>();
@@ -92,7 +186,6 @@ export default function StudentDashboard() {
   // Grab state from Redux
   const {
     topics,
-    personalSections,
     loading,
     personalSectionLoading,
     personalSectionSubmitting,
@@ -120,6 +213,7 @@ export default function StudentDashboard() {
   useEffect(() => {
     dispatch(fetchStudentDetails());
   }, [dispatch]);
+
   // Handle topic selection
   const handleTopicClick = async (topic: Topic) => {
     setSelectedTopic(topic);
@@ -152,7 +246,7 @@ export default function StudentDashboard() {
     try {
       if (existingPersonalSection) {
         // Update existing personal section
-        const result = await dispatch(
+        await dispatch(
           updatePersonalSection({
             id: existingPersonalSection.id,
             content: editingContent,
@@ -189,6 +283,10 @@ export default function StudentDashboard() {
 
   // Handle edit mode
   const handleEdit = () => {
+    // Don't allow editing if there's a pending update
+    if (existingPersonalSection?.status === "pending_updation") {
+      return;
+    }
     setIsEditing(true);
   };
 
@@ -209,10 +307,19 @@ export default function StudentDashboard() {
     return <p className="text-red-500">{studentError}</p>;
   }
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen relative bg-gray-100">
       {/* Header */}
-      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl">
-        <h1 className="text-3xl font-bold">My Dashboard</h1>
+      <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl relative overflow-hidden">
+        <div className="relative z-10">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">My Dashboard</h1>
+            </div>
+          </div>
+        </div>
+        {/* Decorative elements */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+        <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
       </div>
 
       {/* Main Content */}
@@ -322,19 +429,16 @@ export default function StudentDashboard() {
               .map((topic, index) => {
                 const colors = getTopicColors(index);
                 const icon = getTopicIcon(topic.title);
-                const hasContent = personalSections.some(
-                  (ps) => ps.topic_id === topic.id
-                );
 
                 return (
                   <Card
                     key={topic.id}
-                    className={`${colors.border} ${colors.bg} font-medium p-6 cursor-pointer hover:shadow-md transition-all duration-300 border shadow-lg min-h-[120px] `}
+                    className={`${colors.border} ${colors.bg} ${colors.shadow} font-medium p-6 cursor-pointer hover:shadow-xl hover:scale-105 transition-all duration-300 border shadow-lg min-h-[120px] backdrop-blur-sm`}
                     onClick={() => handleTopicClick(topic)}
                   >
                     <div className="flex items-center gap-3">
                       <div
-                        className={`${colors.icon} text-white p-5 rounded-full`}
+                        className={`${colors.icon} text-white p-5 rounded-full shadow-lg`}
                       >
                         {icon}
                       </div>
@@ -357,7 +461,9 @@ export default function StudentDashboard() {
       </div>
 
       {/* Footer */}
-      <Footer />
+      <div className="absolute bottom-0 w-full">
+        <Footer />
+      </div>
 
       {/* Content Editing Modal */}
       <Dialog
@@ -424,7 +530,17 @@ export default function StudentDashboard() {
             ) : (
               <div className="space-y-4">
                 {existingPersonalSection ? (
-                  <div className="bg-gray-50 p-4 rounded-lg">
+                  <div
+                    className={`p-4 rounded-lg ${
+                      existingPersonalSection.status === "pending_updation"
+                        ? "bg-blue-50 border border-blue-200"
+                        : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2 mb-3">
+                      {getStatusBadge(existingPersonalSection.status)}
+                    </div>
+
                     <p className="text-gray-700 leading-relaxed whitespace-pre-wrap">
                       {existingPersonalSection.content}
                     </p>
@@ -436,9 +552,23 @@ export default function StudentDashboard() {
                   </div>
                 )}
                 <div className="flex justify-end">
-                  <Button onClick={handleEdit}>
+                  <Button
+                    onClick={handleEdit}
+                    disabled={
+                      existingPersonalSection?.status === "pending_updation"
+                    }
+                    className={
+                      existingPersonalSection?.status === "pending_updation"
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
+                    }
+                  >
                     <Edit3 className="w-4 h-4 mr-2" />
-                    {existingPersonalSection ? "Edit" : "Write"}
+                    {existingPersonalSection?.status === "pending_updation"
+                      ? "Update Pending"
+                      : existingPersonalSection
+                      ? "Edit"
+                      : "Write"}
                   </Button>
                 </div>
               </div>

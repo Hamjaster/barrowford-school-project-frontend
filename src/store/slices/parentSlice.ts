@@ -38,7 +38,7 @@ export interface StudentReflection {
   created_at: string;
   week : string;
  
-  reflectioncomments: ReflectionComment[];
+  reflection_comments: ReflectionComment[];
 }
 
 export interface ChildDetails {
@@ -244,7 +244,7 @@ const parentSlice = createSlice({
     // add the newComment to reflectioncomments of that specific reflection of selectedChild
     if(!state.selectedChild) return;
     state.selectedChild.reflections = state.selectedChild.reflections.map((reflection) =>
-      reflection.id === reflectionId ? { ...reflection, reflectioncomments: [...reflection.reflectioncomments, newComment] } : reflection
+      reflection.id === reflectionId ? { ...reflection, reflection_comments: [...reflection.reflection_comments, newComment] } : reflection
     );
     
   

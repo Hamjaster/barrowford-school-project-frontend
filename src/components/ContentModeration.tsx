@@ -98,9 +98,9 @@ const ContentModeration: React.FC = () => {
     switch (entityType) {
       case "reflection":
         return <MessageSquare className="h-5 w-5 text-primary" />;
-      case "studentimages":
+      case "student_images":
         return <ImageIcon className="h-5 w-5 text-primary" />;
-      case "studentlearningentities":
+      case "student_learning_entities":
         return <BookOpen className="h-5 w-5 text-primary" />;
       default:
         return <FileText className="h-5 w-5 text-primary" />;
@@ -109,11 +109,11 @@ const ContentModeration: React.FC = () => {
 
   const getEntityTypeDisplayName = (entityType: string) => {
     switch (entityType) {
-      case "reflection":
+      case "reflections":
         return "Reflection";
-      case "studentimages":
+      case "student_images":
         return "Image";
-      case "studentlearningentities":
+      case "student_learning_entities":
         return "Student Learning";
       default:
         return entityType;
@@ -239,7 +239,7 @@ const ContentModeration: React.FC = () => {
               <div className="bg-white p-4 rounded-lg border">
                 {renderAttachment(
                   new_content,
-                  `${entity_type === "studentimages" ? "Image" : "Attachment"}`
+                  `${entity_type === "student_images" ? "Image" : "Attachment"}`
                 )}
               </div>
             )}
@@ -318,7 +318,7 @@ const ContentModeration: React.FC = () => {
         )}
 
         {/* Show entity-specific metadata */}
-        {entity_type === "reflection" && new_content?.topic_id && (
+        {entity_type === "reflections" && new_content?.topic_id && (
           <div className="text-xs text-gray-500 flex items-center gap-1">
             <MessageSquare className="h-3 w-3" />
             Reflection ID: {new_content.topic_id}

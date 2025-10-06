@@ -364,15 +364,19 @@ const userManagementSlice = createSlice({
 
     // Toggle User Status cases
     builder
-      .addCase(toggleUserStatus.pending, (state) => {
+      .addCase(toggleUserStatus.pending, (state, action) => {
         state.isStatusUpdateLoading = true;
         state.error = null;
+      
       })
       .addCase(toggleUserStatus.fulfilled, (state, action) => {
         state.isStatusUpdateLoading = false;
         state.error = null;
         // Update the user's status in the users array
         // Check both user ID and role to ensure we update the correct user
+        // if the user who's status is being updated is a parent, then we need to load the user again (for syncing with the backend)
+      
+        
         const userIndex = state.users.findIndex(user => 
           user.id === action.payload.userId && user.role === action.payload.role
         );

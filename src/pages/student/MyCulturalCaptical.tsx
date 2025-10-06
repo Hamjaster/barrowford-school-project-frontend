@@ -108,6 +108,10 @@ export default function CulturalCapitalPage() {
     activeTitles,
   } = useSelector((state: RootState) => state.reflection);
 
+  useEffect(() => {
+    console.log(filteredData, "filteredData");
+  }, [filteredData]);
+
   //useEffect of feching projects
   useEffect(() => {
     const fetchData = async () => {
@@ -130,7 +134,7 @@ export default function CulturalCapitalPage() {
         return {
           id: Number(item.id),
           date: formatDate(item.created_at),
-          topic: item.reflectiontopics?.title ?? "Unknown", // ✅ use topic instead of title
+          topic: item.reflection_topics?.title ?? "Unknown", // ✅ use topic instead of title
           status: item.status ?? "Pending",
           content: item.content ?? "",
           attachment_url: item.attachment_url ?? "",

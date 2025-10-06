@@ -191,6 +191,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     try {
       const result = await dispatch(createUser(payload) as any);
       console.log(result, "result");
+      dispatch(fetchParents() as any);
     } catch (err) {
       // error handled in slice
     }
@@ -461,12 +462,14 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
               !formData.first_name ||
               !formData.password ||
               !formData.role ||
-              (formData.role === "student" && !formData.current_year_group_id)
+              (formData.role === "student" &&
+                !formData.current_year_group_id) ||
+              isLoading
             }
             loading={isLoading}
             className="w-full bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:from-blue-600 hover:via-blue-700 hover:to-blue-800 text-white cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
           >
-            Create User
+            {isLoading ? "Creating..." : "Create User"}
           </Button>
         </div>
       </form>

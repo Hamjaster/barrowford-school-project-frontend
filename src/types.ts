@@ -253,10 +253,10 @@ export interface ReflectionItem {
   topic_id: number;
   status: 'pending' | 'approved' | 'rejected' | 'pending_deletion';
   week?: string;
-  reflectiontopics: {
+  reflection_topics: {
     title: string;
   };
-  reflectioncomments: ReflectionComment[];
+  reflection_comments: ReflectionComment[];
 }
 
 export interface TableEntry {

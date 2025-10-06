@@ -442,19 +442,6 @@ export default function CulturalCapitalPage() {
             <Eye className="w-4 h-4 text-black" />
 
           </Button>
-          {/* <Button
-            variant="ghost"
-            size="sm"
-            className="text-red-600 hover:text-red-800"
-            onClick={() => {
-              setSelectedReflectionId(item.id);
-              setIsDeleteDialogOpen(true);
-            }}
-            disabled={submissionfetchreflectionsloading}
-            loading={deletingReflectionId === item.id}
-          >
-            <Trash2 className="w-4 h-4" />
-          </Button> */}
           {item.status === "approved" && (
             <Button
               variant="ghost"

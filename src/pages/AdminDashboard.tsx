@@ -87,18 +87,25 @@ const AdminDashboard: React.FC = () => {
     <div className="w-full p-6">
       {/* Welcome Section */}
       {isAuthenticated && user && (
-        <div className="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center gap-3">
-            <Shield className="text-red-600 w-8 h-8" />
-            <div>
-              <h1 className="text-2xl font-bold text-gray-800">
-                Welcome, {user.first_name}!
-              </h1>
-              <p className="text-sm text-gray-600">
-                System Administrator Dashboard - You have full system access
-              </p>
+        <div className="bg-gradient-to-r from-red-500 to-pink-600 text-white p-6 rounded-b-2xl relative overflow-hidden mb-6">
+          <div className="relative z-10">
+            <div className="flex items-center gap-3">
+              <Shield className="text-white w-8 h-8" />
+              <div>
+                <h1 className="text-3xl font-bold text-white">
+                  Welcome, {user.first_name}!
+                </h1>
+                <p className="text-red-100 mt-1">
+                  System Administrator Dashboard - You have full system access
+                </p>
+              </div>
             </div>
           </div>
+
+          {/* Decorative elements */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -translate-y-16 translate-x-16"></div>
+          <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/10 rounded-full translate-y-12 -translate-x-12"></div>
+          <div className="absolute top-1/2 right-1/4 w-16 h-16 bg-white/5 rounded-full"></div>
         </div>
       )}
 
@@ -109,7 +116,6 @@ const AdminDashboard: React.FC = () => {
             key={tab}
             variant={activeTab === tab ? "secondary" : "ghost"}
             size="sm"
-
             onClick={
               () =>
                 setActiveTab(

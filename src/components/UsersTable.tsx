@@ -247,7 +247,6 @@ const UsersTable: React.FC = () => {
     switch (currentUser.role) {
       case "admin":
         // Admin can see all roles
-        return allRoles;
       case "staff_admin":
         // Staff Admin cannot see "Staff Admin" (their own role)
         return allRoles.filter((role) => role.value !== "staff_admin");

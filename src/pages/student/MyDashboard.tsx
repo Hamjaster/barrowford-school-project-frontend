@@ -1,43 +1,42 @@
-import { useState, useEffect } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Footer from "@/components/footer";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
+  ArrowRight,
+  BookOpen,
+  Edit3,
+  GraduationCap,
   Heart,
   Lightbulb,
-  BookOpen,
-  ArrowRight,
+  Loader2,
+  Save,
+  Shield,
+  UserCircle,
   Users,
   Zap,
-  GraduationCap,
-  Shield,
-  Edit3,
-  Save,
-  Loader2,
-  UserCircle,
 } from "lucide-react";
-import Footer from "@/components/footer";
+import { useEffect, useState } from "react";
 //import for personal section
-import { useDispatch, useSelector } from "react-redux";
-import personalSectionSlice, {
+import supabase from "@/lib/supabse";
+import {
+  clearError, clearMessage,
+  createPersonalSection,
   fetchTopics,
   getPersonalSectionByTopic,
-  createPersonalSection,
   updatePersonalSection,
 } from "@/store/slices/personalSectionSlice";
-import type { RootState, AppDispatch } from "../../store";
-import type { Topic, PersonalSection } from "@/types";
-import supabase from "@/lib/supabse";
-import { toast } from "sonner";
-import { clearError, clearMessage } from "@/store/slices/personalSectionSlice";
 import { fetchStudentDetails } from '@/store/slices/studentSlice';
+import type { PersonalSection, Topic } from "@/types";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "sonner";
+import type { AppDispatch, RootState } from "../../store";
 
 
 
@@ -85,9 +84,9 @@ export default function StudentDashboard() {
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [existingPersonalSection, setExistingPersonalSection] =
     useState<PersonalSection | null>(null);
-    const { studentDetails, isLoading, error: studentError } = useSelector(
-      (state: RootState) => state.student
-    );
+  const { studentDetails, isLoading, error: studentError } = useSelector(
+    (state: RootState) => state.student
+  );
   const dispatch = useDispatch<AppDispatch>();
 
   // Grab state from Redux
@@ -198,7 +197,7 @@ export default function StudentDashboard() {
     setIsEditing(false);
     setEditingContent(existingPersonalSection?.content || "");
   };
-console.log("studentdetails111111111111",studentDetails)
+  
   useEffect(() => {
     async function getUser() {
       const { data } = await supabase.auth.getUser();
@@ -219,62 +218,78 @@ console.log("studentdetails111111111111",studentDetails)
       {/* Main Content */}
       <div className="p-6 space-y-6">
         {/* Profile Section */}
-        <div className="bg-white rounded-2xl p-6 shadow-sm">
-          <div className="flex flex-col md:flex-row items-center gap-6">
-            <div className="flex-shrink-0">
-            {studentDetails.profile_photo ? (
-                    <img
-                      src={studentDetails.profile_photo}
-                      alt="Picture Not Found"
-                      className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
-                    />
-                  ) : (
-                    <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
-                      <UserCircle className="w-12 h-12" />
-                    </div>
-                  )}
-            </div>
-            <div className="flex-1">
-              <h2 className="text-5xl font-bold text-gray-800 mb-4">
-                {studentDetails.name} is a Meliorist
-              </h2>
-            </div>
-            <div className="bg-gray-50 rounded-xl p-4 min-w-[280px]">
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Name:</span>
-                  <span className="font-medium">{studentDetails.name}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Age:</span>
-                  {studentDetails?.age || "Not Specified"}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Year:</span>
-                  <span className="font-medium">{studentDetails.year}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Class:</span>
-                  <span className="font-medium">
-  {studentDetails?.class || "Not Specified"}
-</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Hair Color:</span>
-                  {studentDetails?.haircolor || "Not Specified"}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Eye Color:</span>
-                  {studentDetails?.eyecolor || "Not Specified"}
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Height:</span>
-                  {studentDetails?.height || "Not Specified"}
-                </div>
-              </div>
-            </div>
+
+<div className="bg-white rounded-2xl p-6 shadow-sm">
+  {isLoading ? (
+    // 🔄 Loading State
+    <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+      <Loader2 className="w-8 h-8 animate-spin mb-3 text-blue-500" />
+      <p className="text-lg font-medium">Loading student details...</p>
+    </div>
+  ) : studentDetails && Object.keys(studentDetails).length > 0 ? (
+    // ✅ Student Details Available
+    <div className="flex flex-col md:flex-row items-center gap-6">
+      <div className="flex-shrink-0">
+        {studentDetails.profile_photo ? (
+          <img
+            src={studentDetails.profile_photo}
+            alt="Picture Not Found"
+            className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
+          />
+        ) : (
+          <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-black-600 group-hover:border-blue-300 transition-colors">
+            <UserCircle className="w-12 h-12" />
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1">
+        <h2 className="text-5xl font-bold text-gray-800 mb-4">
+          {studentDetails.name} is a Meliorist
+        </h2>
+      </div>
+
+      <div className="bg-gray-50 rounded-xl p-4 min-w-[280px]">
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-gray-600">Name:</span>
+            <span className="font-medium">{studentDetails.name || "Not Specified"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Age:</span>
+            <span className="font-medium">{studentDetails?.age || "Not Specified"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Year:</span>
+            <span className="font-medium">{studentDetails.year || "Not Specified"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Class:</span>
+            <span className="font-medium">{studentDetails?.class || "Not Specified"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Hair Color:</span>
+            <span className="font-medium">{studentDetails?.haircolor || "Not Specified"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Eye Color:</span>
+            <span className="font-medium">{studentDetails?.eyecolor || "Not Specified"}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-gray-600">Height:</span>
+            <span className="font-medium">{studentDetails?.height || "Not Specified"}</span>
           </div>
         </div>
+      </div>
+    </div>
+  ) : (
+    // ❌ No Data Fallback
+    <div className="text-center text-gray-500 text-lg font-medium border-2 border-dashed rounded-xl p-8">
+      No student details available.
+    </div>
+  )}
+</div>
+
 
         {/* Loading State */}
         {loading ? (
@@ -401,8 +416,8 @@ console.log("studentdetails111111111111",studentDetails)
                         ? "Updating..."
                         : "Saving..."
                       : existingPersonalSection
-                      ? "Update"
-                      : "Save"}
+                        ? "Update"
+                        : "Save"}
                   </Button>
                 </div>
               </div>

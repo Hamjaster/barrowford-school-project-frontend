@@ -193,7 +193,6 @@ export const toggleUserStatus = createAsyncThunk(
       if (!token) {
         return rejectWithValue('No authentication token found');
       }
-
       const response = await fetch(`${API_BASE_URL}/user/status`, {
         method: 'POST',
         headers: getAuthHeaders(token),

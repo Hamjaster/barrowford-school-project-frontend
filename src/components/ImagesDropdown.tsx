@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchYearGroups } from "@/store/slices/yearDataSlice";
+import { fetchEligibleYearGroupsForStudent } from "@/store/slices/yearDataSlice";
 import {
   setSelectedSubject,
   setSelectedYearGroup,
@@ -26,17 +26,17 @@ interface ImagesDropdownProps {
 const ImagesDropdown: React.FC<ImagesDropdownProps> = ({ className }) => {
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
-  const { isLoading, error, yearGroups } = useSelector(
+  const { isLoading, error, eligibleYearGroupsWithSubjects } = useSelector(
     (state: RootState) => state.yearData
   );
 
   useEffect(() => {
-    // Fetch year groups and subjects when component mounts
-    if (yearGroups.length === 0 && !isLoading && !error) {
-      console.log("Fetching year groups and subjects !!");
-      dispatch(fetchYearGroups());
+    // Fetch eligible year groups when component mounts
+    if (eligibleYearGroupsWithSubjects.length === 0 && !isLoading && !error) {
+      console.log("Fetching eligible year groups !!");
+      dispatch(fetchEligibleYearGroupsForStudent());
     }
-  }, [dispatch, yearGroups.length, isLoading, error]);
+  }, [dispatch, eligibleYearGroupsWithSubjects.length, isLoading, error]);
 
   if (error) {
     return (
@@ -74,14 +74,14 @@ const ImagesDropdown: React.FC<ImagesDropdownProps> = ({ className }) => {
               <Loader2 className="h-6 w-6 animate-spin" />
               <span className="ml-2">Loading year groups...</span>
             </div>
-          ) : yearGroups.length === 0 ? (
+          ) : eligibleYearGroupsWithSubjects.length === 0 ? (
             <div className="flex items-center justify-center p-4">
               <span className="text-muted-foreground">
                 No year groups available
               </span>
             </div>
           ) : (
-            yearGroups.map((yearGroup: any) => (
+            eligibleYearGroupsWithSubjects.map((yearGroup: any) => (
               <DropdownMenuItem
                 onClick={() => {
                   console.log("updating year group to ", yearGroup);

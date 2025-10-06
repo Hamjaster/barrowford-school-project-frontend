@@ -47,8 +47,8 @@ const ParentDashboard: React.FC = () => {
             className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
           /> */}
           <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
-  <UserCircle className="w-12 h-12" />
-</div>
+            <UserCircle className="w-12 h-12" />
+          </div>
           <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
             <CheckCircle className="w-3 h-3 text-white" />
           </div>
@@ -87,7 +87,7 @@ const ParentDashboard: React.FC = () => {
     <div className="w-full p-6">
       {/* Welcome Section */}
       {isAuthenticated && user && (
-        <div className="bg-gradient-to-r from-green-500 to-emerald-600 text-white p-6 rounded-b-2xl relative overflow-hidden mb-6">
+        <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl relative overflow-hidden mb-6">
           <div className="relative z-10">
             <div className="flex items-center gap-3">
               <Heart className="text-white w-8 h-8" />
@@ -95,7 +95,7 @@ const ParentDashboard: React.FC = () => {
                 <h1 className="text-3xl text-white font-bold">
                   Welcome, {user.first_name}!
                 </h1>
-                <p className="text-green-100 mt-1">
+                <p className="text-orange-100 mt-1">
                   Parent Dashboard - Stay connected with your child's
                   educational journey
                 </p>

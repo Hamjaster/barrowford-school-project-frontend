@@ -67,6 +67,7 @@ export interface CreateUserRequest {
   parent_ids?: number[]; // Optional array of parent IDs for student role
   year_group_id?: number; // Optional year group ID for student role
   class_id?: number; // Optional class ID for student role
+  current_year_group_id?: number; // Required year group ID for student enrollment year
 }
 
 export interface ResetUserPasswordRequest {
@@ -129,6 +130,7 @@ export interface CreateUserFormData {
   parent_ids?: number[]; // Optional array of parent IDs for student role
   year_group_id?: number; // Optional year group ID for student role
   class_id?: number; // Optional class ID for student role
+  current_year_group_id?: number; // Required year group ID for student enrollment year
   profile_image?: File | null;
 }
 
@@ -152,9 +154,11 @@ export interface AuthState {
   error: string | null;
 }
 
+
 export interface UserManagementState {
   users: User[];
   parents: User[];
+  yearGroups: YearGroup[];
   pagination: PaginationInfo | null;
   isLoading: boolean;
   error: string | null;
@@ -194,6 +198,7 @@ export interface PersonalSection {
   topic_id: number;
   student_id: string;
   content: string;
+  status: 'pending' | 'approved' | 'pending_updation' | 'rejected';
   created_at: string;
   updated_at: string;
 }
@@ -319,6 +324,8 @@ export interface YearGroupWithSubjects extends YearGroup {
 export interface YearDataState {
   yearGroups: YearGroup[];
   yearGroupsWithSubjects: YearGroupWithSubjects[];
+  eligibleYearGroups: YearGroup[];
+  eligibleYearGroupsWithSubjects: YearGroupWithSubjects[];
   subjects: Subject[];
   isLoading: boolean;
   isLoadingSubjects: boolean;
@@ -332,7 +339,9 @@ export interface StudentLearning {
   title: string;
   description: string;
   attachment_url?: string;
+  status: 'pending' | 'approved' | 'pending_deletion' | 'rejected';
   created_at: string;
+  updated_at?: string;
 }
 
 export interface CreateLearningRequest {

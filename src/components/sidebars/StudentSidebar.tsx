@@ -14,7 +14,7 @@ import { logout } from "@/store/slices/authSlice";
 import { Button } from "@/components/ui/button";
 import LearningDropdown from "@/components/LearningDropdown";
 import ImagesDropdown from "@/components/ImagesDropdown";
-import barrowfordlogo from "@/assets/barrowforrdlogo.png"
+import barrowfordlogo from "@/assets/barrowforrdlogo.png";
 
 import {
   Sidebar as ShadcnSidebar,
@@ -77,7 +77,7 @@ const StudentSidebar: React.FC = () => {
   ];
 
   return (
-    <ShadcnSidebar className="border-r" collapsible="none">
+    <ShadcnSidebar className="border-r max-h-screen " collapsible="none">
       <SidebarHeader className="p-4 sm:p-6">
         <div className="flex items-start gap-3">
           <img
@@ -87,7 +87,6 @@ const StudentSidebar: React.FC = () => {
           />
         </div>
       </SidebarHeader>
-
 
       <SidebarContent>
         <SidebarGroup>

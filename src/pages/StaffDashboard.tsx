@@ -87,7 +87,7 @@ const StaffDashboard: React.FC = () => {
     "user-management",
     "create-user",
     "personal-section-topics",
-    "my-profile"
+    "my-profile",
   ];
 
   const renderTabContent = () => {
@@ -122,9 +122,11 @@ const StaffDashboard: React.FC = () => {
       case "students":
         return <StudentManagement />;
       case "my-profile":
-        return <div>
-          <TeacherProfile/>
+        return (
+          <div>
+            <TeacherProfile />
           </div>
+        );
       default:
         return <div>No tab selected</div>;
     }

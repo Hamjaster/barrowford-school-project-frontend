@@ -152,7 +152,7 @@
   column-count: 3; /* number of columns */
   column-gap: 16px;
   width: 100%;
-  max-width: 800px;
+  /* max-width: ; */
   margin: auto;
 }
 
@@ -160,6 +160,6 @@
   width: 100%;
   display: block;
   border-radius: 8px;
-  margin-bottom: 16px;
+  /* margin-bottom: 16px; */
   object-fit: cover;
 }

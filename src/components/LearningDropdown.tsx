@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { BookOpen, Loader2 } from "lucide-react";
+import { BookOpen } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,7 +59,7 @@ const LearningDropdown: React.FC<LearningDropdownProps> = ({ className }) => {
           <DropdownMenuSeparator />
           {isLoading ? (
             <div className="flex items-center justify-center p-4">
-              <Loader2 className="h-6 w-6 animate-spin" />
+              <Spinner />
               <span className="ml-2">Loading year groups...</span>
             </div>
           ) : eligibleYearGroupsWithSubjects.length === 0 ? (

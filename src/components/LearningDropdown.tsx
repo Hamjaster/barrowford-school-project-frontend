@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { fetchEligibleYearGroupsForStudent } from "@/store/slices/yearDataSlice";
 import { setSelectedSubject } from "@/store/slices/studentSlice";
 import type { RootState, AppDispatch } from "@/store";
+import { Spinner } from "./ui/Spinner";
 
 interface LearningDropdownProps {
   className?: string;
@@ -28,14 +29,6 @@ const LearningDropdown: React.FC<LearningDropdownProps> = ({ className }) => {
   const { eligibleYearGroupsWithSubjects, isLoading, error } = useSelector(
     (state: RootState) => state.yearData
   );
-
-  useEffect(() => {
-    // Fetch eligible year groups and subjects when component mounts
-    if (eligibleYearGroupsWithSubjects.length === 0 && !isLoading && !error) {
-      console.log("Fetching eligible year groups and subjects !!");
-      dispatch(fetchEligibleYearGroupsForStudent());
-    }
-  }, [dispatch, eligibleYearGroupsWithSubjects.length, isLoading, error]);
 
   if (error) {
     return (
@@ -56,11 +49,7 @@ const LearningDropdown: React.FC<LearningDropdownProps> = ({ className }) => {
         <DropdownMenuTrigger asChild>
           <div className="cursor-pointer h-16 p-2 w-full flex items-center justify-start text-md font-semibold bg-transparent hover:bg-accent/50 rounded-md transition-colors">
             <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mr-2">
-              {isLoading ? (
-                <Loader2 size={20} className="animate-spin" />
-              ) : (
-                <BookOpen size={20} />
-              )}
+              {isLoading ? <Spinner /> : <BookOpen size={20} />}
             </div>
             <span>My Learning</span>
           </div>

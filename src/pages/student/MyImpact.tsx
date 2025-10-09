@@ -10,12 +10,14 @@ import {
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
+import { fetchYearGroups } from "@/store/slices/yearDataSlice";
 
 export default function MyImpact() {
   const dispatch = useDispatch<AppDispatch>();
-  const { impact, isLoading, isSubmitting, error, message } = useSelector(
-    (state: RootState) => state.student
-  );
+  const { impact, isLoading, isSubmitting, error, message, studentDetails } =
+    useSelector((state: RootState) => state.student);
+  const { yearGroups } = useSelector((state: RootState) => state.yearData);
 
   // Initialize with empty content or provide default content
   const [editorContent, setEditorContent] = useState<null | any>(null);
@@ -23,6 +25,7 @@ export default function MyImpact() {
   // Load impact data on component mount
   useEffect(() => {
     dispatch(fetchStudentImpact());
+    dispatch(fetchYearGroups());
   }, [dispatch]);
 
   // Update editor content when impact data is loaded
@@ -79,6 +82,14 @@ export default function MyImpact() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">My Impact</h1>
+              {studentDetails && (
+                <p className="text-orange-100 mt-1">
+                  {getYearGroupDisplayName(
+                    studentDetails.year_group_id,
+                    yearGroups
+                  )}
+                </p>
+              )}
             </div>
             <div>
               <Button

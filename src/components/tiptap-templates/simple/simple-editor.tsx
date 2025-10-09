@@ -211,7 +211,7 @@ export function SimpleEditor({
   const [mobileView, setMobileView] = React.useState<
     "main" | "highlighter" | "link"
   >("main");
-  const [isViewMode, setIsViewMode] = React.useState(true); // Start in view mode
+  const [isViewMode, setIsViewMode] = React.useState(false); // Start in view mode
   const toolbarRef = React.useRef<HTMLDivElement>(null);
 
   const editor = useEditor({

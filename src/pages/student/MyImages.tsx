@@ -1,5 +1,4 @@
 import React, { useState, useRef, useEffect } from "react";
-import Masonry from "react-masonry-css";
 import {
   Upload,
   Download,
@@ -89,13 +88,6 @@ export default function MyImages() {
       dispatch(clearMessage());
     }
   }, [error, message, dispatch]);
-
-  const breakpointColumnsObj = {
-    default: 4,
-    1100: 3,
-    700: 2,
-    500: 1,
-  };
 
   const handleImageUpload = async (
     event: React.ChangeEvent<HTMLInputElement>
@@ -325,11 +317,7 @@ export default function MyImages() {
             </Button>
           </div>
         ) : (
-          <Masonry
-            breakpointCols={breakpointColumnsObj}
-            className="masonry-grid"
-            columnClassName="masonry-grid-column"
-          >
+          <div className="msnry">
             {images.map((image) => {
               const statusInfo = getStatusInfo(image.status);
               const StatusIcon = statusInfo.icon;
@@ -341,7 +329,7 @@ export default function MyImages() {
                   className="relative mb-4 group cursor-pointer"
                 >
                   <div
-                    className={`aspect-square overflow-hidden rounded-md shadow-md hover:shadow-lg transition-shadow duration-300 border-2 ${statusInfo.borderClass}`}
+                    className={` rounded-md shadow-md hover:shadow-lg transition-shadow duration-300 border-2 ${statusInfo.borderClass}`}
                   >
                     <img
                       src={image.url}
@@ -370,7 +358,7 @@ export default function MyImages() {
                 </div>
               );
             })}
-          </Masonry>
+          </div>
         )}
       </div>
 

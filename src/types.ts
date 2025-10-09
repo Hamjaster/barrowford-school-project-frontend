@@ -65,9 +65,9 @@ export interface CreateUserRequest {
   last_name: string;
   role: UserRole;
   parent_ids?: number[]; // Optional array of parent IDs for student role
-  year_group_id?: number; // Optional year group ID for student role
+  year_group_id: number; // Required year group ID for student role
   class_id?: number; // Optional class ID for student role
-  current_year_group_id?: number; // Required year group ID for student enrollment year
+  
 }
 
 export interface ResetUserPasswordRequest {
@@ -128,9 +128,8 @@ export interface CreateUserFormData {
   last_name: string;
   role: UserRole;
   parent_ids?: number[]; // Optional array of parent IDs for student role
-  year_group_id?: number; // Optional year group ID for student role
+  year_group_id: number; // Required year group ID for student role
   class_id?: number; // Optional class ID for student role
-  current_year_group_id?: number; // Required year group ID for student enrollment year
   profile_image?: File | null;
 }
 
@@ -392,5 +391,17 @@ export interface StudentState {
   isDeleting: boolean;
   error: string | null;
   message: string | null;
-  studentDetails: any | null;
+  studentDetails: StudentDetails | null;
+}
+
+export interface StudentDetails {
+  name: string;
+  age: number;
+  year_group_id: number;
+  class_id: number;
+  class_name: string;
+  hair_color: string;
+  eye_color: string;
+  height: number;
+  profile_photo: string;
 }

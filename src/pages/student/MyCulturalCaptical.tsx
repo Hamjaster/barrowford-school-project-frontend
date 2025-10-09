@@ -49,6 +49,8 @@ import {
   deleteReflection,
   fetchActiveTopics,
 } from "@/store/slices/reflectionSlice";
+import { fetchStudentDetails } from "@/store/slices/studentSlice";
+import { fetchYearGroups } from "@/store/slices/userManagementSlice";
 import type { RootState, AppDispatch } from "@/store";
 import type { TableEntry } from "@/types";
 import { showToast } from "@/utils/showToast";
@@ -57,6 +59,7 @@ import supabase from "@/lib/supabse";
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialogProps";
 import AttachmentDisplay from "@/components/AttachmentDisplay";
 import { toast } from "sonner";
+import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
 
 interface CulturalCapitalEntry {
   id: number;
@@ -108,6 +111,11 @@ export default function CulturalCapitalPage() {
     activeTitles,
   } = useSelector((state: RootState) => state.reflection);
 
+  const { studentDetails } = useSelector((state: RootState) => state.student);
+  const { yearGroups } = useSelector(
+    (state: RootState) => state.userManagement
+  );
+
   useEffect(() => {
     console.log(filteredData, "filteredData");
   }, [filteredData]);
@@ -119,6 +127,8 @@ export default function CulturalCapitalPage() {
       await dispatch(fetchAllTopics());
       await dispatch(fetchActiveTopics());
       await dispatch(fetchPreviousWeeks());
+      await dispatch(fetchStudentDetails());
+      await dispatch(fetchYearGroups());
     };
 
     fetchData();
@@ -491,6 +501,14 @@ export default function CulturalCapitalPage() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">My Cultural Capital</h1>
+              {studentDetails && (
+                <p className="text-orange-100 mt-1">
+                  {getYearGroupDisplayName(
+                    studentDetails.year_group_id,
+                    yearGroups
+                  )}
+                </p>
+              )}
             </div>
           </div>
         </div>

@@ -22,7 +22,7 @@ export const Spinner: React.FC<SpinnerProps> = ({ size = "md", className }) => {
 
     let rotation = 0;
     const spin = () => {
-      rotation += 2; // Adjust speed by changing this value (2 degrees per frame)
+      rotation += 4; // Adjust speed by changing this value (2 degrees per frame)
       if (rotation >= 360) {
         rotation = 0;
       }

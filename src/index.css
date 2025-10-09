@@ -147,3 +147,19 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+.msnry {
+  column-count: 3; /* number of columns */
+  column-gap: 16px;
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+}
+
+.msnry img {
+  width: 100%;
+  display: block;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  object-fit: cover;
+}

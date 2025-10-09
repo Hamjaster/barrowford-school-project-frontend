@@ -57,7 +57,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     parent_ids: [],
     year_group_id: 1,
     class_id: 1,
-    current_year_group_id: undefined,
     profile_image: null,
   });
 
@@ -94,7 +93,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
   const handleYearGroupSelection = (value: string) => {
     setFormData((prev) => ({
       ...prev,
-      current_year_group_id: Number(value),
+      year_group_id: Number(value),
     }));
   };
 
@@ -149,7 +148,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       return;
     }
 
-    if (formData.role === "student" && !formData.current_year_group_id) {
+    if (formData.role === "student" && !formData.year_group_id) {
       toast.error("Please select an enrollment year for the student");
       return;
     }
@@ -223,7 +222,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         parent_ids: [],
         year_group_id: 1,
         class_id: 1,
-        current_year_group_id: undefined,
+
         profile_image: null,
       });
 
@@ -387,13 +386,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
             </div>
             <div>
               <label
-                htmlFor="current_year_group_id"
+                htmlFor="year_group_id"
                 className="block text-sm font-medium text-gray-700 mb-2"
               >
                 Enrollment Year
               </label>
               <Select
-                value={formData.current_year_group_id?.toString() || ""}
+                value={formData.year_group_id?.toString() || ""}
                 onValueChange={handleYearGroupSelection}
                 required
               >
@@ -462,8 +461,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
               !formData.first_name ||
               !formData.password ||
               !formData.role ||
-              (formData.role === "student" &&
-                !formData.current_year_group_id) ||
+              (formData.role === "student" && !formData.year_group_id) ||
               isLoading
             }
             loading={isLoading}

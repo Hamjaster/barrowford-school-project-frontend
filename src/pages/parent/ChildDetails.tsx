@@ -53,6 +53,7 @@ import { useSelector, useDispatch } from "react-redux";
 import { fetchChildDetails } from "@/store/slices/parentSlice";
 import { DEFAULT_AVATAR_URL } from "@/constants";
 import AttachmentDisplay from "@/components/AttachmentDisplay";
+import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
 
 // Convert StudentImage to ImageItem for display
 interface ImageItem {
@@ -789,7 +790,10 @@ export default function ChildDetailsPage() {
                 </div>
                 <div className="flex items-center gap-1">
                   <BookOpen className="w-4 h-4" />
-                  <span>Year Group: {child.year_group_id || "N/A"}</span>
+                  <span>
+                    Year Group:{" "}
+                    {getYearGroupDisplayName(child.year_group_id, yearGroups)}
+                  </span>
                 </div>
                 <div className="flex items-center gap-1">
                   <Users className="w-4 h-4" />

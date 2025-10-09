@@ -35,9 +35,12 @@ import {
   clearMessage,
 } from "@/store/slices/personalSectionSlice";
 import { fetchStudentDetails } from "@/store/slices/studentSlice";
+import { fetchYearGroups } from "@/store/slices/userManagementSlice";
 import type { PersonalSection, Topic } from "@/types";
 import type { AppDispatch, RootState } from "../../store";
 import { Badge } from "@/components/ui/badge";
+import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
+import { fetchEligibleYearGroupsForStudent } from "@/store/slices/yearDataSlice";
 
 // Icon mapping for different topics
 const getTopicIcon = (title: string) => {
@@ -185,9 +188,15 @@ export default function StudentDashboard() {
     message,
   } = useSelector((state: RootState) => state.personalSection);
 
-  // Fetch topics on component mount
+  const { yearGroups } = useSelector(
+    (state: RootState) => state.userManagement
+  );
+
+  // Fetch topics and year groups on component mount
   useEffect(() => {
     dispatch(fetchTopics());
+    dispatch(fetchYearGroups());
+    dispatch(fetchEligibleYearGroupsForStudent());
   }, [dispatch]);
 
   // Handle success/error messages
@@ -306,6 +315,14 @@ export default function StudentDashboard() {
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">My Dashboard</h1>
+              {studentDetails && (
+                <p className="text-orange-100 mt-1">
+                  {getYearGroupDisplayName(
+                    studentDetails.year_group_id,
+                    yearGroups
+                  )}
+                </p>
+              )}
             </div>
           </div>
         </div>
@@ -365,25 +382,28 @@ export default function StudentDashboard() {
                   <div className="flex justify-between">
                     <span className="text-gray-600">Year:</span>
                     <span className="font-medium">
-                      {studentDetails.year || "Not Specified"}
+                      {getYearGroupDisplayName(
+                        studentDetails.year_group_id,
+                        yearGroups
+                      ) || "Not Specified"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Class:</span>
                     <span className="font-medium">
-                      {studentDetails?.class || "Not Specified"}
+                      {studentDetails?.class_name || "Not Specified"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Hair Color:</span>
                     <span className="font-medium">
-                      {studentDetails?.haircolor || "Not Specified"}
+                      {studentDetails?.hair_color || "Not Specified"}
                     </span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Eye Color:</span>
                     <span className="font-medium">
-                      {studentDetails?.eyecolor || "Not Specified"}
+                      {studentDetails?.eye_color || "Not Specified"}
                     </span>
                   </div>
                   <div className="flex justify-between">

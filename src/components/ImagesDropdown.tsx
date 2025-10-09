@@ -18,6 +18,7 @@ import {
   setSelectedYearGroup,
 } from "@/store/slices/studentSlice";
 import type { RootState, AppDispatch } from "@/store";
+import Spinner from "./ui/Spinner";
 
 interface ImagesDropdownProps {
   className?: string;
@@ -30,13 +31,13 @@ const ImagesDropdown: React.FC<ImagesDropdownProps> = ({ className }) => {
     (state: RootState) => state.yearData
   );
 
-  useEffect(() => {
-    // Fetch eligible year groups when component mounts
-    if (eligibleYearGroupsWithSubjects.length === 0 && !isLoading && !error) {
-      console.log("Fetching eligible year groups !!");
-      dispatch(fetchEligibleYearGroupsForStudent());
-    }
-  }, [dispatch, eligibleYearGroupsWithSubjects.length, isLoading, error]);
+  // useEffect(() => {
+  //   // Fetch eligible year groups when component mounts
+  //   if (eligibleYearGroupsWithSubjects.length === 0 && !isLoading && !error) {
+  //     console.log("Fetching eligible year groups !!");
+  //     dispatch(fetchEligibleYearGroupsForStudent());
+  //   }
+  // }, [dispatch, eligibleYearGroupsWithSubjects.length, isLoading, error]);
 
   if (error) {
     return (
@@ -57,11 +58,7 @@ const ImagesDropdown: React.FC<ImagesDropdownProps> = ({ className }) => {
         <DropdownMenuTrigger asChild>
           <div className="cursor-pointer h-16 p-2 w-full flex items-center justify-start text-md font-semibold bg-transparent hover:bg-accent/50 rounded-md transition-colors">
             <div className="w-12 h-12 bg-green-500 rounded-full flex items-center justify-center text-white flex-shrink-0 mr-2">
-              {isLoading ? (
-                <Loader2 size={20} className="animate-spin" />
-              ) : (
-                <BookOpen size={20} />
-              )}
+              {isLoading ? <Spinner /> : <BookOpen size={20} />}
             </div>
             <span>My Images</span>
           </div>

@@ -16,6 +16,8 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { fetchMyChildren } from "../store/slices/parentSlice";
 import type { ParentChild } from "../store/slices/parentSlice";
+import { fetchYearGroups } from "../store/slices/userManagementSlice";
+import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
 
 const ParentDashboard: React.FC = () => {
   const { user, isAuthenticated } = useSelector(
@@ -24,12 +26,16 @@ const ParentDashboard: React.FC = () => {
   const { children, isLoadingChildren, error } = useSelector(
     (state: RootState) => state.parent
   );
+  const { yearGroups } = useSelector(
+    (state: RootState) => state.userManagement
+  );
   const dispatch = useDispatch<AppDispatch>();
   const navigate = useNavigate();
 
   useEffect(() => {
     if (isAuthenticated && user?.role === "parent") {
       dispatch(fetchMyChildren());
+      dispatch(fetchYearGroups());
     }
   }, [isAuthenticated, user?.role, dispatch]);
 
@@ -61,7 +67,7 @@ const ParentDashboard: React.FC = () => {
             <div className="flex items-center text-gray-600">
               <GraduationCap className="w-4 h-4 mr-1" />
               <span className="text-sm">
-                Year {child.year_group_id || "N/A"}
+                {getYearGroupDisplayName(child.year_group_id, yearGroups)}
               </span>
             </div>
             <div className="flex items-center text-gray-600">
@@ -89,17 +95,38 @@ const ParentDashboard: React.FC = () => {
       {isAuthenticated && user && (
         <div className="bg-gradient-to-r from-orange-500 to-pink-500 text-white p-6 rounded-b-2xl relative overflow-hidden mb-6">
           <div className="relative z-10">
-            <div className="flex items-center gap-3">
-              <Heart className="text-white w-8 h-8" />
-              <div>
-                <h1 className="text-3xl text-white font-bold">
-                  Welcome, {user.first_name}!
-                </h1>
-                <p className="text-orange-100 mt-1">
-                  Parent Dashboard - Stay connected with your child's
-                  educational journey
-                </p>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Heart className="text-white w-8 h-8" />
+                <div>
+                  <h1 className="text-3xl text-white font-bold">
+                    Welcome, {user.first_name}!
+                  </h1>
+                  <p className="text-orange-100 mt-1">
+                    Parent Dashboard - Stay connected with your child's
+                    educational journey
+                  </p>
+                </div>
               </div>
+              {children.length > 0 && (
+                <div className="text-right">
+                  <div className="text-orange-100 text-sm">
+                    {children.length === 1 ? "Child" : "Children"} in:
+                  </div>
+                  <div className="text-white font-semibold">
+                    {Array.from(
+                      new Set(
+                        children.map((child) =>
+                          getYearGroupDisplayName(
+                            child.year_group_id,
+                            yearGroups
+                          )
+                        )
+                      )
+                    ).join(", ")}
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 

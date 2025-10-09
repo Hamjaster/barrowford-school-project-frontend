@@ -61,14 +61,12 @@ const YoutubeModal: React.FC<{
   const [error, setError] = React.useState<string | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
 
-  if (!editor) return null;
-
   // Clear error when URL changes
-  React.useEffect(() => {
-    if (error && url) {
-      setError(null);
-    }
-  }, [url, error]);
+  // React.useEffect(() => {
+  //   if (error && url) {
+  //     setError(null);
+  //   }
+  // }, [url, error]);
 
   // Reset form when modal closes
   React.useEffect(() => {

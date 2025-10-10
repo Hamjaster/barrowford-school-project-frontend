@@ -6,12 +6,11 @@ import {
   ArrowLeft,
   Users,
   CheckCircle,
-  UserCircle,
   GraduationCap,
   Loader2,
+  UserCircle,
 } from "lucide-react";
 import type { RootState, AppDispatch } from "../store";
-import { DEFAULT_AVATAR_URL } from "@/constants";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { fetchMyChildren } from "../store/slices/parentSlice";
@@ -46,19 +45,22 @@ const ParentDashboard: React.FC = () => {
       className="bg-white rounded-xl shadow-sm hover:shadow-lg border border-gray-100 p-6 cursor-pointer transition-all duration-300 hover:-translate-y-1 group"
     >
       <div className="flex items-center space-x-4">
-        <div className="relative">
-          {/* <img
-            src={DEFAULT_AVATAR_URL}
+        {child.profile_photo ? (
+          <img
+            src={child.profile_photo}
             alt={`${child.first_name} ${child.last_name}`}
             className="w-16 h-16 rounded-full object-cover border-2 border-blue-100 group-hover:border-blue-300 transition-colors"
-          /> */}
-          <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
-            <UserCircle className="w-12 h-12" />
+          />
+        ) : (
+          <div className="relative">
+            <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
+              <UserCircle className="w-12 h-12" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
+              <CheckCircle className="w-3 h-3 text-white" />
+            </div>
           </div>
-          <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
-            <CheckCircle className="w-3 h-3 text-white" />
-          </div>
-        </div>
+        )}
         <div className="flex-1">
           <h3 className="text-lg font-semibold text-gray-800 group-hover:text-blue-600 transition-colors">
             {child.first_name} {child.last_name}

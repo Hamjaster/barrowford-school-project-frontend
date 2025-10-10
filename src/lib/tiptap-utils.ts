@@ -1,6 +1,7 @@
 import type { Node as TiptapNode } from "@tiptap/pm/model"
 import { NodeSelection, Selection, TextSelection } from "@tiptap/pm/state"
 import type { Editor } from "@tiptap/react"
+import { uploadFileToSupabase } from '@/utils/fileUpload'
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
@@ -284,12 +285,14 @@ export function isNodeTypeSelected(
  * @param file The file to upload
  * @param onProgress Optional callback for tracking upload progress
  * @param abortSignal Optional AbortSignal for cancelling the upload
+ * @param userId The user ID for organizing files in storage
  * @returns Promise resolving to the URL of the uploaded image
  */
 export const handleImageUpload = async (
   file: File,
   onProgress?: (event: { progress: number }) => void,
-  abortSignal?: AbortSignal
+  abortSignal?: AbortSignal,
+  userId?: string
 ): Promise<string> => {
   // Validate file
   if (!file) {
@@ -302,17 +305,46 @@ export const handleImageUpload = async (
     )
   }
 
-  // For demo/testing: Simulate upload progress. In production, replace the following code
-  // with your own upload implementation.
-  for (let progress = 0; progress <= 100; progress += 10) {
-    if (abortSignal?.aborted) {
-      throw new Error("Upload cancelled")
+  // If no userId provided, try to get it from Supabase auth
+  let currentUserId = userId;
+  if (!currentUserId) {
+    try {
+      const { data: { user } } = await import('@/lib/supabse').then(module => module.default.auth.getUser());
+      if (!user?.id) {
+        throw new Error("User not authenticated");
+      }
+      currentUserId = user.id;
+    } catch (error) {
+      throw new Error("Failed to get user authentication");
     }
-    await new Promise((resolve) => setTimeout(resolve, 500))
-    onProgress?.({ progress })
   }
 
-  return "/images/tiptap-ui-placeholder-image.jpg"
+  try {
+    // Upload to Supabase storage
+    const uploadResult = await uploadFileToSupabase(
+      file,
+      'barrowford-school-uploads',
+      currentUserId,
+      (progress) => {
+        // Convert the progress format to match the expected format
+        onProgress?.({ progress: progress.percentage });
+      }
+    );
+
+    if (!uploadResult.success || !uploadResult.url) {
+      throw new Error(uploadResult.error || "Upload failed");
+    }
+
+    return uploadResult.url;
+  } catch (error: any) {
+    // Check if upload was cancelled
+    if (abortSignal?.aborted) {
+      throw new Error("Upload cancelled");
+    }
+    
+    // Re-throw the error with more context
+    throw new Error(`Upload failed: ${error.message}`);
+  }
 }
 
 type ProtocolOptions = {

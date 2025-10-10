@@ -28,6 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import AttachmentDisplay from "@/components/AttachmentDisplay";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
@@ -52,7 +53,6 @@ import {
 import { useSelector, useDispatch } from "react-redux";
 import { fetchChildDetails } from "@/store/slices/parentSlice";
 import { DEFAULT_AVATAR_URL } from "@/constants";
-import AttachmentDisplay from "@/components/AttachmentDisplay";
 import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
 
 // Convert StudentImage to ImageItem for display
@@ -346,17 +346,19 @@ export default function ChildDetailsPage() {
                           </div>
                         </div>
                       </div>
-                      <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
-                        <p className="text-sm text-gray-700 leading-relaxed">
-                          {learning.description}
-                        </p>
-                      </div>
+                      {learning.description && (
+                        <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
+                          <p className="text-sm text-gray-700 leading-relaxed">
+                            {learning.description}
+                          </p>
+                        </div>
+                      )}
                       {learning.attachment_url && (
                         <div className="mt-4">
                           <AttachmentDisplay
                             url={learning.attachment_url}
                             alt="Learning attachment"
-                            maxHeight="h-32"
+                            maxHeight="h-48"
                             maxWidth="max-w-full"
                           />
                         </div>
@@ -528,6 +530,26 @@ export default function ChildDetailsPage() {
                             {reflection.content}
                           </p>
                         </div>
+
+                        {/* Attachment Display */}
+                        {reflection.attachment_url &&
+                          reflection.attachment_url.length > 0 && (
+                            <div className="mt-4">
+                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
+                                <FileText className="w-4 h-4" />
+                                Attachment
+                              </div>
+                              <div className="bg-white rounded-lg border p-3">
+                                <AttachmentDisplay
+                                  url={reflection.attachment_url}
+                                  alt="Reflection attachment"
+                                  maxHeight="h-48"
+                                  maxWidth="max-w-full"
+                                  className="w-full"
+                                />
+                              </div>
+                            </div>
+                          )}
 
                         {reflection.reflection_comments.length > 0 && (
                           <div className="mt-4 space-y-3">

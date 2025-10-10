@@ -13,6 +13,7 @@ export interface ParentChild {
   class_id?: number;
   created_at: string;
   status?: string;
+  profile_photo?: string;
 }
 
 export interface StudentLearning {

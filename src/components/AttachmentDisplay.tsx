@@ -65,7 +65,7 @@ export default function AttachmentDisplay({
           <img
             src={url}
             alt={alt}
-            className={`${maxWidth} ${maxHeight} object-contain rounded-lg border`}
+            className={`  object-contain rounded-lg border`}
           />
         );
       case "video":

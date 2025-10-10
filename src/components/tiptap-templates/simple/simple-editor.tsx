@@ -76,6 +76,8 @@ import { useCursorVisibility } from "@/hooks/use-cursor-visibility";
 
 // --- Lib ---
 import { handleImageUpload, MAX_FILE_SIZE } from "@/lib/tiptap-utils";
+import { useSelector } from "react-redux";
+import type { RootState } from "@/store";
 
 // --- Styles ---
 import "@/components/tiptap-templates/simple/simple-editor.scss";
@@ -214,6 +216,21 @@ export function SimpleEditor({
   const [isViewMode, setIsViewMode] = React.useState(false); // Start in view mode
   const toolbarRef = React.useRef<HTMLDivElement>(null);
 
+  // Get current user from auth state
+  const { user } = useSelector((state: RootState) => state.auth);
+
+  // Create a wrapper function that passes the user ID
+  const handleImageUploadWithUser = React.useCallback(
+    (
+      file: File,
+      onProgress?: (event: { progress: number }) => void,
+      abortSignal?: AbortSignal
+    ) => {
+      return handleImageUpload(file, onProgress, abortSignal, user?.id);
+    },
+    [user?.id]
+  );
+
   const editor = useEditor({
     immediatelyRender: false,
     shouldRerenderOnTransaction: false,
@@ -251,7 +268,7 @@ export function SimpleEditor({
         accept: "image/*",
         maxSize: MAX_FILE_SIZE,
         limit: 3,
-        upload: handleImageUpload,
+        upload: handleImageUploadWithUser,
         onError: (error) => console.error("Upload failed:", error),
       }),
       Youtube.configure({

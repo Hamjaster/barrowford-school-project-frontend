@@ -153,6 +153,12 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       return;
     }
 
+    // ✅ Staff-specific checks
+    if (formData.role === "staff" && !formData.year_group_id) {
+      toast.error("Please select a year group for the staff member");
+      return;
+    }
+
     // 📤 Upload image to Cloudinary first (if student + image exists)
     let imageUrl = "";
     if (formData.role === "student" && formData.profile_image) {
@@ -358,7 +364,39 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
           </p>
         </div>
 
-        
+        {formData.role === "staff" && (
+          <div>
+            <label
+              htmlFor="year_group_id"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Year Group
+            </label>
+            <Select
+              value={formData.year_group_id?.toString() || ""}
+              onValueChange={handleYearGroupSelection}
+              required
+            >
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select year group..." />
+              </SelectTrigger>
+              <SelectContent>
+                {yearGroups &&
+                  yearGroups.map((yearGroup) => (
+                    <SelectItem
+                      key={yearGroup.id}
+                      value={yearGroup.id.toString()}
+                    >
+                      {yearGroup.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+            <p className="text-sm text-gray-500 mt-1">
+              Select the year group the staff member will be assigned to
+            </p>
+          </div>
+        )}
 
         {formData.role === "student" && (
           <>
@@ -463,6 +501,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
               !formData.password ||
               !formData.role ||
               (formData.role === "student" && !formData.year_group_id) ||
+              (formData.role === "staff" && !formData.year_group_id) ||
               isLoading
             }
             loading={isLoading}

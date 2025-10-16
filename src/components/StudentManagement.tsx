@@ -4,6 +4,10 @@ import {
   addComment,
   fetchReflectionsByStudentId,
 } from "@/store/slices/reflectionSlice";
+import {
+  fetchYearGroups,
+  fetchClasses,
+} from "@/store/slices/userManagementSlice";
 import type { ReflectionComment, ReflectionItem } from "@/types";
 import { uploadFileToSupabase } from "@/utils/fileUpload";
 import {
@@ -37,6 +41,13 @@ import {
 } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 import { Textarea } from "./ui/textarea";
 
 interface Student {
@@ -44,7 +55,7 @@ interface Student {
   first_name: string;
   last_name: string;
   email: string;
-  year: number;
+  current_year_group_id: number;
   class_id: number;
   class_name: string;
   created_at: string;
@@ -94,6 +105,9 @@ export default function StudentManagement() {
 
   const dispatch = useDispatch<AppDispatch>();
   const { token } = useSelector((state: RootState) => state.auth);
+  // const { yearGroups, classes } = useSelector(
+  //   (state: RootState) => state.userManagement
+  // );
 
   // Fetch assigned students
   const fetchStudents = async () => {
@@ -243,7 +257,7 @@ export default function StudentManagement() {
 
     try {
       const resultAction = await dispatch(
-        fetchReflectionsByStudentId(studentId)
+        fetchReflectionsByStudentId(studentId) as any
       );
       if (fetchReflectionsByStudentId.fulfilled.match(resultAction)) {
         // Ensure each reflection has a reflectioncomments array
@@ -275,7 +289,7 @@ export default function StudentManagement() {
 
     try {
       const newComment = await dispatch(
-        addComment({ reflectionId: reflectionId, content })
+        addComment({ reflectionId: reflectionId, content }) as any
       ).unwrap();
 
       // Update local studentReflections state with the new comment
@@ -316,27 +330,6 @@ export default function StudentManagement() {
     if (!editStudent) return;
     setEditStudent({ ...editStudent, [field]: value });
   };
-  const uploadStudentProfilePhoto = async (
-    file: File,
-    studentId: string | number
-  ): Promise<string | null> => {
-    try {
-      const uploadResult = await uploadFileToSupabase(
-        file,
-        "barrowford-school-uploads",
-        studentId.toString()
-      );
-
-      if (!uploadResult.success || !uploadResult.url) {
-        throw new Error(uploadResult.error || "Photo upload failed");
-      }
-
-      return uploadResult.url;
-    } catch (error) {
-      console.error("❌ Profile photo upload failed:", error);
-      throw error;
-    }
-  };
 
   const handleStudentUpdateDetails = async () => {
     if (!token || !editStudent) return;
@@ -359,8 +352,8 @@ export default function StudentManagement() {
         studentId: editStudent.id,
         first_name: editStudent.first_name,
         last_name: editStudent.last_name,
-        class_name: editStudent.class_name,
-        year_group_id: editStudent.year,
+        class_id: editStudent.class_id,
+        current_year_group_id: editStudent.current_year_group_id,
         height: editStudent.height,
         hair_color: editStudent.hair_color,
         ...(profilePhotoUrl && { profile_photo: profilePhotoUrl }),
@@ -404,13 +397,16 @@ export default function StudentManagement() {
 
   useEffect(() => {
     if (selectedStudent) {
+      console.log("selectedStudent : ", selectedStudent);
       setEditStudent(selectedStudent);
     }
   }, [selectedStudent]);
 
   useEffect(() => {
     fetchStudents();
-  }, [token]);
+    dispatch(fetchYearGroups() as any);
+    dispatch(fetchClasses() as any);
+  }, [token, dispatch]);
 
   if (loading) {
     return (
@@ -614,31 +610,64 @@ export default function StudentManagement() {
                                   }
                                 />{" "}
                               </div>
-
+                              {/* Uncomment when we need class and year updation
                               <div>
                                 <Label className="mb-2">Class Name</Label>
-                                <Input
-                                  value={editStudent?.class_name || ""}
-                                  onChange={(e) =>
-                                    handleEditChange(
-                                      "class_name",
-                                      e.target.value
-                                    )
+                                <Select
+                                  disabled={true}
+                                  value={
+                                    editStudent?.class_id?.toString() || ""
                                   }
-                                />{" "}
+                                  onValueChange={(value) =>
+                                    handleEditChange("class_id", Number(value))
+                                  }
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a class" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {classes.map((classItem) => (
+                                      <SelectItem
+                                        key={classItem.id}
+                                        value={classItem.id.toString()}
+                                      >
+                                        {classItem.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </div>
                               <div>
                                 <Label className="mb-2">Year Group</Label>
-                                <Input
-                                  value={editStudent?.year || ""}
-                                  onChange={(e) =>
+                                <Select
+                                  value={
+                                    editStudent?.current_year_group_id?.toString() ||
+                                    ""
+                                  }
+                                  onValueChange={(value) =>
                                     handleEditChange(
-                                      "year",
-                                      Number(e.target.value)
+                                      "current_year_group_id",
+                                      Number(value)
                                     )
                                   }
-                                />{" "}
+                                  disabled={true}
+                                >
+                                  <SelectTrigger>
+                                    <SelectValue placeholder="Select a year group" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    {yearGroups.map((yearGroup) => (
+                                      <SelectItem
+                                        key={yearGroup.id}
+                                        value={yearGroup.id.toString()}
+                                      >
+                                        {yearGroup.name}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
                               </div>
+                               */}
                               <div>
                                 <Label className="mb-2">Height</Label>
                                 <Input
@@ -670,14 +699,7 @@ export default function StudentManagement() {
                                 disabled={updateLoading}
                                 className="w-40 justify-center"
                               >
-                                {updateLoading ? (
-                                  <Loader2 className="h-4 w-4 animate-spin" />
-                                ) : (
-                                  <>
-                                    <Save className="h-4 w-4 mr-2" />
-                                    Save Changes
-                                  </>
-                                )}
+                                {updateLoading ? "Saving..." : "Save Changes"}
                               </Button>
                             </div>
                           </div>

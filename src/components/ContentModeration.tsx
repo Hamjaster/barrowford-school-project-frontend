@@ -37,7 +37,7 @@ import {
 } from "@/store/slices/moderationSlice";
 import type { RootState, AppDispatch } from "@/store";
 import type { ModerationItem } from "@/store/slices/moderationSlice";
-import { showToast } from "@/utils/showToast";
+import { toast } from "sonner";
 
 const ContentModeration: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -56,7 +56,7 @@ const ContentModeration: React.FC = () => {
 
   useEffect(() => {
     if (error) {
-      showToast(error, false);
+      toast.error(error);
       dispatch(clearError());
     }
   }, [error, dispatch]);
@@ -64,9 +64,9 @@ const ContentModeration: React.FC = () => {
   const handleApprove = async (moderation: ModerationItem) => {
     try {
       await dispatch(approveModeration(moderation.id)).unwrap();
-      showToast("Content approved successfully", true);
+      toast.success("Content approved successfully");
     } catch (error) {
-      showToast("Failed to approve content", false);
+      toast.error("Failed to approve content");
     }
   };
 
@@ -80,12 +80,12 @@ const ContentModeration: React.FC = () => {
           reason: rejectionReason || undefined,
         })
       ).unwrap();
-      showToast("Content rejected successfully", true);
+      toast.success("Content rejected successfully");
       setRejectDialogOpen(false);
       setSelectedModeration(null);
       setRejectionReason("");
     } catch (error) {
-      showToast("Failed to reject content", false);
+      toast.error("Failed to reject content");
     }
   };
 
@@ -155,6 +155,34 @@ const ContentModeration: React.FC = () => {
       minute: "2-digit",
     });
   };
+
+  // Sort moderations: pending at top, approved in middle, rejected at bottom
+  const sortedModerations = [...moderations].sort((a, b) => {
+    // Define priority order: pending (0), approved (1), rejected (2)
+    const getStatusPriority = (status: string) => {
+      switch (status) {
+        case "pending":
+          return 0;
+        case "approved":
+          return 1;
+        case "rejected":
+          return 2;
+        default:
+          return 3;
+      }
+    };
+
+    const statusA = getStatusPriority(a.status);
+    const statusB = getStatusPriority(b.status);
+
+    // If statuses are different, sort by status priority
+    if (statusA !== statusB) {
+      return statusA - statusB;
+    }
+
+    // If statuses are the same, sort by creation date (newest first)
+    return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+  });
 
   const renderContentPreview = (moderation: ModerationItem) => {
     const { action_type, entity_type, new_content, old_content, entity_title } =
@@ -363,7 +391,7 @@ const ContentModeration: React.FC = () => {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {moderations.length === 0 ? (
+            {sortedModerations.length === 0 ? (
               <div className="text-center py-16 px-6">
                 <div className="max-w-md mx-auto">
                   <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
@@ -385,7 +413,7 @@ const ContentModeration: React.FC = () => {
                 </div>
               </div>
             ) : (
-              moderations.map((moderation) => (
+              sortedModerations.map((moderation) => (
                 <div
                   key={moderation.id}
                   className="bg-white border-2 border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden"

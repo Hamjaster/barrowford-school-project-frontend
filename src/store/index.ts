@@ -7,6 +7,7 @@ import studentReducer from './slices/studentSlice';
 import personalSectionReducer from './slices/personalSectionSlice';
 import parentReducer from './slices/parentSlice';
 import moderationReducer from './slices/moderationSlice';
+import { authErrHandlerMiddleware } from './middleware/authErrorHandler';
 
 export const store = configureStore({
   reducer: {
@@ -20,6 +21,8 @@ export const store = configureStore({
     moderation: moderationReducer,
     
   },
+  middleware: (getDefaultMiddleware: any) =>
+    getDefaultMiddleware().concat(authErrHandlerMiddleware),
 });
 
 export type RootState = ReturnType<typeof store.getState>;

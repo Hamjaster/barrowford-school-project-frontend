@@ -12,13 +12,16 @@ const initialState: UserManagementState = {
   users: [],
   parents: [],
   yearGroups: [],
+  classes: [],
   pagination: null,
   isLoading: false,
   error: null,
   createUserSuccess: false,
   successMessage: "",
   resetPasswordSuccess: false,
-  isStatusUpdateLoading : false
+  isStatusUpdateLoading : false,
+  isAssigningParent: false,
+  isAssigningTeacher: false
 };
 
 // Helper function to get auth headers
@@ -213,6 +216,35 @@ export const fetchYearGroups = createAsyncThunk(
   }
 );
 
+export const fetchClasses = createAsyncThunk(
+  'userManagement/fetchClasses',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/subject/classes`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch classes');
+      }
+
+      const data = await response.json();
+      return data.data; // Return the classes array
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
 
 export const toggleUserStatus = createAsyncThunk(
   'userManagement/toggleUserStatus',
@@ -241,6 +273,141 @@ export const toggleUserStatus = createAsyncThunk(
 
       const data = await response.json();
       return { userId, action, role, message: data.message };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+// Assignment-related async thunks
+export const getStudentAssignments = createAsyncThunk(
+  'userManagement/getStudentAssignments',
+  async (studentId: string, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/assignment/student/${studentId}`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch student assignments');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+export const assignParentsToStudent = createAsyncThunk(
+  'userManagement/assignParentsToStudent',
+  async ({ studentId, parentIds }: { studentId: string; parentIds: number[] }, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/assignment/student/${studentId}/parents`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({ parentIds }),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to assign parents');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+export const assignTeacherToStudent = createAsyncThunk(
+  'userManagement/assignTeacherToStudent',
+  async ({ studentId, teacherId }: { studentId: string; teacherId: number }, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/assignment/student/${studentId}/teacher`, {
+        method: 'POST',
+        headers: getAuthHeaders(token),
+        body: JSON.stringify({ teacherId }),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to assign teacher');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+export const removeTeacherFromStudent = createAsyncThunk(
+  'userManagement/removeTeacherFromStudent',
+  async (studentId: string, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/assignment/student/${studentId}/teacher`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(token),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to remove teacher');
+      }
+
+      const data = await response.json();
+      return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');
     }
@@ -361,9 +528,26 @@ const userManagementSlice = createSlice({
         state.yearGroups = [];
       });
 
+    // Fetch Classes cases
+    builder
+      .addCase(fetchClasses.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchClasses.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        state.classes = action.payload;
+      })
+      .addCase(fetchClasses.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+        state.classes = [];
+      });
+
     // Toggle User Status cases
     builder
-      .addCase(toggleUserStatus.pending, (state, action) => {
+      .addCase(toggleUserStatus.pending, (state) => {
         state.isStatusUpdateLoading = true;
         state.error = null;
       
@@ -387,6 +571,66 @@ const userManagementSlice = createSlice({
       })
       .addCase(toggleUserStatus.rejected, (state, action) => {
         state.isStatusUpdateLoading = false;
+        state.error = action.payload as string;
+      });
+
+    // Assignment cases
+    builder
+      .addCase(getStudentAssignments.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getStudentAssignments.fulfilled, (state) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(getStudentAssignments.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(assignParentsToStudent.pending, (state) => {
+        state.isAssigningParent = true;
+        state.error = null;
+      })
+      .addCase(assignParentsToStudent.fulfilled, (state, action) => {
+        state.isAssigningParent = false
+        state.error = null;
+        state.successMessage = action.payload.message;
+      })
+      .addCase(assignParentsToStudent.rejected, (state, action) => {
+        state.isAssigningParent = false
+        state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(assignTeacherToStudent.pending, (state) => {
+        state.isAssigningTeacher = true;
+        state.error = null;
+      })
+      .addCase(assignTeacherToStudent.fulfilled, (state, action) => {
+        state.isAssigningTeacher = false;
+        state.error = null;
+        state.successMessage = action.payload.message;
+      })
+      .addCase(assignTeacherToStudent.rejected, (state, action) => {
+        state.isAssigningTeacher = false;
+        state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(removeTeacherFromStudent.pending, (state) => {
+        state.isAssigningTeacher = true;
+        state.error = null;
+      })
+      .addCase(removeTeacherFromStudent.fulfilled, (state, action) => {
+        state.isAssigningTeacher = false;
+        state.error = null;
+        state.successMessage = action.payload.message;
+      })
+      .addCase(removeTeacherFromStudent.rejected, (state, action) => {
+        state.isAssigningTeacher = false;
         state.error = action.payload as string;
       });
   },

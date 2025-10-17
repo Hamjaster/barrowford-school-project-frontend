@@ -158,13 +158,16 @@ export interface UserManagementState {
   users: User[];
   parents: User[];
   yearGroups: YearGroup[];
+  classes: Class[];
   pagination: PaginationInfo | null;
   isLoading: boolean;
   error: string | null;
   createUserSuccess: boolean;
   resetPasswordSuccess: boolean;
   successMessage: string;
-  isStatusUpdateLoading : boolean
+  isStatusUpdateLoading : boolean;
+  isAssigningParent: boolean;
+  isAssigningTeacher: boolean;
 }
 
 // Child-related Types
@@ -306,6 +309,12 @@ export interface YearGroup {
   id: number;
   name: string;
   description: string;
+  created_at: string;
+}
+
+export interface Class {
+  id: number;
+  name: string;
   created_at: string;
 }
 

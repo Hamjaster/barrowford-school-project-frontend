@@ -11,6 +11,7 @@ import {
   Loader2,
   UserCheck,
   UserX,
+  Users,
 } from "lucide-react";
 import {
   Table,
@@ -45,6 +46,7 @@ import {
 } from "@/store/slices/userManagementSlice";
 import type { FetchUsersRequest, User } from "@/types";
 import { toast } from "sonner";
+import AssignmentModal from "./AssignmentModal";
 
 type SortColumn = "first_name" | "last_name" | "email" | "role" | "created_at";
 type SortOrder = "asc" | "desc";
@@ -75,6 +77,10 @@ const UsersTable: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
+  // Assignment modal state
+  const [assignmentModal, setAssignmentModal] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
+
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -94,7 +100,7 @@ const UsersTable: React.FC = () => {
       sortBy: sortColumn,
       sortOrder: sortOrder,
     };
-    dispatch(fetchUsers(params));
+    dispatch(fetchUsers(params) as any);
     console.log("hit the API", debouncedSearchTerm);
   }, [
     currentPage,
@@ -182,7 +188,7 @@ const UsersTable: React.FC = () => {
       resetUserPassword({
         email: selectedUser.email,
         newPassword: newPassword,
-      })
+      }) as any
     );
   };
 
@@ -193,16 +199,21 @@ const UsersTable: React.FC = () => {
     setConfirmPassword("");
   };
 
+  const openAssignmentModal = (student: User) => {
+    setSelectedStudent(student);
+    setAssignmentModal(true);
+  };
+
   const handleToggleStatus = (user: User) => {
     const action = user.status === "active" ? "deactivate" : "activate";
     const role = user.role;
     const userId = user.id;
 
-    dispatch(toggleUserStatus({ action, role, userId }))
+    dispatch(toggleUserStatus({ action, role, userId }) as any)
       .unwrap()
       .then(() => {
         if (role === "parent") {
-          dispatch(fetchUsers({}));
+          dispatch(fetchUsers({}) as any);
         }
       });
   };
@@ -396,6 +407,18 @@ const UsersTable: React.FC = () => {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex justify-end gap-2">
+                      {/* Uncomment it for Assing PART */}
+                      {/* {user.role === "student" && user.status === "active" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => openAssignmentModal(user)}
+                          className="cursor-pointer"
+                        >
+                          <Users className="h-4 w-4 mr-1" />
+                          Assign
+                        </Button>
+                      )} */}
                       <Button
                         variant="outline"
                         size="sm"
@@ -560,6 +583,18 @@ const UsersTable: React.FC = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Assignment Modal */}
+      {selectedStudent && (
+        <AssignmentModal
+          isOpen={assignmentModal}
+          onClose={() => {
+            setAssignmentModal(false);
+            setSelectedStudent(null);
+          }}
+          student={selectedStudent}
+        />
+      )}
     </div>
   );
 };

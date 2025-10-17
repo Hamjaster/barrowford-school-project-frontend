@@ -53,12 +53,11 @@ import { fetchStudentDetails } from "@/store/slices/studentSlice";
 import { fetchYearGroups } from "@/store/slices/userManagementSlice";
 import type { RootState, AppDispatch } from "@/store";
 import type { TableEntry } from "@/types";
-import { showToast } from "@/utils/showToast";
+import { toast } from "sonner";
 import { validateFile, uploadFileToSupabase } from "@/utils/fileUpload";
 import supabase from "@/lib/supabse";
 import DeleteConfirmationDialog from "@/components/ui/DeleteConfirmationDialogProps";
 import AttachmentDisplay from "@/components/AttachmentDisplay";
-import { toast } from "sonner";
 import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
 
 interface CulturalCapitalEntry {
@@ -302,14 +301,14 @@ export default function CulturalCapitalPage() {
         ]);
 
         if (!validation.isValid) {
-          showToast(validation.error || "Invalid file", false);
+          toast.error(validation.error || "Invalid file");
           return;
         }
 
         // Get user ID from Supabase auth
         const userData = await supabase.auth.getUser();
         if (!userData.data.user?.id) {
-          showToast("User is not authenticated", false);
+          toast.error("User is not authenticated");
           return;
         }
         const userId = userData.data.user.id;
@@ -343,7 +342,7 @@ export default function CulturalCapitalPage() {
       const result = unwrapResult(resultAction);
       console.log(result, "RESULT");
       // Show moderation message instead of success message
-      showToast(result.message, true);
+      toast.success(result.message);
 
       // Only runs on success ✅
       setIsNewReflectionOpen(false);
@@ -372,10 +371,10 @@ export default function CulturalCapitalPage() {
       await dispatch(requestDeleteReflection(String(reflectionId)))
         .unwrap()
         .then((res) => {
-          showToast(res.message, true);
+          toast.success(res.message);
         })
         .catch((err) => {
-          showToast("Failed to request reflection deletion", false);
+          toast.error("Failed to request reflection deletion");
           console.error("Error while requesting reflection deletion:", err);
         });
     } catch (err) {
@@ -393,7 +392,7 @@ export default function CulturalCapitalPage() {
       unwrapResult(result);
       setIsDetailModalOpen(true);
     } catch (err) {
-      showToast("Failed to load reflections and comments", false);
+      toast.error("Failed to load reflections and comments");
       console.error(err);
     }
   };

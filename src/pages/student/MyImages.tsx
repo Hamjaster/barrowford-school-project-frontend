@@ -23,7 +23,6 @@ import {
   fetchStudentImages,
   uploadStudentImage,
   deleteStudentImage,
-  refreshStudentImages,
   clearError,
   clearMessage,
 } from "@/store/slices/studentSlice";
@@ -53,6 +52,77 @@ const convertToImageItem = (studentImage: StudentImage): ImageItem => ({
   status: studentImage.status,
 });
 
+// Lazy Image Component with Intersection Observer
+interface LazyImageProps {
+  src: string;
+  alt: string;
+  className?: string;
+  onClick?: () => void;
+}
+
+const LazyImage: React.FC<LazyImageProps> = ({
+  src,
+  alt,
+  className,
+  onClick,
+}) => {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [isInView, setIsInView] = useState(false);
+  const imgRef = useRef<HTMLImageElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setIsInView(true);
+          observer.disconnect(); // Stop observing once image is in view
+        }
+      },
+      {
+        threshold: 0.1, // Trigger when 10% of image is visible
+        rootMargin: "50px", // Start loading 50px before image enters viewport
+      }
+    );
+
+    if (imgRef.current) {
+      observer.observe(imgRef.current);
+    }
+
+    return () => observer.disconnect();
+  }, []);
+
+  const handleImageLoad = () => {
+    setIsLoaded(true);
+  };
+
+  return (
+    <div ref={imgRef} className="relative">
+      {/* Skeleton/Placeholder */}
+      {!isLoaded && (
+        <div className={`animate-pulse bg-gray-200 rounded-md ${className}`}>
+          <div className="w-full h-full flex items-center justify-center">
+            {/* <Loader2 className="w-8 h-8 text-gray-400 animate-spin" /> */}
+          </div>
+        </div>
+      )}
+
+      {/* Actual Image */}
+      {isInView && (
+        <img
+          src={src}
+          alt={alt}
+          className={`${className} ${
+            isLoaded ? "opacity-100" : "opacity-0"
+          } transition-opacity duration-300`}
+          onClick={onClick}
+          onLoad={handleImageLoad}
+          loading="lazy" // Native lazy loading as fallback
+        />
+      )}
+    </div>
+  );
+};
+
 export default function MyImages() {
   const dispatch = useDispatch<AppDispatch>();
   const {
@@ -74,7 +144,7 @@ export default function MyImages() {
 
   // Fetch images on component mount and when year group changes
   useEffect(() => {
-    dispatch(fetchStudentImages(selectedYearGroup?.id));
+    (dispatch as any)(fetchStudentImages(selectedYearGroup?.id as any));
   }, [dispatch, selectedYearGroup]);
 
   // Handle error and message display
@@ -137,7 +207,7 @@ export default function MyImages() {
 
         if (uploadResult.success && uploadResult.url) {
           // Upload to backend API with year group ID
-          dispatch(
+          (dispatch as any)(
             uploadStudentImage({
               imageUrl: uploadResult.url,
               yearGroupId: selectedYearGroup?.id,
@@ -155,8 +225,8 @@ export default function MyImages() {
         } else {
           toast.error(uploadResult.error || "Failed to upload image");
         }
-      } catch (error) {
-        console.error("Upload error:", error);
+      } catch (err: unknown) {
+        console.error("Upload error:", String(err));
         toast.error("Failed to upload image");
       }
     }
@@ -169,12 +239,12 @@ export default function MyImages() {
   const confirmDeleteImage = async () => {
     if (!imageToDelete) return;
     try {
-      await dispatch(deleteStudentImage(imageToDelete.id)).unwrap();
+      await (dispatch as any)(deleteStudentImage(imageToDelete.id)).unwrap();
       toast.success("Image deleted successfully!");
       setSelectedImage(null);
-    } catch (error) {
+    } catch (err: unknown) {
       toast.error("Failed to delete image");
-      console.error("Delete error:", error);
+      console.error("Delete error:", String(err));
     } finally {
       setImageToDelete(null);
       setDeleteDialogOpen(false);
@@ -331,11 +401,11 @@ export default function MyImages() {
                   <div
                     className={` rounded-md shadow-md hover:shadow-lg transition-shadow duration-300 border-2 ${statusInfo.borderClass}`}
                   >
-                    <img
+                    <LazyImage
                       src={image.url}
                       alt={image.title}
                       className={`w-full h-full object-cover hover:scale-105 transition-transform duration-300 ${statusInfo.blurClass}`}
-                      loading="lazy"
+                      onClick={() => setSelectedImage(image)}
                     />
 
                     {/* Status Overlay */}

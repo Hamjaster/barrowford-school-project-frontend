@@ -406,7 +406,7 @@ export interface StudentState {
 export interface StudentDetails {
   name: string;
   age: number;
-  year_group_id: number;
+  current_year_group_id: number;
   class_id: number;
   class_name: string;
   hair_color: string;

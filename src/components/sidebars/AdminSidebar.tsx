@@ -8,6 +8,7 @@ import {
   KeyRound,
   Settings,
   Shield,
+  Upload,
 } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -48,6 +49,7 @@ const AdminSidebar: React.FC = () => {
       KeyRound: <KeyRound size={20} />,
       Settings: <Settings size={20} />,
       Shield: <Shield size={20} />,
+      Upload: <Upload size={20} />,
     };
     return iconMap[iconName as keyof typeof iconMap] || null;
   };

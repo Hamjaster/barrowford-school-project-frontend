@@ -55,7 +55,7 @@ interface UploadedFile {
   uploadError?: string;
 }
 
-export default function StudentContentPage() {
+export default function MyLearnings() {
   const dispatch = useDispatch<AppDispatch>();
   const {
     selectedSubject,

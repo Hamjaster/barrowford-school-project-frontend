@@ -18,6 +18,7 @@ import {
   clearSuccess,
   fetchParents,
   fetchYearGroups,
+  fetchClasses,
 } from "@/store/slices/userManagementSlice";
 import { uploadFileToSupabase } from "@/utils/fileUpload";
 
@@ -45,6 +46,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     successMessage,
     parents,
     yearGroups,
+    classes,
   } = useSelector((state: RootState) => state.userManagement);
 
   const [formData, setFormData] = useState<CreateUserFormData>({
@@ -94,6 +96,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     setFormData((prev) => ({
       ...prev,
       year_group_id: Number(value),
+    }));
+  };
+
+  const handleClassSelection = (value: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      class_id: Number(value),
     }));
   };
 
@@ -159,6 +168,17 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
       return;
     }
 
+    if (formData.role === "staff" && !formData.class_id) {
+      toast.error("Please select a class for the staff member");
+      return;
+    }
+
+    // ✅ Student-specific class check
+    if (formData.role === "student" && !formData.class_id) {
+      toast.error("Please select a class for the student");
+      return;
+    }
+
     // 📤 Upload image to Cloudinary first (if student + image exists)
     let imageUrl = "";
     if (formData.role === "student" && formData.profile_image) {
@@ -202,10 +222,11 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
     }
   };
 
-  // 📦 Load parents and year groups when component mounts
+  // 📦 Load parents, year groups, and classes when component mounts
   React.useEffect(() => {
     dispatch(fetchParents() as any);
     dispatch(fetchYearGroups() as any);
+    dispatch(fetchClasses() as any);
   }, [dispatch]);
 
   React.useEffect(() => {
@@ -228,7 +249,6 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         parent_ids: [],
         year_group_id: 1,
         class_id: 1,
-
         profile_image: null,
       });
 
@@ -365,37 +385,70 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
         </div>
 
         {formData.role === "staff" && (
-          <div>
-            <label
-              htmlFor="year_group_id"
-              className="block text-sm font-medium text-gray-700 mb-2"
-            >
-              Year Group
-            </label>
-            <Select
-              value={formData.year_group_id?.toString() || ""}
-              onValueChange={handleYearGroupSelection}
-              required
-            >
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Select year group..." />
-              </SelectTrigger>
-              <SelectContent>
-                {yearGroups &&
-                  yearGroups.map((yearGroup) => (
-                    <SelectItem
-                      key={yearGroup.id}
-                      value={yearGroup.id.toString()}
-                    >
-                      {yearGroup.name}
-                    </SelectItem>
-                  ))}
-              </SelectContent>
-            </Select>
-            <p className="text-sm text-gray-500 mt-1">
-              Select the year group the staff member will be assigned to
-            </p>
-          </div>
+          <>
+            <div>
+              <label
+                htmlFor="year_group_id"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Year Group
+              </label>
+              <Select
+                value={formData.year_group_id?.toString() || ""}
+                onValueChange={handleYearGroupSelection}
+                required
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select year group..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {yearGroups &&
+                    yearGroups.map((yearGroup) => (
+                      <SelectItem
+                        key={yearGroup.id}
+                        value={yearGroup.id.toString()}
+                      >
+                        {yearGroup.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-gray-500 mt-1">
+                Select the year group the staff member will be assigned to
+              </p>
+            </div>
+            <div>
+              <label
+                htmlFor="class_id"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Class
+              </label>
+              <Select
+                value={formData.class_id?.toString() || ""}
+                onValueChange={handleClassSelection}
+                required
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select class..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes &&
+                    classes.map((classItem) => (
+                      <SelectItem
+                        key={classItem.id}
+                        value={classItem.id.toString()}
+                      >
+                        {classItem.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-gray-500 mt-1">
+                Select the class the staff member will be assigned to
+              </p>
+            </div>
+          </>
         )}
 
         {formData.role === "student" && (
@@ -456,6 +509,37 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
             </div>
             <div>
               <label
+                htmlFor="class_id"
+                className="block text-sm font-medium text-gray-700 mb-2"
+              >
+                Class
+              </label>
+              <Select
+                value={formData.class_id?.toString() || ""}
+                onValueChange={handleClassSelection}
+                required
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select class..." />
+                </SelectTrigger>
+                <SelectContent>
+                  {classes &&
+                    classes.map((classItem) => (
+                      <SelectItem
+                        key={classItem.id}
+                        value={classItem.id.toString()}
+                      >
+                        {classItem.name}
+                      </SelectItem>
+                    ))}
+                </SelectContent>
+              </Select>
+              <p className="text-sm text-gray-500 mt-1">
+                Select the class the student will be assigned to
+              </p>
+            </div>
+            <div>
+              <label
                 htmlFor="profile_image"
                 className="block text-sm font-medium text-gray-700 mb-2 cursor-pointer"
               >
@@ -501,7 +585,9 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ allowedRoles }) => {
               !formData.password ||
               !formData.role ||
               (formData.role === "student" && !formData.year_group_id) ||
+              (formData.role === "student" && !formData.class_id) ||
               (formData.role === "staff" && !formData.year_group_id) ||
+              (formData.role === "staff" && !formData.class_id) ||
               isLoading
             }
             loading={isLoading}

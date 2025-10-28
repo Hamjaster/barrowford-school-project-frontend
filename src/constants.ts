@@ -49,10 +49,15 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
         bgColor: 'bg-blue-500',
         iconName: 'Home',
       },
-
+      {
+        to: '/bulk-upload',
+        label: 'Bulk Upload',
+        bgColor: 'bg-purple-500',
+        iconName: 'Upload',
+      },
     ],
     
-    availableTabs: ['overview', 'create-user'], // 'reset-password' commented out for new password management flow
+    availableTabs: ['overview', 'create-user'], // Removed bulk-upload tab - now has dedicated page
     
   },
   staff_admin: {
@@ -71,10 +76,15 @@ export const ROLEWISE_INFORMATION: Record<UserRole, {
         bgColor: 'bg-blue-500',
         iconName: 'Home',
       },
-
+      {
+        to: '/bulk-upload',
+        label: 'Bulk Upload',
+        bgColor: 'bg-purple-500',
+        iconName: 'Upload',
+      },
     ],
     
-    availableTabs: ['overview', 'create-user'], // Same as admin dashboard
+    availableTabs: ['overview', 'create-user'], // Removed bulk-upload tab - now has dedicated page
     
   },
   staff: {
@@ -172,7 +182,7 @@ export const TAB_DISPLAY_NAMES: Record<string, string> = {
   'my-learning': 'My Learning',
   'my-experiences': 'My Experiences',
   'what-i-read': 'What I Read',
-  'personal-section-topics': 'Personal Section Topics',
+  'bulk-upload': 'Bulk Upload',
 } as const;
 
 // Default Avatar URL

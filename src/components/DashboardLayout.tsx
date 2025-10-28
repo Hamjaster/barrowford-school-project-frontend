@@ -37,7 +37,7 @@ const DashboardLayout: React.FC = () => {
       <div className="flex max-h-screen w-full">
         {renderSidebar()}
         <SidebarInset className="flex overflow-y-scroll bg-[#eaf7fd] flex-col flex-1 w-full min-w-0">
-          {user?.role !== "student" && <Header />}
+          {user?.role !== "student" && user?.role !== "parent" && <Header />}
           <div className="w-full">
             <Outlet />
           </div>

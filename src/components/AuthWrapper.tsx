@@ -11,7 +11,7 @@ const AuthWrapper: React.FC<AuthWrapperProps> = ({ children }) => {
 
   useEffect(() => {
     // Initialize auth state from localStorage on app start
-    dispatch(initializeAuth());
+    dispatch(initializeAuth() as any);
   }, [dispatch]);
 
   return <>{children}</>;

@@ -87,6 +87,71 @@ export const forgotPassword = createAsyncThunk(
   }
 );
 
+export const initializeAuth = createAsyncThunk(
+  'auth/initialize',
+  async (_, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      const userStr = localStorage.getItem('user');
+      const supabaseAccessToken = localStorage.getItem('supabase_access_token');
+      const supabaseRefreshToken = localStorage.getItem('supabase_refresh_token');
+      
+      if (token && userStr) {
+        try {
+          const user = JSON.parse(userStr);
+          
+          // Check if user is inactive
+          if (user.status && user.status !== 'active') {
+            localStorage.removeItem('auth_token');
+            localStorage.removeItem('user');
+            localStorage.removeItem('supabase_access_token');
+            localStorage.removeItem('supabase_refresh_token');
+            return rejectWithValue('Account is inactive. Please contact an administrator.');
+          }
+          
+          // Restore Supabase session if tokens are available
+          if (supabaseAccessToken && supabaseRefreshToken) {
+            try {
+              const { error } = await supabase.auth.setSession({
+                access_token: supabaseAccessToken,
+                refresh_token: supabaseRefreshToken
+              });
+              
+              if (error) {
+                console.warn('Failed to restore Supabase session:', error);
+                // Clear invalid session tokens
+                localStorage.removeItem('supabase_access_token');
+                localStorage.removeItem('supabase_refresh_token');
+                return rejectWithValue('Session expired. Please login again.');
+              } else {
+                console.log('Supabase session restored successfully');
+              }
+            } catch (sessionError) {
+              console.warn('Error restoring Supabase session:', sessionError);
+              localStorage.removeItem('supabase_access_token');
+              localStorage.removeItem('supabase_refresh_token');
+              return rejectWithValue('Session restoration failed. Please login again.');
+            }
+          }
+          
+          return { user, token };
+        } catch (error) {
+          // If parsing fails, clear localStorage
+          localStorage.removeItem('auth_token');
+          localStorage.removeItem('user');
+          localStorage.removeItem('supabase_access_token');
+          localStorage.removeItem('supabase_refresh_token');
+          return rejectWithValue('Invalid session data. Please login again.');
+        }
+      } else {
+        return rejectWithValue('No session found');
+      }
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to initialize auth');
+    }
+  }
+);
+
 
 const authSlice = createSlice({
   name: 'auth',
@@ -99,48 +164,13 @@ const authSlice = createSlice({
       state.error = null;
       localStorage.removeItem('auth_token');
       localStorage.removeItem('user');
+      localStorage.removeItem('supabase_access_token');
+      localStorage.removeItem('supabase_refresh_token');
+      // Clear Supabase session
+      supabase.auth.signOut();
     },
     clearError: (state) => {
       state.error = null;
-    },
-    initializeAuth: (state) => {
-      const token = localStorage.getItem('auth_token');
-      const userStr = localStorage.getItem('user');
-      
-      if (token && userStr) {
-        try {
-          const user = JSON.parse(userStr);
-          
-          // Check if user is inactive
-          if (user.status && user.status !== 'active') {
-            state.isAuthenticated = false;
-            state.user = null;
-            state.token = null;
-            state.error = 'Account is inactive. Please contact an administrator.';
-            localStorage.removeItem('auth_token');
-            localStorage.removeItem('user');
-          } else {
-            state.token = token;
-            state.user = user;
-            state.isAuthenticated = true;
-          }
-        } catch (error) {
-          // If parsing fails, clear localStorage
-          localStorage.removeItem('auth_token');
-          localStorage.removeItem('user');
-          state.isAuthenticated = false;
-          state.user = null;
-          state.token = null;
-        }
-      } else {
-        // No token or user found
-        state.isAuthenticated = false;
-        state.user = null;
-        state.token = null;
-      }
-      
-      // Set loading to false after checking
-      state.isLoading = false;
     },
   },
   extraReducers: (builder) => {
@@ -176,6 +206,9 @@ const authSlice = createSlice({
         // Persist to localStorage
         localStorage.setItem('auth_token', action.payload.access_token);
         localStorage.setItem('user', JSON.stringify(action.payload.user));
+        // Store Supabase session tokens for restoration on app load
+        localStorage.setItem('supabase_access_token', action.payload.session.access_token);
+        localStorage.setItem('supabase_refresh_token', action.payload.session.refresh_token);
         
       })
       .addCase(loginUser.rejected, (state, action) => {
@@ -201,9 +234,29 @@ const authSlice = createSlice({
         state.error = action.payload as string;
       })
 
+    // Initialize Auth cases
+    builder
+      .addCase(initializeAuth.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(initializeAuth.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.user = action.payload.user;
+        state.token = action.payload.token;
+        state.isAuthenticated = true;
+        state.error = null;
+      })
+      .addCase(initializeAuth.rejected, (state, action) => {
+        state.isLoading = false;
+        state.isAuthenticated = false;
+        state.user = null;
+        state.token = null;
+        state.error = action.payload as string;
+      });
 
   },
 });
 
-export const { logout, clearError, initializeAuth } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

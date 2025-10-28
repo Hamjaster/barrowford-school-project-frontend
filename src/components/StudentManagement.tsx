@@ -57,7 +57,6 @@ interface Student {
   email: string;
   current_year_group_id: number;
   class_id: number;
-  class_name: string;
   created_at: string;
   profile_photo: string;
   height: number;
@@ -105,9 +104,9 @@ export default function StudentManagement() {
 
   const dispatch = useDispatch<AppDispatch>();
   const { token } = useSelector((state: RootState) => state.auth);
-  // const { yearGroups, classes } = useSelector(
-  //   (state: RootState) => state.userManagement
-  // );
+  const { yearGroups, classes } = useSelector(
+    (state: RootState) => state.userManagement
+  );
 
   // Fetch assigned students
   const fetchStudents = async () => {
@@ -610,11 +609,10 @@ export default function StudentManagement() {
                                   }
                                 />{" "}
                               </div>
-                              {/* Uncomment when we need class and year updation
+                              {/* Uncomment when we need class and year updation */}
                               <div>
                                 <Label className="mb-2">Class Name</Label>
                                 <Select
-                                  disabled={true}
                                   value={
                                     editStudent?.class_id?.toString() || ""
                                   }
@@ -626,7 +624,7 @@ export default function StudentManagement() {
                                     <SelectValue placeholder="Select a class" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {classes.map((classItem) => (
+                                    {classes.map((classItem: any) => (
                                       <SelectItem
                                         key={classItem.id}
                                         value={classItem.id.toString()}
@@ -650,13 +648,12 @@ export default function StudentManagement() {
                                       Number(value)
                                     )
                                   }
-                                  disabled={true}
                                 >
                                   <SelectTrigger>
                                     <SelectValue placeholder="Select a year group" />
                                   </SelectTrigger>
                                   <SelectContent>
-                                    {yearGroups.map((yearGroup) => (
+                                    {yearGroups.map((yearGroup: any) => (
                                       <SelectItem
                                         key={yearGroup.id}
                                         value={yearGroup.id.toString()}
@@ -667,7 +664,15 @@ export default function StudentManagement() {
                                   </SelectContent>
                                 </Select>
                               </div>
-                               */}
+                              {/* Disclaimer for class and year group changes */}
+                              <div className="col-span-2 -mt-2">
+                                <p className="text-sm text-gray-500 italic">
+                                  ⚠️ Note: Changing the class or year group may
+                                  result in this student no longer being visible
+                                  to you, as they will no longer be assigned to
+                                  your class/year group.
+                                </p>
+                              </div>
                               <div>
                                 <Label className="mb-2">Height</Label>
                                 <Input

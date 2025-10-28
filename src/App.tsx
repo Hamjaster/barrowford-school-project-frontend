@@ -24,6 +24,7 @@ import ChildDetailsPage from "./pages/parent/ChildDetails";
 import MyLearning from "./pages/student/MyLearning";
 import MyImages from "./pages/student/MyImages";
 import MyExperiences from "./pages/student/MyExperiences";
+import BulkUploadPage from "./pages/BulkUploadPage";
 
 const App: React.FC = () => {
   return (
@@ -97,6 +98,16 @@ const App: React.FC = () => {
                   element={
                     <ProtectedRoute allowedRoles={["parent"]}>
                       <ChildDetailsPage />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Admin-only routes */}
+                <Route
+                  path="bulk-upload"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin", "staff_admin"]}>
+                      <BulkUploadPage />
                     </ProtectedRoute>
                   }
                 />

@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import Masonry from "react-masonry-css";
 import {
   ArrowLeft,
   BookOpen,
@@ -12,33 +11,17 @@ import {
   Users,
   Heart,
   Star,
-  Clock,
   CheckCircle,
   Zap,
-  Send,
-  User,
   Loader2,
-  FileText,
-  Image as ImageIcon,
-  Download,
   UserCircle,
-  Filter,
-  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import AttachmentDisplay from "@/components/AttachmentDisplay";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import LearningTab from "@/components/parent/LearningTab";
+import PhotosTab from "@/components/parent/PhotosTab";
+import ReflectionsTab from "@/components/parent/ReflectionsTab";
 import { useNavigate, useParams } from "react-router-dom";
 import type { RootState, AppDispatch } from "@/store";
 import {
@@ -52,7 +35,6 @@ import {
 } from "@/store/slices/yearDataSlice";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchChildDetails } from "@/store/slices/parentSlice";
-import { DEFAULT_AVATAR_URL } from "@/constants";
 import { getYearGroupDisplayName } from "@/utils/yearGroupUtils";
 
 // Convert StudentImage to ImageItem for display
@@ -92,15 +74,16 @@ export default function ChildDetailsPage() {
   const { selectedChild, isLoadingChildDetails, addingCommentLoading } =
     useSelector((state: RootState) => state.parent);
 
+  useEffect(() => {
+    console.log("selectedChild : ", selectedChild);
+  }, [selectedChild]);
+
   // Filter states
   const [learningSubjectFilter, setLearningSubjectFilter] =
     useState<string>("all");
   const [photosYearFilter, setPhotosYearFilter] = useState<string>("all");
   const [reflectionWeekFilter, setReflectionWeekFilter] =
     useState<string>("all");
-
-  const [newComments, setNewComments] = useState<{ [key: string]: string }>({});
-  const [selectedImage, setSelectedImage] = useState<ImageItem | null>(null);
 
   // Get year groups, subjects, and weeks from Redux store
   const {
@@ -114,28 +97,28 @@ export default function ChildDetailsPage() {
   );
 
   useEffect(() => {
-    const studentId = parseInt(childId); // convert to number
-    dispatch(fetchReflectionsByStudentId(studentId));
+    const studentId = Number.parseInt(childId); // convert to number
+    dispatch(fetchReflectionsByStudentId(studentId) as any);
   }, [dispatch, childId]);
 
   useEffect(() => {
     if (childId) {
-      dispatch(fetchChildDetails(childId));
+      dispatch(fetchChildDetails(childId) as any);
     }
   }, [childId, dispatch]);
 
   // Fetch year groups, subjects, and weeks on component mount
   useEffect(() => {
-    dispatch(fetchYearGroups());
-    dispatch(fetchAllSubjects());
-    dispatch(fetchPreviousWeeks());
+    dispatch(fetchYearGroups() as any);
+    dispatch(fetchAllSubjects() as any);
+    dispatch(fetchPreviousWeeks() as any);
   }, [dispatch]);
 
   if (isLoadingChildDetails) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-pink-50">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-blue-600 mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 animate-spin text-orange-500 mx-auto mb-4" />
           <p className="text-gray-600">Loading child details...</p>
         </div>
       </div>
@@ -144,12 +127,15 @@ export default function ChildDetailsPage() {
 
   if (!selectedChild) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-pink-50">
         <div className="text-center">
           <h1 className="text-2xl font-bold text-gray-800 mb-4">
             Child Not Found
           </h1>
-          <Button onClick={() => navigate("/")}>
+          <Button
+            onClick={() => navigate("/")}
+            className="bg-blue-500 hover:bg-blue-600"
+          >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
@@ -163,505 +149,61 @@ export default function ChildDetailsPage() {
   // Convert student images to display format
   const images = selectedChild.images.map(convertToImageItem);
 
-  // Filter functions
-  const filterLearningsBySubject = (
-    learnings: any[],
-    subjectFilter: string
-  ) => {
-    if (subjectFilter === "all") return learnings;
-    return learnings.filter((learning) => {
-      return learning.subject?.name === subjectFilter;
-    });
-  };
-
-  const filterImagesByYear = (images: ImageItem[], yearFilter: string) => {
-    if (yearFilter === "all") return images;
-    return images.filter((image) => {
-      return image.yearGroup === yearFilter;
-    });
-  };
-
-  const filterReflectionsByWeek = (reflections: any[], weekFilter: string) => {
-    if (weekFilter === "all") return reflections;
-    return reflections.filter((reflection) => reflection.week === weekFilter);
-  };
-
-  // Get filtered data
-  const filteredLearnings = filterLearningsBySubject(
-    selectedChild.learnings,
-    learningSubjectFilter
-  );
-  const filteredImages = filterImagesByYear(images, photosYearFilter);
-  const filteredReflections = filterReflectionsByWeek(
-    selectedChild.reflections,
-    reflectionWeekFilter
-  );
-
-  const breakpointColumnsObj = {
-    default: 4,
-    1100: 3,
-    700: 2,
-    500: 1,
-  };
-
-  const handleAddComment = async (reflectionId: number) => {
-    const commentText = newComments[reflectionId]?.trim();
-    if (!commentText) return;
-
+  const handleAddComment = async (reflectionId: number, content: string) => {
     try {
       // clear old error before request
       setAddCommentError("");
       setAddingCommentReflectionId(reflectionId);
       // ✅ unwrap so errors can be caught
       await dispatch(
-        addReflectionComment({ reflectionId, content: commentText })
+        addReflectionComment({ reflectionId, content }) as any
       ).unwrap();
-
-      // ✅ clear input on success
-      setNewComments((prev) => ({ ...prev, [reflectionId]: "" }));
     } catch (err: any) {
       // ❌ show backend error for this reflection
       setAddCommentError("Failed while uploading comments");
+      throw err; // Re-throw to let ReflectionsTab handle it
     } finally {
       setAddingCommentReflectionId(null);
     }
   };
 
-  // Filter component
-  const FilterDropdown = ({
-    value,
-    onValueChange,
-    options,
-    placeholder,
-    isLoading = false,
-  }: {
-    value: string;
-    onValueChange: (value: string) => void;
-    options: { value: string; label: string }[];
-    placeholder: string;
-    isLoading?: boolean;
-  }) => (
-    <div className="flex items-center gap-2">
-      <Filter className="w-4 h-4 text-gray-500" />
-      <Select value={value} onValueChange={onValueChange} disabled={isLoading}>
-        <SelectTrigger className="w-48">
-          <SelectValue placeholder={placeholder} />
-        </SelectTrigger>
-        <SelectContent>
-          <SelectItem value="all">All {placeholder.toLowerCase()}</SelectItem>
-          {options.map((option) => (
-            <SelectItem key={option.value} value={option.value}>
-              {option.label}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-      {value !== "all" && (
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onValueChange("all")}
-          className="h-8 w-8 p-0"
-        >
-          <X className="w-4 h-4" />
-        </Button>
-      )}
-    </div>
-  );
-
   const renderTabContent = () => {
     switch (activeTab) {
       case "learning":
         return (
-          <div className="space-y-6">
-            {/* Learning Filter */}
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800">
-                Learning Activities
-              </h3>
-              <FilterDropdown
-                value={learningSubjectFilter}
-                onValueChange={setLearningSubjectFilter}
-                options={subjects.map((subject) => ({
-                  value: subject.name,
-                  label: subject.name,
-                }))}
-                placeholder="Filter by Subject"
-                isLoading={isLoadingSubjects}
-              />
-            </div>
-
-            {filteredLearnings.length === 0 ? (
-              <div className="text-center py-12">
-                <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-600 mb-2">
-                  {selectedChild.learnings.length === 0
-                    ? "No Learning Activities Yet"
-                    : "No Learning Activities for Selected Subject"}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {selectedChild.learnings.length === 0
-                    ? "Your child's learning activities will appear here."
-                    : "Try selecting a different subject or 'All Subjects' to see more activities."}
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-6">
-                {filteredLearnings.map((learning) => (
-                  <Card
-                    key={learning.id}
-                    className="hover:shadow-md transition-shadow duration-200"
-                  >
-                    <CardContent className="p-6">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 bg-blue-100 rounded-lg">
-                            <FileText className="w-5 h-5 text-blue-600" />
-                          </div>
-                          <div>
-                            <h4 className="font-semibold text-gray-800 text-base">
-                              {learning.title}
-                            </h4>
-                            <div className="flex items-center gap-2 mt-1">
-                              {learning.subject && (
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-green-100 text-green-800"
-                                >
-                                  {learning.subject.name}
-                                </Badge>
-                              )}
-                              <span className="text-xs text-gray-500 flex items-center gap-1">
-                                <Clock className="w-3 h-3" />
-                                {new Date(
-                                  learning.created_at
-                                ).toLocaleDateString("en-US", {
-                                  weekday: "long",
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                      {learning.description && (
-                        <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
-                          <p className="text-sm text-gray-700 leading-relaxed">
-                            {learning.description}
-                          </p>
-                        </div>
-                      )}
-                      {learning.attachment_url && (
-                        <div className="mt-4">
-                          <AttachmentDisplay
-                            url={learning.attachment_url}
-                            alt="Learning attachment"
-                            maxHeight="h-48"
-                            maxWidth="max-w-full"
-                          />
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </div>
+          <LearningTab
+            learnings={selectedChild.learnings}
+            subjects={subjects}
+            subjectFilter={learningSubjectFilter}
+            onSubjectFilterChange={setLearningSubjectFilter}
+            isLoadingSubjects={isLoadingSubjects}
+          />
         );
 
       case "photos":
         return (
-          <div className="space-y-6">
-            {/* Photos Filter */}
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-gray-800">Photos</h3>
-              <FilterDropdown
-                value={photosYearFilter}
-                onValueChange={setPhotosYearFilter}
-                options={yearGroups.map((year) => ({
-                  value: year.name,
-                  label: year.name,
-                }))}
-                placeholder="Filter by Year"
-                isLoading={isLoadingYearGroups}
-              />
-            </div>
-
-            {filteredImages.length === 0 ? (
-              <div className="text-center py-12">
-                <Camera className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-600 mb-2">
-                  {selectedChild.images.length === 0
-                    ? "No Photos Yet"
-                    : "No Photos for Selected Year"}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {selectedChild.images.length === 0
-                    ? "Your child's photos will appear here."
-                    : "Try selecting a different year or 'All Years' to see more photos."}
-                </p>
-              </div>
-            ) : (
-              <Masonry
-                breakpointCols={breakpointColumnsObj}
-                className="masonry-grid"
-                columnClassName="masonry-grid-column"
-              >
-                {filteredImages.map((image) => (
-                  <div
-                    key={image.id}
-                    onClick={() => setSelectedImage(image)}
-                    className="relative mb-4 group cursor-pointer"
-                  >
-                    <div className="aspect-square overflow-hidden rounded-md shadow-md hover:shadow-lg transition-shadow duration-300">
-                      <img
-                        src={image.url}
-                        alt={image.title}
-                        className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                        loading="lazy"
-                        onError={(e) => {
-                          const target = e.target as HTMLImageElement;
-                          target.src = DEFAULT_AVATAR_URL;
-                        }}
-                      />
-                    </div>
-                    {/* Overlay on hover */}
-                    <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300 rounded-md flex items-center justify-center">
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <div className="flex items-center gap-2 text-white">
-                          <ImageIcon className="w-5 h-5" />
-                          <span className="text-sm font-medium">
-                            View Image
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </Masonry>
-            )}
-          </div>
+          <PhotosTab
+            images={images}
+            yearGroups={yearGroups}
+            yearFilter={photosYearFilter}
+            onYearFilterChange={setPhotosYearFilter}
+            isLoadingYearGroups={isLoadingYearGroups}
+          />
         );
 
       case "reflections":
         return (
-          <div className="space-y-6">
-            {/* Reflections Filter */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <h3 className="text-lg font-semibold text-gray-800">
-                  Reflections
-                </h3>
-                <Badge variant="outline" className="text-xs">
-                  {filteredReflections.length} of{" "}
-                  {selectedChild.reflections.length} reflections
-                </Badge>
-              </div>
-              <FilterDropdown
-                value={reflectionWeekFilter}
-                onValueChange={setReflectionWeekFilter}
-                options={
-                  previousWeeks?.previousWeeks?.map((week) => ({
-                    value: week,
-                    label: week,
-                  })) || []
-                }
-                placeholder="Filter by Week"
-                isLoading={isLoadingWeeks}
-              />
-            </div>
-
-            {filteredReflections.length === 0 ? (
-              <div className="text-center py-12">
-                <MessageSquare className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-                <h3 className="text-lg font-medium text-gray-600 mb-2">
-                  {selectedChild.reflections.length === 0
-                    ? "No Reflections Yet"
-                    : "No Reflections for Selected Week"}
-                </h3>
-                <p className="text-sm text-gray-500">
-                  {selectedChild.reflections.length === 0
-                    ? "Your child's reflections will appear here."
-                    : "Try selecting a different week or 'All Weeks' to see more reflections."}
-                </p>
-              </div>
-            ) : (
-              <div className="grid gap-6">
-                {filteredReflections.map((reflection) => {
-                  return (
-                    <Card
-                      key={reflection.id}
-                      className="hover:shadow-md transition-shadow duration-200"
-                    >
-                      <CardContent className="px-6 py-2">
-                        <div className="flex items-start justify-between mb-4">
-                          <div className="flex items-center gap-3">
-                            <div>
-                              <h4 className="font-semibold text-gray-800 text-base">
-                                {/* {reflection.reflectiontopics.title} */}
-                              </h4>
-                              <div className="flex items-center gap-2 mt-1">
-                                <Badge
-                                  variant="secondary"
-                                  className="text-xs bg-gray-100"
-                                >
-                                  {reflection.week}
-                                </Badge>
-                                <span className="text-xs text-gray-500 flex items-center gap-1">
-                                  <Clock className="w-3 h-3" />
-                                  {new Date(
-                                    reflection.created_at
-                                  ).toLocaleDateString("en-US", {
-                                    weekday: "long",
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  })}
-                                </span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="bg-gray-50 rounded-lg p-4 border-l-4 border-blue-400">
-                          <p className="text-sm text-gray-700 leading-relaxed">
-                            {reflection.content}
-                          </p>
-                        </div>
-
-                        {/* Attachment Display */}
-                        {reflection.attachment_url &&
-                          reflection.attachment_url.length > 0 && (
-                            <div className="mt-4">
-                              <div className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-3">
-                                <FileText className="w-4 h-4" />
-                                Attachment
-                              </div>
-                              <div className="bg-white rounded-lg border p-3">
-                                <AttachmentDisplay
-                                  url={reflection.attachment_url}
-                                  alt="Reflection attachment"
-                                  maxHeight="h-48"
-                                  maxWidth="max-w-full"
-                                  className="w-full"
-                                />
-                              </div>
-                            </div>
-                          )}
-
-                        {reflection.reflection_comments.length > 0 && (
-                          <div className="mt-4 space-y-3">
-                            <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                              <MessageSquare className="w-4 h-4" />
-                              Comments ({reflection.reflection_comments.length})
-                            </div>
-
-                            {reflection.reflection_comments.map(
-                              (comment: any) => (
-                                <div
-                                  key={comment.id}
-                                  className="bg-blue-50 rounded-lg p-3 border-l-4 border-blue-200"
-                                >
-                                  <div className="flex items-start gap-3">
-                                    <div className="flex-1">
-                                      <div className="flex items-center gap-2 mb-1">
-                                        <span className="text-sm font-medium text-gray-800">
-                                          {comment.user_name} (
-                                          {comment.user_role.toLowerCase()})
-                                        </span>
-                                        <span className="text-xs text-gray-500">
-                                          {new Date(
-                                            comment.created_at
-                                          ).toLocaleDateString("en-US", {
-                                            month: "short",
-                                            day: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                          })}
-                                        </span>
-                                      </div>
-                                      <p className="text-sm text-gray-700 leading-relaxed">
-                                        {comment.comment}
-                                      </p>
-                                    </div>
-                                  </div>
-                                </div>
-                              )
-                            )}
-                          </div>
-                        )}
-
-                        <div className="mt-4 space-y-3">
-                          <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
-                            <MessageSquare className="w-4 h-4" />
-                            Add a comment
-                          </div>
-                          <div className="flex gap-3">
-                            <Avatar className="w-8 h-8">
-                              <AvatarImage
-                                src="/loving-parent.png"
-                                alt="Parent"
-                              />
-                              <AvatarFallback className="text-xs">
-                                <User className="w-4 h-4" />
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 space-y-2">
-                              {addcommentError && (
-                                <div className="p-3 mb-4 rounded-md bg-red-50 border border-red-200 text-red-600 text-sm">
-                                  {addcommentError}
-                                </div>
-                              )}
-                              <Textarea
-                                placeholder="Share your thoughts about this reflection..."
-                                value={newComments[reflection.id] || ""}
-                                onChange={(e) =>
-                                  setNewComments((prev) => ({
-                                    ...prev,
-                                    [reflection.id]: e.target.value,
-                                  }))
-                                }
-                                className="min-h-[80px] text-sm resize-none"
-                              />
-                              <div className="flex gap-2">
-                                <Button
-                                  size="sm"
-                                  onClick={() =>
-                                    handleAddComment(Number(reflection.id))
-                                  }
-                                  disabled={!newComments[reflection.id]?.trim()}
-                                  className="h-8 bg-gradient-to-r from-gray-700 via-gray-800 to-black hover:from-gray-800 hover:via-gray-900 hover:to-gray-900 text-white shadow-lg hover:shadow-xl transition-all duration-300"
-                                  loading={
-                                    addingCommentLoading &&
-                                    addingCommentReflectionId === reflection.id
-                                  }
-                                >
-                                  <Send className="w-3 h-3 mr-1" />
-                                  {addingCommentLoading &&
-                                  addingCommentReflectionId === reflection.id
-                                    ? "Posting..."
-                                    : "Post Comment"}
-                                </Button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-gray-100">
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <MessageSquare className="w-3 h-3" />
-                            <span>Student Reflection</span>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  );
-                })}
-              </div>
-            )}
-          </div>
+          <ReflectionsTab
+            reflections={selectedChild.reflections}
+            previousWeeks={previousWeeks}
+            weekFilter={reflectionWeekFilter}
+            onWeekFilterChange={setReflectionWeekFilter}
+            isLoadingWeeks={isLoadingWeeks}
+            onAddComment={handleAddComment}
+            addingCommentLoading={addingCommentLoading}
+            addingCommentReflectionId={addingCommentReflectionId}
+            addCommentError={addcommentError}
+          />
         );
 
       case "other tabs":
@@ -770,7 +312,7 @@ export default function ChildDetailsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-pink-50 to-blue-50">
       <style>{`
         .masonry-grid {
           display: flex;
@@ -781,61 +323,89 @@ export default function ChildDetailsPage() {
           padding-left: 16px;
           background-clip: padding-box;
         }
+        .msnry {
+          column-count: 4;
+          column-gap: 16px;
+        }
+        @media (max-width: 1200px) {
+          .msnry {
+            column-count: 3;
+          }
+        }
+        @media (max-width: 768px) {
+          .msnry {
+            column-count: 2;
+          }
+        }
+        @media (max-width: 480px) {
+          .msnry {
+            column-count: 1;
+          }
+        }
+        .msnry > div {
+          break-inside: avoid;
+          margin-bottom: 16px;
+        }
       `}</style>
 
       <div className="w-full mx-auto px-6 py-8">
         {/* Child Profile Header */}
-        <div className="bg-white rounded-xl shadow-sm border p-8 mb-8">
+        <div className="bg-gradient-to-r from-orange-500 to-pink-500 rounded-2xl shadow-lg p-8 mb-8 text-white relative">
+          {/* Back Button */}
+          <Button
+            onClick={() => navigate("/parent-dashboard")}
+            variant="ghost"
+            size="sm"
+            className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white border-white/40 hover:border-white/60 transition-all duration-200 backdrop-blur-sm"
+          >
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Back to Dashboard</span>
+            <span className="sm:hidden">Back</span>
+          </Button>
+
           <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
-            {/* <Avatar className="w-24 h-24"> */}
-            {/* <AvatarImage
-                src={DEFAULT_AVATAR_URL}
-                alt={`${child.first_name} ${child.last_name}`}
-              /> */}
-            <div className="w-16 h-16 flex items-center justify-center bg-blue-50 rounded-full border-2 border-blue-100 group-hover:border-blue-300 transition-colors">
-              <UserCircle className="w-12 h-12 " />
-            </div>
-            {/* <AvatarFallback className="text-2xl">
-                {child.first_name[0]}
-                {child.last_name[0]}
-              </AvatarFallback> */}
-            {/* </Avatar> */}
+            {selectedChild.student.profile_photo ? (
+              <img
+                src={selectedChild.student.profile_photo || "/placeholder.svg"}
+                alt={`${selectedChild.student.first_name} ${selectedChild.student.last_name}`}
+                className={`w-16 h-16 rounded-full object-cover border-3  group-hover:shadow-md transition-all`}
+              />
+            ) : (
+              <div
+                className={`w-16 h-16 flex items-center justify-center bg-white/20 rounded-full border-3 border-white/40 backdrop-blur-sm transition-all`}
+              >
+                <UserCircle className="w-10 h-10 text-white" />
+              </div>
+            )}
 
             <div className="flex-1 text-center md:text-left">
-              <h1 className="text-3xl font-bold text-gray-800 mb-2">
+              <h1 className="text-4xl font-bold mb-3 text-white">
                 {child.first_name} {child.last_name}
               </h1>
-              <div className="flex flex-wrap justify-center md:justify-start gap-4 text-gray-600 mb-4">
-                <div className="flex items-center gap-1">
-                  <Calendar className="w-4 h-4" />
-                  <span>Username: {child.username}</span>
+              <div className="flex flex-wrap justify-center md:justify-start gap-6 text-white/90 mb-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-5 h-5" />
+                  <span className="text-sm">{child.username}</span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <BookOpen className="w-4 h-4" />
-                  <span>
-                    Year Group:{" "}
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5" />
+                  <span className="text-sm">
                     {getYearGroupDisplayName(child.year_group_id, yearGroups)}
                   </span>
                 </div>
-                <div className="flex items-center gap-1">
-                  <Users className="w-4 h-4" />
-                  <span>Class: {child.class_id || "N/A"}</span>
+                <div className="flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  <span className="text-sm">{child.class_id || "N/A"}</span>
                 </div>
               </div>
-              <div className="flex justify-center md:justify-start gap-2">
-                <Badge
-                  variant="secondary"
-                  className="bg-green-100 text-green-800"
-                >
+              <div className="flex justify-center md:justify-start gap-3">
+                <Badge className="bg-white/20 text-white border-white/40 hover:bg-white/30">
                   <CheckCircle className="w-3 h-3 mr-1" />
                   {child.status === "active"
                     ? "Active Student"
                     : child.status || "Active Student"}
                 </Badge>
-                <Badge
-                  variant="secondary"
-                  className="bg-blue-100 text-blue-800"
-                >
+                <Badge className="bg-white/20 text-white border-white/40 hover:bg-white/30">
                   <Heart className="w-3 h-3 mr-1" />
                   Joined{" "}
                   {new Date(child.created_at).toLocaleDateString("en-US", {
@@ -849,19 +419,29 @@ export default function ChildDetailsPage() {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
-          <div className="border-b">
+        <div className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden">
+          <div className="border-b border-gray-200">
             <nav className="flex overflow-x-auto">
-              {tabs.map((tab) => {
+              {tabs.map((tab, index) => {
                 const Icon = tab.icon;
+                const colors = [
+                  "text-blue-600 border-blue-600 bg-blue-50 hover:bg-blue-100",
+                  "text-green-600 border-green-600 bg-green-50 hover:bg-green-100",
+                  "text-purple-600 border-purple-600 bg-purple-50 hover:bg-purple-100",
+                ];
+                const inactiveColors = [
+                  "text-gray-600 hover:text-blue-600 hover:bg-blue-50",
+                  "text-gray-600 hover:text-green-600 hover:bg-green-50",
+                  "text-gray-600 hover:text-purple-600 hover:bg-purple-50",
+                ];
                 return (
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`cursor-pointer flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
+                    className={`cursor-pointer flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-all ${
                       activeTab === tab.id
-                        ? "text-blue-600 border-b-2 border-blue-600 bg-blue-50"
-                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                        ? `border-b-2 ${colors[index]}`
+                        : inactiveColors[index]
                     }`}
                   >
                     <Icon className="w-4 h-4" />
@@ -872,58 +452,9 @@ export default function ChildDetailsPage() {
             </nav>
           </div>
 
-          <div className="p-6">{renderTabContent()}</div>
+          <div className="p-8">{renderTabContent()}</div>
         </div>
       </div>
-
-      {/* Image Modal */}
-      {selectedImage && (
-        <Dialog
-          open={!!selectedImage}
-          onOpenChange={() => setSelectedImage(null)}
-        >
-          <DialogContent className="max-w-4xl max-h-[90vh] p-0">
-            <div className="relative">
-              <img
-                src={selectedImage.url}
-                alt={selectedImage.title}
-                className="w-full h-auto max-h-[70vh] object-contain"
-              />
-              <div className="p-6">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h2 className="text-xl font-bold text-gray-900 mb-2">
-                      {selectedImage.title}
-                    </h2>
-                    <p className="text-gray-500 text-sm mb-4">
-                      Uploaded on{" "}
-                      {new Date(selectedImage.uploadDate).toLocaleDateString()}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        const link = document.createElement("a");
-                        link.href = selectedImage.url;
-                        link.download = selectedImage.title;
-                        link.target = "_blank";
-                        document.body.appendChild(link);
-                        link.click();
-                        document.body.removeChild(link);
-                      }}
-                    >
-                      <Download className="w-4 h-4 mr-1" />
-                      Download
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-      )}
     </div>
   );
 }

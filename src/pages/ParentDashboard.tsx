@@ -167,25 +167,6 @@ const ParentDashboard: React.FC = () => {
                   </p>
                 </div>
               </div>
-              {children.length > 0 && (
-                <div className="text-right bg-white/10 backdrop-blur-sm rounded-xl px-4 py-3">
-                  <div className="text-orange-100 text-sm font-medium">
-                    {children.length === 1 ? "Child" : "Children"} in:
-                  </div>
-                  <div className="text-white font-bold text-lg">
-                    {Array.from(
-                      new Set(
-                        children.map((child) =>
-                          getYearGroupDisplayName(
-                            child.year_group_id,
-                            yearGroups
-                          )
-                        )
-                      )
-                    ).join(", ")}
-                  </div>
-                </div>
-              )}
             </div>
           </div>
 

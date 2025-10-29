@@ -216,6 +216,13 @@ const BulkUploadPage: React.FC = () => {
           </Button>
         </div>
 
+        {/* Processing Status Message */}
+        {selectedSession.status === "processing" && (
+          <p className="text-gray-500 text-sm text-center py-2">
+            Please refresh to check the updated rows added/uploaded
+          </p>
+        )}
+
         {/* Session Summary */}
         <Card>
           <CardHeader>

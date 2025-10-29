@@ -75,8 +75,8 @@ const ParentDashboard: React.FC = () => {
 
   useEffect(() => {
     if (isAuthenticated && user?.role === "parent") {
-      dispatch(fetchMyChildren());
-      dispatch(fetchYearGroups());
+      dispatch(fetchMyChildren as unknown as any);
+      dispatch(fetchYearGroups as unknown as any);
     }
   }, [isAuthenticated, user?.role, dispatch]);
 
@@ -117,7 +117,10 @@ const ParentDashboard: React.FC = () => {
               <div className="flex items-center space-x-2 mt-2">
                 <GraduationCap className={`w-4 h-4 ${colors.accent}`} />
                 <span className={`text-sm font-medium ${colors.accent}`}>
-                  {getYearGroupDisplayName(child.year_group_id, yearGroups)}
+                  {getYearGroupDisplayName(
+                    child.current_year_group_id,
+                    yearGroups
+                  )}
                 </span>
               </div>
             </div>
@@ -204,7 +207,11 @@ const ParentDashboard: React.FC = () => {
               </div>
               <div>
                 <p className="text-purple-700 font-bold text-3xl">
-                  {new Set(children.map((child) => child.year_group_id)).size}
+                  {
+                    new Set(
+                      children.map((child) => child.current_year_group_id)
+                    ).size
+                  }
                 </p>
                 <p className="text-purple-600 font-semibold">Year Groups</p>
               </div>
@@ -238,7 +245,9 @@ const ParentDashboard: React.FC = () => {
           ) : error ? (
             <div className="text-center py-16 bg-white rounded-2xl border-2 border-red-200">
               <p className="text-red-600 mb-4 font-semibold">{error}</p>
-              <Button onClick={() => dispatch(fetchMyChildren())}>
+              <Button
+                onClick={() => dispatch(fetchMyChildren as unknown as any)}
+              >
                 Try Again
               </Button>
             </div>

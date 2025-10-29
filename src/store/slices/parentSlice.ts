@@ -9,7 +9,7 @@ export interface ParentChild {
   first_name: string;
   last_name: string;
   username: string;
-  year_group_id?: number;
+  current_year_group_id?: number;
   class_id?: number;
   created_at: string;
   status?: string;

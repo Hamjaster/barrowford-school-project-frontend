@@ -2,7 +2,8 @@ import type { UserRole, NavItem, Child } from './types';
 // Icons are imported in utils.ts where they're used
 
 // API Configuration
-export const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}`;
+export const API_BASE_URL = `https://barrowford-school-project.vercel.app/api`;
+// export const API_BASE_URL = `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api'}`;
 
 
 // Validation Constants

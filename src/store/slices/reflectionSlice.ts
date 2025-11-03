@@ -29,6 +29,7 @@ const initialState: ReflectionState = {
   error: null,
   message: null,
   previousWeeks: null,
+  selectedTopicId: null,
 };
 
 
@@ -647,6 +648,9 @@ const reflectionSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setSelectedTopicId: (state, action: PayloadAction<string | null>) => {
+      state.selectedTopicId = action.payload;
+    },
    
   },
   extraReducers: (builder) => {
@@ -902,7 +906,7 @@ builder
       .addCase(deleteReflection.fulfilled, (state, action: PayloadAction<{ reflectionId: string }>) => {
         state.loading = false;
         state.reflections = state.reflections.filter(
-          (r) => r.id !== action.payload.reflectionId
+          (r) => r.id.toString() !== action.payload.reflectionId
         );
       })
       .addCase(deleteReflection.rejected, (state, action) => {
@@ -950,7 +954,7 @@ builder
     
 
 
-export const { clearError } = reflectionSlice.actions;
+export const { clearError, setSelectedTopicId } = reflectionSlice.actions;
 
 
 export default reflectionSlice.reducer;

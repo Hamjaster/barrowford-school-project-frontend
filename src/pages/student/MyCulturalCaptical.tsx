@@ -108,6 +108,7 @@ export default function CulturalCapitalPage() {
     error,
     previousWeeks,
     activeTitles,
+    selectedTopicId,
   } = useSelector((state: RootState) => state.reflection);
 
   const { studentDetails } = useSelector((state: RootState) => state.student);
@@ -135,7 +136,15 @@ export default function CulturalCapitalPage() {
 
   useEffect(() => {
     if (reflections.length) {
-      const tableData: TableEntry[] = reflections.map((item, index) => {
+      // Filter reflections by selectedTopicId if one is selected
+      let filteredReflections = reflections;
+      if (selectedTopicId !== null && selectedTopicId !== undefined) {
+        filteredReflections = reflections.filter(
+          (item) => item.topic_id?.toString() === selectedTopicId.toString()
+        );
+      }
+
+      const tableData: TableEntry[] = filteredReflections.map((item, index) => {
         // Assign weeks based on index for now (Week 1-5)
         const weekNumber = (index % 5) + 1;
         const assignedWeek = `Week ${weekNumber}`;
@@ -169,8 +178,15 @@ export default function CulturalCapitalPage() {
         Array.from(new Set(tableData.map((item) => item.status)))
       );
       setUniqueTopics(Array.from(new Set(tableData.map((item) => item.topic))));
+    } else {
+      // Reset data when reflections are empty
+      setData([]);
+      setFilteredData([]);
+      setUniqueWeeks([]);
+      setUniqueStatuses([]);
+      setUniqueTopics([]);
     }
-  }, [reflections]);
+  }, [reflections, selectedTopicId]);
 
   const formatDate = (timestamp: string) => {
     const date = new Date(timestamp);
@@ -560,7 +576,7 @@ export default function CulturalCapitalPage() {
                 <SelectTrigger className="cursor-pointer">
                   <SelectValue placeholder="Select topic..." />
                 </SelectTrigger>
-                <SelectContent>
+                {/* <SelectContent>
                   <SelectItem value="all">Filter by Topic</SelectItem>
 
                   {topics.map((topic) => (
@@ -568,7 +584,7 @@ export default function CulturalCapitalPage() {
                       {topic.title as string}
                     </SelectItem>
                   ))}
-                </SelectContent>
+                </SelectContent> */}
               </Select>
             </div>
 

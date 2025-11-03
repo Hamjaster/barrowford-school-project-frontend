@@ -231,6 +231,7 @@ export interface ReflectionState {
   error: string | null;
   message: string | null;
   previousWeeks: { currentWeek: string; previousWeeks: string[]; totalPreviousWeeks: number } | null;
+  selectedTopicId: string | null;
 }
 
 

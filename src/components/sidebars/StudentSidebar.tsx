@@ -14,6 +14,7 @@ import { logout } from "@/store/slices/authSlice";
 import { Button } from "@/components/ui/button";
 import LearningDropdown from "@/components/LearningDropdown";
 import ImagesDropdown from "@/components/ImagesDropdown";
+import CulturalCapitalDropdown from "@/components/CulturalCapitalDropdown";
 import barrowfordlogo from "@/assets/barrowforrdlogo.png";
 
 import {
@@ -100,6 +101,8 @@ const StudentSidebar: React.FC = () => {
                     <LearningDropdown className="w-full" />
                   ) : item.label === "My Images" ? (
                     <ImagesDropdown className="w-full" />
+                  ) : item.label === "My Cultural Capital" ? (
+                    <CulturalCapitalDropdown className="w-full" />
                   ) : (
                     <SidebarMenuButton className="h-16" asChild size="lg">
                       <Link

@@ -566,7 +566,7 @@ export default function CulturalCapitalPage() {
                   )}
                 </SelectContent>
               </Select>
-              <Select
+              {/* <Select
                 value={topicFilter}
                 onValueChange={(value) => {
                   setTopicFilter(value);
@@ -576,7 +576,7 @@ export default function CulturalCapitalPage() {
                 <SelectTrigger className="cursor-pointer">
                   <SelectValue placeholder="Select topic..." />
                 </SelectTrigger>
-                {/* <SelectContent>
+                <SelectContent>
                   <SelectItem value="all">Filter by Topic</SelectItem>
 
                   {topics.map((topic) => (
@@ -584,8 +584,8 @@ export default function CulturalCapitalPage() {
                       {topic.title as string}
                     </SelectItem>
                   ))}
-                </SelectContent> */}
-              </Select>
+                </SelectContent>
+              </Select> */}
             </div>
 
             <div className=" w-full flex flex-row gap-2">

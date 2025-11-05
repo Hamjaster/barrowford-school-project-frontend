@@ -2,6 +2,8 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { 
   type CreateLearningRequest, 
   type StudentState,
+  type CreateImpactRequest,
+  type CreateExperienceRequest,
   type UpdateImpactRequest,
   type UpdateExperienceRequest
 } from '@/types';
@@ -10,10 +12,12 @@ import { API_BASE_URL } from '@/constants';
 const initialState: StudentState = {
   selectedSubject: null,
   selectedYearGroup: null,
+  selectedYearGroupForImpacts: null,
+  selectedYearGroupForExperiences: null,
   learnings: [],
   images: [],
-  impact: null,
-  experience: null,
+  impacts: [],
+  experiences: [],
   isLoading: true,
   isSubmitting: false,
   isDeleting : false,
@@ -254,9 +258,9 @@ export const refreshStudentImages = createAsyncThunk(
 );
 
 // Impact-related async thunks
-export const fetchStudentImpact = createAsyncThunk(
-  'student/fetchStudentImpact',
-  async (_, { rejectWithValue }) => {
+export const fetchStudentImpacts = createAsyncThunk(
+  'student/fetchStudentImpacts',
+  async (yearGroupId: number, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
@@ -264,29 +268,30 @@ export const fetchStudentImpact = createAsyncThunk(
       }
 
       const response = await fetch(`${API_BASE_URL}/student/impacts/me`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        body: JSON.stringify({ year_group_id: yearGroupId }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch impact');
+        return rejectWithValue(errorData.error || 'Failed to fetch impacts');
       }
 
       const data = await response.json();
-      return data.data; // Return the impact data
+      return data.data; // Return the impacts array
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');
     }
   }
 );
 
-export const updateStudentImpact = createAsyncThunk(
-  'student/updateStudentImpact',
-  async (impactData: UpdateImpactRequest, { rejectWithValue }) => {
+export const createStudentImpact = createAsyncThunk(
+  'student/createStudentImpact',
+  async ({ impactData, yearGroupId }: { impactData: CreateImpactRequest; yearGroupId: number }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
@@ -294,21 +299,51 @@ export const updateStudentImpact = createAsyncThunk(
       }
 
       const response = await fetch(`${API_BASE_URL}/student/impacts`, {
-        method: 'PUT',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(impactData),
+        body: JSON.stringify({ ...impactData, year_group_id: yearGroupId }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to update impact');
+        return rejectWithValue(errorData.error || 'Failed to create impact');
       }
 
       const data = await response.json();
-      return data; // Return the updated impact data
+      return data;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+export const deleteStudentImpact = createAsyncThunk(
+  'student/deleteStudentImpact',
+  async (impactId: number, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/student/impacts/${impactId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to delete impact');
+      }
+
+      const data = await response.json();
+      return { impactId, ...data };
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');
     }
@@ -316,9 +351,9 @@ export const updateStudentImpact = createAsyncThunk(
 );
 
 // Experience-related async thunks
-export const fetchStudentExperience = createAsyncThunk(
-  'student/fetchStudentExperience',
-  async (_, { rejectWithValue }) => {
+export const fetchStudentExperiences = createAsyncThunk(
+  'student/fetchStudentExperiences',
+  async (yearGroupId: number, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
@@ -326,54 +361,101 @@ export const fetchStudentExperience = createAsyncThunk(
       }
 
       const response = await fetch(`${API_BASE_URL}/student/experiences/me`, {
-        method: 'GET',
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
+        body: JSON.stringify({ year_group_id: yearGroupId }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch experience');
+        return rejectWithValue(errorData.error || 'Failed to fetch experiences');
       }
 
       const data = await response.json();
-      return data.data; // Return the experience data
+      return data.data; // Return the experiences array
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');
     }
   }
 );
 
-export const updateStudentExperience = createAsyncThunk(
-  'student/updateStudentExperience',
-  async (experienceData: UpdateExperienceRequest, { rejectWithValue }) => {
+export const createStudentExperience = createAsyncThunk(
+  'student/createStudentExperience',
+  async ({ experienceData, yearGroupId }: { experienceData: CreateExperienceRequest; yearGroupId: number }, { rejectWithValue }) => {
     try {
       const token = localStorage.getItem('auth_token');
       if (!token) {
         return rejectWithValue('No authentication token found');
       }
 
-      const response = await fetch(`${API_BASE_URL}/student/experiences`, {
-        method: 'PUT',
+      const response = await fetch(`${API_BASE_URL}/student/experiences/`, {
+        method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
         },
-        body: JSON.stringify(experienceData),
+        body: JSON.stringify({ ...experienceData, year_group_id: yearGroupId }),
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to update experience');
+        return rejectWithValue(errorData.error || 'Failed to create experience');
       }
 
       const data = await response.json();
-      return data; // Return the updated experience data
+      return data;
     } catch (error: any) {
       return rejectWithValue(error.message || 'Network error');
     }
+  }
+);
+
+export const deleteStudentExperience = createAsyncThunk(
+  'student/deleteStudentExperience',
+  async (experienceId: number, { rejectWithValue }) => {
+    try {
+      const token = localStorage.getItem('auth_token');
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/student/experiences/${experienceId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to delete experience');
+      }
+
+      const data = await response.json();
+      return { experienceId, ...data };
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
+// Legacy thunks for backward compatibility (can be removed later)
+export const fetchStudentImpact = fetchStudentImpacts;
+export const fetchStudentExperience = fetchStudentExperiences;
+export const updateStudentImpact = createAsyncThunk(
+  'student/updateStudentImpact',
+  async (impactData: UpdateImpactRequest, { rejectWithValue }) => {
+    return rejectWithValue('This endpoint is deprecated. Use createStudentImpact instead.');
+  }
+);
+export const updateStudentExperience = createAsyncThunk(
+  'student/updateStudentExperience',
+  async (experienceData: UpdateExperienceRequest, { rejectWithValue }) => {
+    return rejectWithValue('This endpoint is deprecated. Use createStudentExperience instead.');
   }
 );
 
@@ -470,6 +552,20 @@ const studentSlice = createSlice({
     clearMessage: (state) => {
       state.message = null;
     },
+    setSelectedYearGroupForImpacts: (state, action) => {
+      state.selectedYearGroupForImpacts = action.payload;
+    },
+    clearSelectedYearGroupForImpacts: (state) => {
+      state.selectedYearGroupForImpacts = null;
+      state.impacts = [];
+    },
+    setSelectedYearGroupForExperiences: (state, action) => {
+      state.selectedYearGroupForExperiences = action.payload;
+    },
+    clearSelectedYearGroupForExperiences: (state) => {
+      state.selectedYearGroupForExperiences = null;
+      state.experiences = [];
+    },
   },
   extraReducers: (builder) => {
     // Fetch learnings cases
@@ -542,6 +638,124 @@ const studentSlice = createSlice({
         state.error = null;
       })
       .addCase(deleteStudentLearning.rejected, (state, action) => {
+        state.isDeleting = false;
+        state.error = action.payload as string;
+      })
+
+    // Fetch impacts cases
+    builder
+      .addCase(fetchStudentImpacts.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentImpacts.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.impacts = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchStudentImpacts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+
+    // Create impact cases
+    builder
+      .addCase(createStudentImpact.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(createStudentImpact.fulfilled, (state, action) => {
+        state.isSubmitting = false;
+        state.message = action.payload.message;
+        // Add the new impact to the beginning of the array with pending status
+        if (action.payload.data) {
+          state.impacts.unshift(action.payload.data);
+        }
+        state.error = null;
+      })
+      .addCase(createStudentImpact.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error = action.payload as string;
+      })
+
+    // Delete impact cases
+    builder
+      .addCase(deleteStudentImpact.pending, (state) => {
+        state.isDeleting = true;
+        state.error = null;
+      })
+      .addCase(deleteStudentImpact.fulfilled, (state, action) => {
+        state.isDeleting = false;
+        state.message = action.payload.message;
+        // Update the impact status to pending_deletion in the array
+        if (action.payload.data) {
+          const impactIndex = state.impacts.findIndex(impact => impact.id === action.payload.data.id);
+          if (impactIndex !== -1) {
+            state.impacts[impactIndex] = action.payload.data;
+          }
+        }
+        state.error = null;
+      })
+      .addCase(deleteStudentImpact.rejected, (state, action) => {
+        state.isDeleting = false;
+        state.error = action.payload as string;
+      })
+
+    // Fetch experiences cases
+    builder
+      .addCase(fetchStudentExperiences.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchStudentExperiences.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.experiences = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchStudentExperiences.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+
+    // Create experience cases
+    builder
+      .addCase(createStudentExperience.pending, (state) => {
+        state.isSubmitting = true;
+        state.error = null;
+      })
+      .addCase(createStudentExperience.fulfilled, (state, action) => {
+        state.isSubmitting = false;
+        state.message = action.payload.message;
+        // Add the new experience to the beginning of the array with pending status
+        if (action.payload.data) {
+          state.experiences.unshift(action.payload.data);
+        }
+        state.error = null;
+      })
+      .addCase(createStudentExperience.rejected, (state, action) => {
+        state.isSubmitting = false;
+        state.error = action.payload as string;
+      })
+
+    // Delete experience cases
+    builder
+      .addCase(deleteStudentExperience.pending, (state) => {
+        state.isDeleting = true;
+        state.error = null;
+      })
+      .addCase(deleteStudentExperience.fulfilled, (state, action) => {
+        state.isDeleting = false;
+        state.message = action.payload.message;
+        // Update the experience status to pending_deletion in the array
+        if (action.payload.data) {
+          const experienceIndex = state.experiences.findIndex(exp => exp.id === action.payload.data.id);
+          if (experienceIndex !== -1) {
+            state.experiences[experienceIndex] = action.payload.data;
+          }
+        }
+        state.error = null;
+      })
+      .addCase(deleteStudentExperience.rejected, (state, action) => {
         state.isDeleting = false;
         state.error = action.payload as string;
       })
@@ -622,71 +836,71 @@ const studentSlice = createSlice({
         state.error = action.payload as string;
       });
 
-    // Fetch impact cases
-    builder
-      .addCase(fetchStudentImpact.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(fetchStudentImpact.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.impact = action.payload;
-        state.error = null;
-      })
-      .addCase(fetchStudentImpact.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      });
+    // OLD IMPACT THUNKS
+    // builder
+    //   .addCase(fetchStudentImpact.pending, (state) => {
+    //     state.isLoading = true;
+    //     state.error = null;
+    //   })
+    //   .addCase(fetchStudentImpact.fulfilled, (state, action) => {
+    //     state.isLoading = false;
+    //     // state.impact = action.payload;
+    //     state.error = null;
+    //   })
+    //   .addCase(fetchStudentImpact.rejected, (state, action) => {
+    //     state.isLoading = false;
+    //     state.error = action.payload as string;
+    //   });
 
-    // Update impact cases
-    builder
-      .addCase(updateStudentImpact.pending, (state) => {
-        state.isSubmitting = true;
-        state.error = null;
-      })
-      .addCase(updateStudentImpact.fulfilled, (state, action) => {
-        state.isSubmitting = false;
-        state.impact = action.payload.data;
-        state.message = action.payload.message || 'Impact updated successfully';
-        state.error = null;
-      })
-      .addCase(updateStudentImpact.rejected, (state, action) => {
-        state.isSubmitting = false;
-        state.error = action.payload as string;
-      });
+    // OLD IMPACT THUNKS
+    // builder
+    //   .addCase(updateStudentImpact.pending, (state) => {
+    //     state.isSubmitting = true;
+    //     state.error = null;
+    //   })
+    //   .addCase(updateStudentImpact.fulfilled, (state, action) => {
+    //     state.isSubmitting = false;
+    //     // state.impact = action.payload.data;
+    //     state.message = action.payload.message || 'Impact updated successfully';
+    //     state.error = null;
+    //   })
+    //   .addCase(updateStudentImpact.rejected, (state, action) => {
+    //     state.isSubmitting = false;
+    //     state.error = action.payload as string;
+    //   });
 
-    // Fetch experience cases
-    builder
-      .addCase(fetchStudentExperience.pending, (state) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(fetchStudentExperience.fulfilled, (state, action) => {
-        state.isLoading = false;
-        state.experience = action.payload;
-        state.error = null;
-      })
-      .addCase(fetchStudentExperience.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload as string;
-      });
+    // OLD experience cases
+    // builder
+    //   .addCase(fetchStudentExperience.pending, (state) => {
+    //     state.isLoading = true;
+    //     state.error = null;
+    //   })
+    //   .addCase(fetchStudentExperience.fulfilled, (state, action) => {
+    //     state.isLoading = false;
+    //     // state.experience = action.payload;
+    //     state.error = null;
+    //   })
+    //   .addCase(fetchStudentExperience.rejected, (state, action) => {
+    //     state.isLoading = false;
+    //     state.error = action.payload as string;
+    //   });
 
-    // Update experience cases
-    builder
-      .addCase(updateStudentExperience.pending, (state) => {
-        state.isSubmitting = true;
-        state.error = null;
-      })
-      .addCase(updateStudentExperience.fulfilled, (state, action) => {
-        state.isSubmitting = false;
-        state.experience = action.payload.data;
-        state.message = action.payload.message || 'Experience updated successfully';
-        state.error = null;
-      })
-      .addCase(updateStudentExperience.rejected, (state, action) => {
-        state.isSubmitting = false;
-        state.error = action.payload as string;
-      });
+    // OLD EXPERIENCE THUNKS
+    // builder
+    //   .addCase(updateStudentExperience.pending, (state) => {
+    //     state.isSubmitting = true;
+    //     state.error = null;
+    //   })
+    //   .addCase(updateStudentExperience.fulfilled, (state, action) => {
+    //     state.isSubmitting = false;
+    //     // state.experience = action.payload.data;
+    //     state.message = action.payload.message || 'Experience updated successfully';
+    //     state.error = null;
+    //   })
+    //   .addCase(updateStudentExperience.rejected, (state, action) => {
+    //     state.isSubmitting = false;
+    //     state.error = action.payload as string;
+    //   });
   },
 });
 
@@ -697,6 +911,10 @@ export const {
   clearLearnings,
   clearSelectedYearGroup,
   setSelectedYearGroup,
+  setSelectedYearGroupForImpacts,
+  clearSelectedYearGroupForImpacts,
+  setSelectedYearGroupForExperiences,
+  clearSelectedYearGroupForExperiences,
   clearMessage
 } = studentSlice.actions;
 export default studentSlice.reducer;

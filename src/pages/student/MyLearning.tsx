@@ -43,6 +43,7 @@ import {
   formatFileSize as utilFormatFileSize,
 } from "@/utils/fileUpload";
 import supabase from "@/lib/supabse";
+import { Link } from "react-router-dom";
 
 interface UploadedFile {
   id: string;
@@ -69,6 +70,7 @@ export default function MyLearnings() {
 
   const [isWritingModalOpen, setIsWritingModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
 
   // Writing modal states
   const [writingTitle, setWritingTitle] = useState("");
@@ -79,6 +81,9 @@ export default function MyLearnings() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [itemBeingDeleted, setItemBeingDeleted] = useState<number | null>(null);
+
+  // View modal state
+  const [selectedLearning, setSelectedLearning] = useState<any>(null);
   // Fetch learnings when selected subject changes
   useEffect(() => {
     if (selectedSubject) {
@@ -292,6 +297,16 @@ export default function MyLearnings() {
     dispatch(deleteStudentLearning(id));
   };
 
+  const handleViewLearning = (learning: any) => {
+    setSelectedLearning(learning);
+    setIsViewModalOpen(true);
+  };
+
+  const handleCloseViewModal = () => {
+    setIsViewModalOpen(false);
+    setSelectedLearning(null);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -419,7 +434,7 @@ export default function MyLearnings() {
             Please select a subject from the sidebar to view your learnings.
           </p>
           <Button asChild>
-            <a href="/">Go to Home</a>
+            <Link to="/">Go to Home</Link>
           </Button>
         </div>
       </div>
@@ -716,11 +731,12 @@ export default function MyLearnings() {
                     key={learning.id}
                     className={`relative ${colors.bg} ${
                       colors.border
-                    } border-2 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 ${
+                    } border-2 hover:shadow-lg transition-all duration-200 hover:-translate-y-1 cursor-pointer ${
                       learning.status === "rejected" ? "opacity-60" : ""
                     } ${
                       learning.status === "pending_deletion" ? "opacity-75" : ""
                     }`}
+                    onClick={() => handleViewLearning(learning)}
                   >
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
@@ -752,7 +768,10 @@ export default function MyLearnings() {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => removeContentItem(learning.id)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            removeContentItem(learning.id);
+                          }}
                           disabled={
                             isSubmitting ||
                             learning.status === "pending_deletion" ||
@@ -805,6 +824,78 @@ export default function MyLearnings() {
           )}
         </div>
       </div>
+
+      {/* View Learning Modal */}
+      <Dialog open={isViewModalOpen} onOpenChange={setIsViewModalOpen}>
+        <DialogContent className="!max-w-7xl">
+          <DialogHeader>
+            <DialogTitle className="text-2xl text-pink-700">
+              {selectedLearning?.title || "Learning"}
+            </DialogTitle>
+            <DialogDescription>View your learning details</DialogDescription>
+          </DialogHeader>
+          {selectedLearning && (
+            <div className="space-y-4">
+              <div>
+                <Label className="text-gray-700 font-medium mb-2">Title</Label>
+                <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                  <p className="text-gray-900 font-medium">
+                    {selectedLearning.title}
+                  </p>
+                </div>
+              </div>
+              <div>
+                <Label className="text-gray-700 font-medium mb-2">
+                  Description
+                </Label>
+                <div className="p-4 bg-gray-50 rounded-md border border-gray-200 min-h-[200px] max-h-96 overflow-y-auto">
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedLearning.description || "No description"}
+                  </p>
+                </div>
+              </div>
+              {selectedLearning.attachment_url && (
+                <div>
+                  <Label className="text-gray-700 font-medium mb-2">
+                    Attachment
+                  </Label>
+                  <div className="p-3 bg-gray-50 rounded-md border border-gray-200">
+                    <a
+                      href={selectedLearning.attachment_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:text-blue-800 underline flex items-center gap-2"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <FileText className="h-4 w-4" />
+                      {selectedLearning.attachment_url.split("/").pop()}
+                    </a>
+                  </div>
+                </div>
+              )}
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Calendar className="h-4 w-4" />
+                <span>
+                  Created:{" "}
+                  {new Date(selectedLearning.created_at).toLocaleDateString()}
+                </span>
+                <div className="ml-auto">
+                  {getStatusBadge(selectedLearning.status)}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={handleCloseViewModal}
+                  className="border-gray-300"
+                >
+                  Close
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

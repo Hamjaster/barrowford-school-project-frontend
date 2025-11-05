@@ -7,7 +7,7 @@ export interface ModerationItem {
   student_id: number;
   year_group_id: number;
   class_id: number;
-  entity_type: 'reflections' | 'student_images' | 'student_learning_entities';
+  entity_type: 'reflections' | 'student_images' | 'student_learning_entities' | 'student_impacts' | 'student_experiences';
   entity_title: string;
   action_type: 'create' | 'update' | 'delete';
   entity_id?: number;
@@ -21,6 +21,13 @@ export interface ModerationItem {
   student_name?: string;
   content_preview?: string;
   attachment_url?: string;
+  student?: {
+    id: number;
+    first_name: string;
+    last_name: string;
+    status: string;
+    profile_photo?: string;
+  };
 }
 
 interface ModerationState {

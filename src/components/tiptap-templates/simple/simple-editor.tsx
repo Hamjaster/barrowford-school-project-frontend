@@ -324,7 +324,7 @@ export function SimpleEditor({
   };
 
   return (
-    <div className="simple-editor-wrapper relative">
+    <div className="simple-editor-wrapper relative overflow-hidden">
       <EditorContext.Provider value={{ editor }}>
         {/* View/Edit Toggle Button */}
         <div className="absolute top-4 right-4 z-[1000]">

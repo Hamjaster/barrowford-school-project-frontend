@@ -7,7 +7,7 @@
  * 5. Update TypeScript types to include these tabs in activeTab state
  */
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Users,
   BookOpen,
@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import CreateUserForm from "../components/forms/CreateUserForm";
 import ForgotPasswordForm from "../components/forms/ForgotPasswordForm";
-import { mockChildren, mockReflectionTopics } from "@/constants";
 import { getTabDisplayName } from "@/lib/utils";
 import type { UserRole } from "@/types";
 import UsersTable from "@/components/UsersTable";
@@ -27,27 +26,47 @@ import ReflectionTopicsManagement from "@/components/ReflectionTopicsManagement"
 import StudentManagement from "@/components/StudentManagement";
 import ContentModeration from "@/components/ContentModeration";
 
-import { useSelector } from "react-redux";
-import type { RootState } from "../store";
+import { useSelector, useDispatch } from "react-redux";
+import type { RootState, AppDispatch } from "../store";
+import { fetchAllTopics } from "@/store/slices/reflectionSlice";
+import { fetchAssignedStudents } from "@/store/slices/userManagementSlice";
 import PersonalSectionTopicsManagement from "@/components/PersonalSectionTopicsManagement";
 import TeacherProfile from "@/components/TeacherProfile";
 
 const StaffDashboard: React.FC = () => {
-  const { user, isAuthenticated } = useSelector(
+  const dispatch = useDispatch<AppDispatch>();
+  const { user, isAuthenticated, token } = useSelector(
     (state: RootState) => state.auth
   );
+  const { topics: reflectionTopics, loading: topicsLoading } = useSelector(
+    (state: RootState) => state.reflection
+  );
+  const { assignedStudents, isFetchingAssignedStudents } = useSelector(
+    (state: RootState) => state.userManagement
+  );
   const [activeTab, setActiveTab] = useState("students");
+  const [pendingCount] = useState(0); // TODO: Integrate with moderation data
 
-  const [reflectionTopics] = useState(mockReflectionTopics);
+  // Fetch reflection topics
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      dispatch(fetchAllTopics() as any);
+    }
+  }, [dispatch, isAuthenticated, token]);
 
-  const pendingCount = 0; // This will be updated when we integrate with real moderation data
+  // Fetch assigned students
+  useEffect(() => {
+    if (isAuthenticated && token) {
+      dispatch(fetchAssignedStudents() as any);
+    }
+  }, [dispatch, isAuthenticated, token]);
 
   // Quick stats data
   const quickStats = [
     {
       id: "total-students",
       title: "Total Students",
-      value: mockChildren.length,
+      value: isFetchingAssignedStudents ? "..." : assignedStudents.length,
       icon: Users,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",
@@ -63,7 +82,7 @@ const StaffDashboard: React.FC = () => {
     {
       id: "reflection-topics",
       title: "Reflection Topics",
-      value: reflectionTopics.length,
+      value: topicsLoading ? "..." : reflectionTopics.length,
       icon: BookOpen,
       bgColor: "bg-primary/10",
       iconColor: "text-primary",

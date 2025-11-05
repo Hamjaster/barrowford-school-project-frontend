@@ -15,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import LearningDropdown from "@/components/LearningDropdown";
 import ImagesDropdown from "@/components/ImagesDropdown";
 import CulturalCapitalDropdown from "@/components/CulturalCapitalDropdown";
+import ImpactDropdown from "@/components/ImpactDropdown";
+import ExperienceDropdown from "@/components/ExperienceDropdown";
 import barrowfordlogo from "@/assets/barrowforrdlogo.png";
 
 import {
@@ -99,6 +101,10 @@ const StudentSidebar: React.FC = () => {
 
                   {item.label === "My Learning" ? (
                     <LearningDropdown className="w-full" />
+                  ) : item.label === "My Impact" ? (
+                    <ImpactDropdown className="w-full" />
+                  ) : item.label === "My Experiences" ? (
+                    <ExperienceDropdown className="w-full" />
                   ) : item.label === "My Images" ? (
                     <ImagesDropdown className="w-full" />
                   ) : item.label === "My Cultural Capital" ? (

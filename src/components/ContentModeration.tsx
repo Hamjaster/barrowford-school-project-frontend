@@ -28,6 +28,9 @@ import {
   XCircle,
   Calendar,
   FileText,
+  Heart,
+  Globe,
+  UserCircle,
 } from "lucide-react";
 import {
   fetchModerations,
@@ -38,6 +41,7 @@ import {
 import type { RootState, AppDispatch } from "@/store";
 import type { ModerationItem } from "@/store/slices/moderationSlice";
 import { toast } from "sonner";
+import { ReadOnlyTipTap } from "./ReadOnlyTipTap";
 
 const ContentModeration: React.FC = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -51,7 +55,7 @@ const ContentModeration: React.FC = () => {
   const [rejectionReason, setRejectionReason] = useState("");
 
   useEffect(() => {
-    dispatch(fetchModerations());
+    void (dispatch as any)(fetchModerations());
   }, [dispatch]);
 
   useEffect(() => {
@@ -63,9 +67,9 @@ const ContentModeration: React.FC = () => {
 
   const handleApprove = async (moderation: ModerationItem) => {
     try {
-      await dispatch(approveModeration(moderation.id)).unwrap();
+      await (dispatch as any)(approveModeration(moderation.id)).unwrap();
       toast.success("Content approved successfully");
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Failed to approve content");
     }
   };
@@ -74,7 +78,7 @@ const ContentModeration: React.FC = () => {
     if (!selectedModeration) return;
 
     try {
-      await dispatch(
+      await (dispatch as any)(
         rejectModeration({
           moderationId: selectedModeration.id,
           reason: rejectionReason || undefined,
@@ -84,7 +88,7 @@ const ContentModeration: React.FC = () => {
       setRejectDialogOpen(false);
       setSelectedModeration(null);
       setRejectionReason("");
-    } catch (error) {
+    } catch (error: unknown) {
       toast.error("Failed to reject content");
     }
   };
@@ -102,6 +106,10 @@ const ContentModeration: React.FC = () => {
         return <ImageIcon className="h-5 w-5 text-primary" />;
       case "student_learning_entities":
         return <BookOpen className="h-5 w-5 text-primary" />;
+      case "student_impacts":
+        return <Heart className="h-5 w-5 text-primary" />;
+      case "student_experiences":
+        return <Globe className="h-5 w-5 text-primary" />;
       default:
         return <FileText className="h-5 w-5 text-primary" />;
     }
@@ -111,10 +119,16 @@ const ContentModeration: React.FC = () => {
     switch (entityType) {
       case "reflections":
         return "Reflection";
+      case "personal_sections":
+        return "Personal Section";
       case "student_images":
         return "Image";
       case "student_learning_entities":
         return "Student Learning";
+      case "student_impacts":
+        return "Student Impact";
+      case "student_experiences":
+        return "Student Experience";
       default:
         return entityType;
     }
@@ -193,7 +207,6 @@ const ContentModeration: React.FC = () => {
       if (!content?.attachment_url && !content?.image_url) return null;
 
       const imageUrl = content.attachment_url || content.image_url;
-      const borderColor = isOld ? "border-red-200" : "border-green-200";
 
       return (
         <div className="space-y-2">
@@ -223,13 +236,18 @@ const ContentModeration: React.FC = () => {
     };
 
     // Helper function to render text content
-    const renderTextContent = (content: any, _label: string, isOld = false) => {
+    const renderTextContent = (
+      content: any,
+      _label: string,
+      entityType: string,
+      isOld = false
+    ) => {
       const text = content?.content || content?.description || "";
       if (!text) return null;
 
       return (
         <div
-          className={`relative text-sm p-4 rounded-lg border-2 ${
+          className={`relative max-h-96 overflow-y-scroll text-sm p-4 rounded-lg border-2 ${
             isOld
               ? "bg-red-50 border-red-200"
               : action_type === "delete"
@@ -237,7 +255,17 @@ const ContentModeration: React.FC = () => {
               : "bg-green-50 border-green-200"
           }`}
         >
-          <div className="whitespace-pre-wrap">{text}</div>
+          {/* check if the entity is impact of experiences, show simple editor in view mode only */}
+          {entityType === "student_impacts" ||
+          (entityType === "student_experiences" && action_type === "create") ? (
+            <ReadOnlyTipTap
+              key="view-content"
+              content={JSON.parse(text)}
+              className="p-4"
+            />
+          ) : (
+            <div className="whitespace-pre-wrap">{text}</div>
+          )}
         </div>
       );
     };
@@ -277,7 +305,8 @@ const ContentModeration: React.FC = () => {
               <div>
                 {renderTextContent(
                   new_content,
-                  `New ${getEntityTypeDisplayName(entity_type)}`
+                  `New ${getEntityTypeDisplayName(entity_type)}`,
+                  entity_type
                 )}
               </div>
             )}
@@ -303,7 +332,12 @@ const ContentModeration: React.FC = () => {
                 {(old_content?.attachment_url || old_content?.image_url) &&
                   renderAttachment(old_content, "Previous Attachment", true)}
                 {(old_content?.content || old_content?.description) &&
-                  renderTextContent(old_content, "Previous Content", true)}
+                  renderTextContent(
+                    old_content,
+                    "Previous Content",
+                    entity_type,
+                    true
+                  )}
                 {!old_content?.attachment_url &&
                   !old_content?.image_url &&
                   !old_content?.content &&
@@ -321,7 +355,7 @@ const ContentModeration: React.FC = () => {
                 {(new_content?.attachment_url || new_content?.image_url) &&
                   renderAttachment(new_content, "New Attachment")}
                 {(new_content?.content || new_content?.description) &&
-                  renderTextContent(new_content, "New Content")}
+                  renderTextContent(new_content, "New Content", entity_type)}
               </div>
             </div>
           </div>
@@ -340,7 +374,12 @@ const ContentModeration: React.FC = () => {
               {(old_content?.attachment_url || old_content?.image_url) &&
                 renderAttachment(old_content, "Image to be deleted", true)}
               {(old_content?.content || old_content?.description) &&
-                renderTextContent(old_content, "Content to be deleted", true)}
+                renderTextContent(
+                  old_content,
+                  "Content to be deleted",
+                  entity_type,
+                  true
+                )}
             </div>
           </div>
         )}
@@ -422,17 +461,24 @@ const ContentModeration: React.FC = () => {
                   <div className="p-6 border-b border-gray-100">
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-4">
-                        <div
-                          className={`p-3 rounded-xl ${
-                            moderation.action_type === "create"
-                              ? "bg-green-100"
-                              : moderation.action_type === "update"
-                              ? "bg-orange-100"
-                              : "bg-red-100"
-                          }`}
-                        >
-                          {getEntityTypeIcon(moderation.entity_type)}
+                        {/* Student Avatar */}
+                        <div className="flex-shrink-0">
+                          {moderation.student?.profile_photo ? (
+                            <img
+                              src={moderation.student.profile_photo}
+                              alt={
+                                moderation.student_name ||
+                                `Student ${moderation.student_id}`
+                              }
+                              className="w-12 h-12 rounded-full object-cover border-2 border-gray-200"
+                            />
+                          ) : (
+                            <div className="w-12 h-12 flex items-center justify-center bg-blue-50 rounded-full border-2 border-gray-200">
+                              <UserCircle className="w-8 h-8 text-blue-400" />
+                            </div>
+                          )}
                         </div>
+
                         <div>
                           <div className="flex items-center gap-2 mb-1">
                             <h3 className="font-semibold text-lg text-gray-900">
@@ -529,9 +575,7 @@ const ContentModeration: React.FC = () => {
             <DialogDescription className="text-gray-600">
               You are about to reject this{" "}
               {selectedModeration
-                ? getEntityTypeDisplayName(
-                    selectedModeration.entity_type
-                  ).toLowerCase()
+                ? getEntityTypeDisplayName(selectedModeration.entity_type)
                 : "content"}{" "}
               submission. Please provide a clear reason to help the student
               understand the decision.
@@ -542,13 +586,32 @@ const ContentModeration: React.FC = () => {
           {selectedModeration && (
             <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 my-4">
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 bg-red-100 rounded-lg">
-                  {getEntityTypeIcon(selectedModeration.entity_type)}
+                {/* Student Avatar */}
+                <div className="flex-shrink-0">
+                  {selectedModeration.student?.profile_photo ? (
+                    <img
+                      src={selectedModeration.student.profile_photo}
+                      alt={
+                        selectedModeration.student_name ||
+                        `Student ${selectedModeration.student_id}`
+                      }
+                      className="w-10 h-10 rounded-full object-cover border-2 border-gray-200"
+                    />
+                  ) : (
+                    <div className="w-10 h-10 flex items-center justify-center bg-blue-50 rounded-full border-2 border-gray-200">
+                      <UserCircle className="w-6 h-6 text-blue-400" />
+                    </div>
+                  )}
                 </div>
+                {/* <div className="p-2 bg-red-100 rounded-lg">
+                  {getEntityTypeIcon(selectedModeration.entity_type)}
+                </div> */}
                 <div>
                   <h4 className="font-medium text-gray-900">
                     {selectedModeration.student_name ||
-                      `Student ${selectedModeration.student_id}`}
+                      (selectedModeration.student
+                        ? `${selectedModeration.student.first_name} ${selectedModeration.student.last_name}`
+                        : `Student ${selectedModeration.student_id}`)}
                   </h4>
                   <p className="text-sm text-gray-600">
                     {getEntityTypeDisplayName(selectedModeration.entity_type)} •{" "}
@@ -558,8 +621,8 @@ const ContentModeration: React.FC = () => {
               </div>
               {/* {!selectedModeration.topic_title && ( */}
               <p className="text-sm text-gray-700 mt-2">
-                <strong>Topic:</strong> The Orientation
-                {/* <strong>Topic:</strong> {selectedModeration.topic_title} */}
+                {/* <strong>Topic:</strong> The Orientation */}
+                <strong>Topic:</strong> {selectedModeration.entity_title}
               </p>
               {/* )} */}
             </div>

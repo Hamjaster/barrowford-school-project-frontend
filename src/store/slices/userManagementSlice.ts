@@ -21,7 +21,9 @@ const initialState: UserManagementState = {
   resetPasswordSuccess: false,
   isStatusUpdateLoading : false,
   isAssigningParent: false,
-  isAssigningTeacher: false
+  isAssigningTeacher: false,
+  assignedStudents: [],
+  isFetchingAssignedStudents: false,
 };
 
 // Helper function to get auth headers
@@ -414,6 +416,39 @@ export const removeTeacherFromStudent = createAsyncThunk(
   }
 );
 
+export const fetchAssignedStudents = createAsyncThunk(
+  'userManagement/fetchAssignedStudents',
+  async (_, { rejectWithValue, getState }) => {
+    try {
+      const state = getState() as any;
+      const token = state.auth.token;
+
+      if (!token) {
+        return rejectWithValue('No authentication token found');
+      }
+
+      const response = await fetch(`${API_BASE_URL}/teacher/getStudents`, {
+        method: 'GET',
+        headers: getAuthHeaders(token),
+      });
+
+      if (response.status === 429) {
+        return rejectWithValue('Too many login attempts. Please try again later.');
+      }
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.error || 'Failed to fetch assigned students');
+      }
+
+      const data = await response.json();
+      return data.data || [];
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Network error');
+    }
+  }
+);
+
 const userManagementSlice = createSlice({
   name: 'userManagement',
   initialState,
@@ -632,6 +667,22 @@ const userManagementSlice = createSlice({
       .addCase(removeTeacherFromStudent.rejected, (state, action) => {
         state.isAssigningTeacher = false;
         state.error = action.payload as string;
+      });
+
+    builder
+      .addCase(fetchAssignedStudents.pending, (state) => {
+        state.isFetchingAssignedStudents = true;
+        state.error = null;
+      })
+      .addCase(fetchAssignedStudents.fulfilled, (state, action) => {
+        state.isFetchingAssignedStudents = false;
+        state.error = null;
+        state.assignedStudents = action.payload;
+      })
+      .addCase(fetchAssignedStudents.rejected, (state, action) => {
+        state.isFetchingAssignedStudents = false;
+        state.error = action.payload as string;
+        state.assignedStudents = [];
       });
   },
 });

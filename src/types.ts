@@ -168,6 +168,8 @@ export interface UserManagementState {
   isStatusUpdateLoading : boolean;
   isAssigningParent: boolean;
   isAssigningTeacher: boolean;
+  assignedStudents: any[];
+  isFetchingAssignedStudents: boolean;
 }
 
 // Child-related Types
@@ -368,19 +370,39 @@ export interface StudentImage {
   status: 'pending' | 'approved' | 'rejected' | 'pending_deletion';
 }
 
-// Student Impact and Experience Types
+// Student Impact Types
 export interface StudentImpact {
   id: number;
-  content: string;
+  title: string;
+  description: string;
+  attachment_url?: string;
+  status: 'pending' | 'approved' | 'pending_deletion' | 'rejected';
   created_at: string;
 }
 
+export interface CreateImpactRequest {
+  title: string;
+  content?: string;
+  attachment_url?: string;
+}
+
+// Student Experience Types
 export interface StudentExperience {
   id: number;
-  content: string;
+  title: string;
+  description: string;
+  attachment_url?: string;
+  status: 'pending' | 'approved' | 'pending_deletion' | 'rejected';
   created_at: string;
 }
 
+export interface CreateExperienceRequest {
+  title: string;
+  content?: string;
+  attachment_url?: string;
+}
+
+// Legacy types for backward compatibility (can be removed later)
 export interface UpdateImpactRequest {
   content: string;
 }
@@ -392,10 +414,12 @@ export interface UpdateExperienceRequest {
 export interface StudentState {
   selectedSubject: Subject | null;
   selectedYearGroup: YearGroup | null;
+  selectedYearGroupForImpacts: YearGroup | null;
+  selectedYearGroupForExperiences: YearGroup | null;
   learnings: StudentLearning[];
   images: StudentImage[];
-  impact: StudentImpact | null;
-  experience: StudentExperience | null;
+  impacts: StudentImpact[];
+  experiences: StudentExperience[];
   isLoading: boolean;
   isSubmitting: boolean;
   isDeleting: boolean;

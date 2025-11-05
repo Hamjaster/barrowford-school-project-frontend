@@ -81,6 +81,11 @@ const UsersTable: React.FC = () => {
   const [assignmentModal, setAssignmentModal] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<User | null>(null);
 
+  // Deactivation warning modal state
+  const [deactivationWarningModal, setDeactivationWarningModal] =
+    useState(false);
+  const [userToDeactivate, setUserToDeactivate] = useState<User | null>(null);
+
   // Debounce search term
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -206,6 +211,25 @@ const UsersTable: React.FC = () => {
 
   const handleToggleStatus = (user: User) => {
     const action = user.status === "active" ? "deactivate" : "activate";
+
+    // If deactivating a student or parent, show warning modal first
+    if (
+      action === "deactivate" &&
+      (user.role === "student" || user.role === "parent")
+    ) {
+      setUserToDeactivate(user);
+      setDeactivationWarningModal(true);
+      return;
+    }
+
+    // Otherwise, proceed with activation/deactivation directly
+    proceedWithStatusChange(user, action);
+  };
+
+  const proceedWithStatusChange = (
+    user: User,
+    action: "activate" | "deactivate"
+  ) => {
     const role = user.role;
     const userId = user.id;
 
@@ -216,6 +240,10 @@ const UsersTable: React.FC = () => {
           dispatch(fetchUsers({}) as any);
         }
       });
+
+    // Close warning modal if open
+    setDeactivationWarningModal(false);
+    setUserToDeactivate(null);
   };
 
   const getSortIcon = (column: SortColumn) => {
@@ -595,6 +623,85 @@ const UsersTable: React.FC = () => {
           student={selectedStudent}
         />
       )}
+
+      {/* Deactivation Warning Modal */}
+      <Dialog
+        open={deactivationWarningModal}
+        onOpenChange={setDeactivationWarningModal}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">
+              Warning: Deactivation Impact
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            {userToDeactivate && (
+              <>
+                <div className="text-sm text-gray-600">
+                  You are about to deactivate:{" "}
+                  <strong>
+                    {userToDeactivate.first_name} {userToDeactivate.last_name}
+                  </strong>{" "}
+                  ({userToDeactivate.email})
+                </div>
+
+                {userToDeactivate.role === "student" && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                    <p className="text-sm font-medium text-yellow-800 mb-2">
+                      ⚠️ Important: Student Deactivation
+                    </p>
+                    <p className="text-sm text-yellow-700">
+                      Deactivating this student will permanently delete all of
+                      their pending moderation requests that have not been
+                      processed yet by the teachers. This action cannot be
+                      undone.
+                    </p>
+                  </div>
+                )}
+
+                {userToDeactivate.role === "parent" && (
+                  <div className="bg-yellow-50 border border-yellow-200 rounded-md p-4">
+                    <p className="text-sm font-medium text-yellow-800 mb-2">
+                      ⚠️ Important: Parent Deactivation
+                    </p>
+                    <p className="text-sm text-yellow-700">
+                      If this is the last active parent for any of their
+                      children, deactivating this parent will automatically
+                      deactivate those students as well. This action cannot be
+                      undone.
+                    </p>
+                  </div>
+                )}
+
+                <div className="flex justify-end space-x-2 pt-4">
+                  <Button
+                    variant="outline"
+                    className="cursor-pointer"
+                    onClick={() => {
+                      setDeactivationWarningModal(false);
+                      setUserToDeactivate(null);
+                    }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    className="cursor-pointer"
+                    onClick={() => {
+                      if (userToDeactivate) {
+                        proceedWithStatusChange(userToDeactivate, "deactivate");
+                      }
+                    }}
+                  >
+                    Confirm Deactivation
+                  </Button>
+                </div>
+              </>
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };

@@ -9,7 +9,7 @@ import {
     type AuthState 
 } from '@/types';
 import { API_BASE_URL } from '@/constants';
-import { getFromStorage } from '@/lib/utils';
+import { getFromStorage, extractErrorMessage } from '@/lib/utils';
 import supabase from '@/lib/supabse';
 
 const initialState: AuthState = {
@@ -41,7 +41,7 @@ export const loginUser = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Login failed');
+        return rejectWithValue(extractErrorMessage(errorData, 'Login failed'));
       }
 
      
@@ -74,7 +74,7 @@ export const forgotPassword = createAsyncThunk(
       if (!response.ok) {
         console.log('failed to send reset email')
         const errorData = await response.json();
-        return rejectWithValue(errorData.message || 'Failed to send reset email');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to send reset email'));
       }
 
       

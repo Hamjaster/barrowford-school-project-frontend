@@ -94,6 +94,20 @@ export const isValidRole = (role: string): role is UserRole => {
 }
 
 // String utilities
+/**
+ * Extracts error message from API error response
+ * Checks both 'message' and 'error' properties as backend may use either
+ */
+export const extractErrorMessage = (errorData: any, fallback: string = 'An error occurred'): string => {
+  if (typeof errorData === 'string') {
+    return errorData;
+  }
+  if (typeof errorData === 'object' && errorData !== null) {
+    return errorData.message || errorData.error || fallback;
+  }
+  return fallback;
+};
+
 export const capitalizeFirst = (str: string): string => {
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase()
 }

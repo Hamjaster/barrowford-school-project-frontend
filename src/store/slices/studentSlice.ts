@@ -8,6 +8,7 @@ import {
   type UpdateExperienceRequest
 } from '@/types';
 import { API_BASE_URL } from '@/constants';
+import { extractErrorMessage } from '@/lib/utils';
 
 const initialState: StudentState = {
   selectedSubject: null,
@@ -47,7 +48,7 @@ export const fetchStudentLearnings = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch learnings');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch learnings'));
       }
 
       const data = await response.json();
@@ -78,7 +79,7 @@ export const createStudentLearning = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to create learning');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to create learning'));
       }
 
       const data = await response.json();
@@ -108,7 +109,7 @@ export const deleteStudentLearning = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to delete learning');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to delete learning'));
       }
 
       const data = await response.json();
@@ -145,7 +146,7 @@ export const fetchStudentImages = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch images');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch images'));
       }
 
       const data = await response.json();
@@ -179,7 +180,7 @@ export const uploadStudentImage = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to upload image');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to upload image'));
       }
 
       const data = await response.json();
@@ -209,7 +210,7 @@ export const deleteStudentImage = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to delete image');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to delete image'));
       }
 
       const data = await response.json();
@@ -246,7 +247,7 @@ export const refreshStudentImages = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to refresh images');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to refresh images'));
       }
 
       const data = await response.json();
@@ -278,7 +279,7 @@ export const fetchStudentImpacts = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch impacts');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch impacts'));
       }
 
       const data = await response.json();
@@ -309,7 +310,7 @@ export const createStudentImpact = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to create impact');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to create impact'));
       }
 
       const data = await response.json();
@@ -339,7 +340,7 @@ export const deleteStudentImpact = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to delete impact');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to delete impact'));
       }
 
       const data = await response.json();
@@ -371,7 +372,7 @@ export const fetchStudentExperiences = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch experiences');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch experiences'));
       }
 
       const data = await response.json();
@@ -402,7 +403,7 @@ export const createStudentExperience = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to create experience');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to create experience'));
       }
 
       const data = await response.json();
@@ -432,7 +433,7 @@ export const deleteStudentExperience = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to delete experience');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to delete experience'));
       }
 
       const data = await response.json();
@@ -479,7 +480,7 @@ export const uploadStudentProfileImage = createAsyncThunk(
 
       if (!res.ok) {
         const errorData = await res.json();
-        return rejectWithValue(errorData.error?.message || "Image upload failed");
+        return rejectWithValue(extractErrorMessage(errorData, "Image upload failed"));
       }
 
       const result = await res.json();
@@ -510,13 +511,15 @@ export const fetchStudentDetails = createAsyncThunk(
      
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch student details');
+        console.log(errorData, "ERROR DATA")
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch student details'));
       }
 
       const data = await response.json();
       console.log("✅ Parsed data:", data);
       return data.data;
     } catch (error: any) {
+      console.log(error, 'errorrr')
       return rejectWithValue(error.message || 'Network error');
     }
   }

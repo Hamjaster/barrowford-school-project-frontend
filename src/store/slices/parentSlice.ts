@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from '@reduxjs/toolkit';
 import { API_BASE_URL } from '../../constants';
+import { extractErrorMessage } from '@/lib/utils';
 import type { AddCommentRequest, ReflectionComment } from '@/types';
 import type { RootState } from '..';
 
@@ -98,7 +99,7 @@ export const fetchMyChildren = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch children');
+        throw new Error(extractErrorMessage(errorData, 'Failed to fetch children'));
       }
 
       const data = await response.json();
@@ -128,7 +129,7 @@ export const fetchChildDetails = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to fetch child details');
+        throw new Error(extractErrorMessage(errorData, 'Failed to fetch child details'));
       }
 
       const data = await response.json();
@@ -162,7 +163,7 @@ export const addReflectionComment = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to add comment");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to add comment"));
       }
 
        const result: {  data: ReflectionComment } = await response.json();

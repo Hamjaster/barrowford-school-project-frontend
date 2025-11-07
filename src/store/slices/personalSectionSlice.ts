@@ -1,5 +1,6 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import { API_BASE_URL } from '@/constants';
+import { extractErrorMessage } from '@/lib/utils';
 import { type Topic, type PersonalSection } from "@/types";
 import { type RootState } from "..";
 
@@ -68,7 +69,7 @@ export const createTopic = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to create topic");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to create topic"));
       }
 
       return (await response.json()).data as Topic;
@@ -101,7 +102,7 @@ export const fetchTopics = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch topics");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch topics"));
       }
 
       return (await response.json()).data as Topic[];
@@ -134,7 +135,7 @@ export const fetchAllTopics = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch all topics");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch all topics"));
       }
 
       return (await response.json()).data as Topic[];
@@ -171,7 +172,7 @@ export const updateTopic = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to update topic");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to update topic"));
       }
 
       return (await response.json()).data as Topic;
@@ -204,7 +205,7 @@ export const deleteTopic = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to delete topic");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to delete topic"));
       }
 
       return id; // return deleted topic id
@@ -238,7 +239,7 @@ export const toggleTopicStatus = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to toggle topic status");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to toggle topic status"));
       }
 
       return (await response.json()).data as Topic;
@@ -271,7 +272,7 @@ export const getMyPersonalSections = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch personal sections");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch personal sections"));
       }
 
       return (await response.json()).data as PersonalSection[];
@@ -309,7 +310,7 @@ export const getPersonalSectionByTopic = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch personal section");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch personal section"));
       }
 
       return (await response.json()).data as PersonalSection;
@@ -343,7 +344,7 @@ export const createPersonalSection = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to create personal section");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to create personal section"));
       }
 
       return (await response.json()).data as PersonalSection;
@@ -377,7 +378,7 @@ export const updatePersonalSection = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to update personal section");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to update personal section"));
       }
 
       return (await response.json()).data as PersonalSection;

@@ -7,6 +7,7 @@ import {
   type FetchUsersResponse
 } from '@/types';
 import { API_BASE_URL } from '@/constants';
+import { extractErrorMessage } from '@/lib/utils';
 
 const initialState: UserManagementState = {
   users: [],
@@ -52,7 +53,7 @@ export const createUser = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to create user');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to create user'));
       }
       if (response.status === 429) {
         return rejectWithValue('Too many login attempts. Please try again later.');
@@ -87,7 +88,7 @@ export const resetUserPassword = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to reset password');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to reset password'));
       }
       if (response.status === 429) {
         return rejectWithValue('Too many login attempts. Please try again later.');
@@ -134,7 +135,7 @@ export const fetchUsers = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch users');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch users'));
       }
 
       const data: FetchUsersResponse = await response.json();
@@ -175,7 +176,7 @@ export const fetchParents = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch parents');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch parents'));
       }
 
 
@@ -207,7 +208,7 @@ export const fetchYearGroups = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch year groups');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch year groups'));
       }
 
       const data = await response.json();
@@ -236,7 +237,7 @@ export const fetchClasses = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch classes');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch classes'));
       }
 
       const data = await response.json();
@@ -270,7 +271,7 @@ export const toggleUserStatus = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to toggle user status');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to toggle user status'));
       }
 
       const data = await response.json();
@@ -304,7 +305,7 @@ export const getStudentAssignments = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch student assignments');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch student assignments'));
       }
 
       const data = await response.json();
@@ -338,7 +339,7 @@ export const assignParentsToStudent = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to assign parents');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to assign parents'));
       }
 
       const data = await response.json();
@@ -372,7 +373,7 @@ export const assignTeacherToStudent = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to assign teacher');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to assign teacher'));
       }
 
       const data = await response.json();
@@ -405,7 +406,7 @@ export const removeTeacherFromStudent = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to remove teacher');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to remove teacher'));
       }
 
       const data = await response.json();
@@ -438,7 +439,7 @@ export const fetchAssignedStudents = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch assigned students');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch assigned students'));
       }
 
       const data = await response.json();

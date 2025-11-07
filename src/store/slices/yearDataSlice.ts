@@ -6,6 +6,7 @@ import {
   type YearDataState 
 } from '@/types';
 import { API_BASE_URL } from '@/constants';
+import { extractErrorMessage } from '@/lib/utils';
 import type { RootState } from '@/store';
 
 const initialState: YearDataState = {
@@ -33,7 +34,7 @@ export const fetchYearGroups = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch year groups');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch year groups'));
       }
 
       const data = await response.json();
@@ -57,7 +58,7 @@ export const fetchSubjectsByYearGroup = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch subjects');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch subjects'));
       }
 
       const data = await response.json();
@@ -85,7 +86,7 @@ export const fetchAllSubjects = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch subjects');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch subjects'));
       }
 
       const data = await response.json();
@@ -120,7 +121,7 @@ export const fetchEligibleYearGroupsForStudent = createAsyncThunk(
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || 'Failed to fetch eligible year groups');
+        return rejectWithValue(extractErrorMessage(errorData, 'Failed to fetch eligible year groups'));
       }
 
       const data = await response.json();

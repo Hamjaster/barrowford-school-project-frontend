@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import { API_BASE_URL } from '@/constants';
 import { type RootState } from "..";
+import { extractErrorMessage } from '@/lib/utils';
 import type  { ReflectionTopic, ReflectionState,ReflectionItem,
   UpdateReflectionPayload,AddCommentRequest,ReflectionComment } from '@/types'
 
@@ -60,7 +61,7 @@ export const createTopic = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to create topic");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to create topic"));
       }
 
       return (await response.json()).data as ReflectionTopic;
@@ -96,7 +97,7 @@ export const fetchAllTopics = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch topics");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch topics"));
       }
 
       const result = await response.json();
@@ -134,7 +135,7 @@ export const updateTopic = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to update topic");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to update topic"));
       }
 
       const result = await response.json();
@@ -171,7 +172,7 @@ export const deleteTopic = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to delete topic");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to delete topic"));
       }
 
       return { topicId };
@@ -207,7 +208,7 @@ export const fetchActiveTopics = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch active topics");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch active topics"));
       }
 
       // Parse JSON
@@ -267,7 +268,7 @@ export const createReflection = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to create reflection");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to create reflection"));
       }
 
       const result = await response.json();
@@ -310,7 +311,7 @@ export const deleteReflection = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to delete reflection");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to delete reflection"));
       }
 
       return { reflectionId }; // return deleted reflection ID
@@ -349,7 +350,7 @@ export const requestDeleteReflection = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to request reflection deletion");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to request reflection deletion"));
       }
 
       const result = await response.json();
@@ -424,7 +425,7 @@ export const fetchAllReflections = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch reflections");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch reflections"));
       }
 
       const result = await response.json();
@@ -456,7 +457,8 @@ export const fetchMyReflections = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch reflections");
+        console.log(errorData, "ERROR DATA")
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch reflections"));
       }
 
       const result = await response.json();
@@ -489,7 +491,7 @@ export const refreshMyReflections = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to refresh reflections");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to refresh reflections"));
       }
 
       const result = await response.json();
@@ -563,7 +565,7 @@ export const addComment = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to add comment");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to add comment"));
       }
 
        const result: {  data: ReflectionComment } = await response.json();
@@ -597,7 +599,7 @@ export const fetchComments = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch comments");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch comments"));
       }
 
       const result: {  data: ReflectionComment[] } = await response.json();
@@ -628,7 +630,7 @@ export const fetchPreviousWeeks = createAsyncThunk<
 
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.error || "Failed to fetch previous weeks");
+        return rejectWithValue(extractErrorMessage(errorData, "Failed to fetch previous weeks"));
       }
 
       const result: { success: boolean; data: PreviousWeeksResponse } = await response.json();

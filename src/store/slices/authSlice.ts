@@ -222,6 +222,7 @@ const authSlice = createSlice({
     // Forgot Password cases
     builder
       .addCase(forgotPassword.pending, (state) => {
+        
         state.isLoadingForgotPassword = true;
         state.error = null;
       })

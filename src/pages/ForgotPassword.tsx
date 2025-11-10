@@ -14,7 +14,7 @@ const ForgotPassword: React.FC = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const dispatch = useDispatch<AppDispatch>();
-  const { isLoading } = useSelector((state: RootState) => state.auth);
+  const { isLoadingForgotPassword } = useSelector((state: RootState) => state.auth);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
@@ -42,7 +42,7 @@ const ForgotPassword: React.FC = () => {
     if (!validateForm()) return;
 
     try {
-      const result = await dispatch(forgotPassword({ email }));
+      const result = await dispatch(forgotPassword({ email }) as any);
 
       if (forgotPassword.fulfilled.match(result)) {
         setIsSubmitted(true);
@@ -142,10 +142,10 @@ const ForgotPassword: React.FC = () => {
           <div className="space-y-4">
             <Button
               type="submit"
-              loading={isLoading}
+              loading={isLoadingForgotPassword}
               className=" cursor-pointer group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gradient-to-r from-indigo-500 via-purple-600 to-indigo-700 hover:from-indigo-600 hover:via-purple-700 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 shadow-lg hover:shadow-xl transition-all duration-300"
             >
-              {isLoading ? "Sending..." : "Send reset link"}
+              {isLoadingForgotPassword ? "Sending..." : "Send reset link"}
             </Button>
 
             <Link

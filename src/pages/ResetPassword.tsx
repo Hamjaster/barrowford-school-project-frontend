@@ -18,8 +18,7 @@ const ResetPassword: React.FC = () => {
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitted, setIsSubmitted] = useState(false);
-
-  const { isLoading } = useSelector((state: RootState) => state.auth);
+  const [isLoadingResetPassword, setIsLoadingResetPassword] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
@@ -68,9 +67,13 @@ const ResetPassword: React.FC = () => {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    if (!validateForm() || !accessToken || !refreshToken) {
+      setIsLoadingResetPassword(false);
+      return;
+    }
 
-    if (!validateForm() || !accessToken || !refreshToken) return;
+    setIsLoadingResetPassword(true);
+    e.preventDefault();
 
     try {
       // const result = await dispatch(
@@ -99,14 +102,17 @@ const ResetPassword: React.FC = () => {
       });
       if (error) {
         toast.error(error.message);
+        setIsLoadingResetPassword(false);
       }
       if (data) {
         toast.success("Password reset successful");
         setIsSubmitted(true);
+        setIsLoadingResetPassword(false);
       }
     } catch (error: any) {
       console.error("Password reset failed:", error);
       toast.error("Failed to reset password. Please try again.");
+      setIsLoadingResetPassword(false);
     }
   };
 
@@ -222,10 +228,10 @@ const ResetPassword: React.FC = () => {
           <div className="space-y-4">
             <Button
               type="submit"
-              loading={isLoading}
+              loading={isLoadingResetPassword}
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-              {isLoading ? "Updating..." : "Update password"}
+              {isLoadingResetPassword ? "Updating..." : "Update password"}
             </Button>
 
             <Link

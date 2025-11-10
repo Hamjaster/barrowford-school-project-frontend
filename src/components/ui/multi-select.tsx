@@ -138,7 +138,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               autoFocus
             />
           </div>
-          <div className="max-h-48 overflow-y-auto">
+          <div className="max-h-36 overflow-y-auto">
             {filteredOptions.length > 0 ? (
               filteredOptions.map((option) => (
                 <div

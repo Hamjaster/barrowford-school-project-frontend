@@ -18,7 +18,6 @@ const Login: React.FC = () => {
     password: "",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [showModal, setShowModal] = useState(false);
 
   const navigate = useNavigate();
   const dispatch = useDispatch<AppDispatch>();
@@ -122,105 +121,9 @@ const Login: React.FC = () => {
             <h2 className="text-2xl font-bold text-gray-900">
               Sign in to your account
             </h2>
-            <button
-              type="button"
-              onClick={() => setShowModal(true)}
-              className="text-blue-500 hover:text-blue-700 transition-colors"
-              title="Test Credentials"
-            >
-              <InfoIcon size={20} />
-            </button>
+           
           </div>
-          {showModal && (
-            <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex justify-center items-center z-50 p-4">
-              <div className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                <h3 className="text-2xl font-bold mb-6 text-center text-gray-900">
-                  Test Credentials
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="border border-blue-200 rounded-lg p-4 bg-blue-50 hover:bg-blue-100 transition-colors">
-                    <p className="font-semibold text-blue-600 mb-2">Admin</p>
-                    <p className="text-sm text-gray-700">
-                      Email:{" "}
-                      <span className="font-mono text-gray-900">
-                        admin@school.com
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Password:{" "}
-                      <span className="font-mono text-gray-900">test12345</span>
-                    </p>
-                  </div>
-                  <div className="border border-indigo-200 rounded-lg p-4 bg-indigo-50 hover:bg-indigo-100 transition-colors">
-                    <p className="font-semibold text-indigo-600 mb-2">
-                      Staff Admin
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Email:{" "}
-                      <span className="font-mono text-gray-900">
-                        staffadmin@test.com
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Password:{" "}
-                      <span className="font-mono text-gray-900">test12345</span>
-                    </p>
-                  </div>
-                  <div className="border border-purple-200 rounded-lg p-4 bg-purple-50 hover:bg-purple-100 transition-colors">
-                    <p className="font-semibold text-purple-600 mb-2">
-                      Teacher
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Email:{" "}
-                      <span className="font-mono text-gray-900">
-                        demouserdontchange@teacher.com
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Password:{" "}
-                      <span className="font-mono text-gray-900">test1234</span>
-                    </p>
-                  </div>
-                  <div className="border border-green-200 rounded-lg p-4 bg-green-50 hover:bg-green-100 transition-colors">
-                    <p className="font-semibold text-green-600 mb-2">Parent</p>
-                    <p className="text-sm text-gray-700">
-                      Email:{" "}
-                      <span className="font-mono text-gray-900">
-                        demouserdontchange@parent.com
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Password:{" "}
-                      <span className="font-mono text-gray-900">test1234</span>
-                    </p>
-                  </div>
-                  <div className="border border-orange-200 rounded-lg p-4 bg-orange-50 hover:bg-orange-100 transition-colors md:col-span-2">
-                    <p className="font-semibold text-orange-600 mb-2">
-                      Student
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Username:{" "}
-                      <span className="font-mono text-gray-900">
-                        demouserdontchange.student
-                      </span>
-                    </p>
-                    <p className="text-sm text-gray-700">
-                      Password:{" "}
-                      <span className="font-mono text-gray-900">test1234</span>
-                    </p>
-                  </div>
-                </div>
-
-                <Button
-                  onClick={() => setShowModal(false)}
-                  className="cursor-pointer w-full mt-6 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold py-3 rounded-lg shadow-lg transition-all"
-                >
-                  Close
-                </Button>
-              </div>
-            </div>
-          )}
-
+        
           <form className="space-y-6" onSubmit={handleSubmit}>
             <div className="rounded-md space-y-4">
               {/* Login Type Toggle */}
